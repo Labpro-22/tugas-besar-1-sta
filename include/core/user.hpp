@@ -28,6 +28,14 @@ public:
 
     void move(int dadu); // Bergerak sesuai jumlah dadu
 
+    std::vector<Street*> getStreetByColor(const std::string& warna) const;
+
+    bool hasMonopoli(const std::string& warna, int totalDiPapan) const; //Mengecek apakah pemain memonopoli satu color group
+    
+    int getRailroadCount() const; //Menghitung jumalh Railraod yang dimiliki pemain (maks 4)
+
+    int getUtilityCount() const; // Menghitung jumlah Utility yang dimiliki pemain (maks 2)
+
 };
 
 // Transcation Logger
