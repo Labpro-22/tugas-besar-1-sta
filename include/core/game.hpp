@@ -19,9 +19,13 @@ public:
     Game();
     ~Game();
 
+    bool isEnd(); // Kondisi 1 Player atau Config : Bangkrut
     void setMAXTURN(int max);
     void turn();
     int getTurn();
+
+    // Tambahan
+    void leave(User& user);
 };
 
 
@@ -33,6 +37,11 @@ private:
 public: 
     Board(int size);
     ~Board();
+
+    void inisialisasiPapan();
+    Petak* getPetak(int index) const;
+    void cetakPapan(const std::vector<User>& listPemain) const;
+    static void tampilkanInfoPetak(Petak* p);
 };
 
 #endif
