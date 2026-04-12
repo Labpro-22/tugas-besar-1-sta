@@ -24,6 +24,16 @@ public:
     void apply(Game* g, User& user) override;
 };
 
+class KartuKesempatan : public KartuAksi {
+public:
+    void apply(Game* game, User& user) override;
+};
+
+class KartuDanaUmum : public KartuAksi {
+public:
+    void apply(Game* game, User& user) override;
+};
+
 class KartuSpesial : public Kartu{
 private:
     int jenisKartu;
@@ -31,6 +41,33 @@ public:
     KartuSpesial();
     ~KartuSpesial();
     void apply(Game* g, User& user) override;
+};
+
+class DiscountCard : public KartuSpesial {
+private:
+    int persentasediskon;
+public:
+    void apply(Game* game, User& user) override;
+};
+
+class ShieldCard : public KartuSpesial {
+public:
+    void apply(Game* game, User& user) override;
+};
+
+class TeleportCard : public KartuSpesial {
+public:
+    void apply(Game* game, User& user) override;
+};
+
+class LassoCard : public KartuSpesial {
+public:
+    void apply(Game* game, User& user) override;
+};
+
+class DemolitionCard : public KartuSpesial {
+public:
+    void apply(Game* game, User& user) override;
 };
 
 // Deck Kartu
