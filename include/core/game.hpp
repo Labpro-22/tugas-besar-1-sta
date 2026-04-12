@@ -19,9 +19,13 @@ public:
     Game();
     ~Game();
 
+    bool isEnd(); // Kondisi 1 Player atau Config : Bangkrut
     void setMAXTURN(int max);
     void turn();
     int getTurn();
+
+    // Tambahan
+    void leave(User& user);
 };
 
 
