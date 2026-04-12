@@ -80,7 +80,10 @@ class PetakFestival : public PetakAksi{
 private:
 
 public:
+    PetakFestival();
+    ~PetakFestival();
 
+    std::string getType() override;
 };
 
 class PetakPajak : public PetakAksi{
