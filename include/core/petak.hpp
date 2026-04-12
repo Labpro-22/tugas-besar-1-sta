@@ -84,6 +84,10 @@ public:
     ~PetakFestival();
 
     std::string getType() override;
+
+    void onLanded(User* user, Game* game);
+
+    void terapkanEfek(Properti* targetProperti);
 };
 
 class PetakPajak : public PetakAksi{
