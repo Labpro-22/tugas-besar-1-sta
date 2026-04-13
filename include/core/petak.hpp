@@ -123,29 +123,9 @@ public:
 
 class PetakPBM : public PetakPajak{    float pajakFlat;
 public:
-    PetakPajak();
-    ~PetakPajak();
-    virtual void bayarPajak(User& user) = 0;
-};
-
-class PetakPPH : public PetakPajak{
-private:
-    float pajakPercent;
-public:
-    PetakPPH();
-    PetakPPH(float flat, float percent);
-    ~PetakPPH();
-
-    void bayarPajak(User& user) override;
-};
-
-class PetakPBM : public PetakPajak{
-public:
     PetakPBM();
-    PetakPBM(float flat);
     ~PetakPBM();
-
-    void bayarPajak(User& user) override;
+    virtual void bayarPajak(User& user) = 0;
 };
 
 class PetakSpesial : public Petak{

@@ -14,4 +14,5 @@ public:
     ~Lelang();
     void pass(User& User);
     void bid(User& User);
+    void isEnd();
 };
