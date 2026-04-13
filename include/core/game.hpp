@@ -37,6 +37,11 @@ private:
 public: 
     Board(int size);
     ~Board();
+
+    void inisialisasiPapan();
+    Petak* getPetak(int index) const;
+    void cetakPapan(const std::vector<User>& listPemain) const;
+    static void tampilkanInfoPetak(Petak* p);
 };
 
 #endif

@@ -15,12 +15,14 @@ private:
 public:
     Petak();
     ~Petak();
+
+    virtual void onLanded(User& user) = 0;
     virtual std::string getType() = 0;
     virtual int getIndex();
 
 };
 
-// Inheritance Kelas Petak :: Kelas PetakProperti dan PetakAksi
+// Inheritance Kelas Petak :: Kelas PetakProperti
 class PetakProperti : public Petak{
 private:
     std::string nama;
@@ -31,11 +33,7 @@ private:
     Properti* sertifikat;
 public:
     virtual void beliLahan() = 0;
-    virtual void hitungSewa() = 0;
-};
-
-class PetakAksi: public Petak{
-
+    virtual void hitungSewa(User& user) = 0;
 };
 
 // Inheritance PetakProperti: Petak Lahan, Petak Stasiun, Petak utilitas. 
@@ -65,15 +63,32 @@ class PetakUtilitas : public PetakProperti{
 private:
 
 public:
+    PetakUtilitas();
+    ~PetakUtilitas();
+
+    void onLanded(User& user) override;
+    void hitungSewa(User& user) override;
+    std::string getType() override;
     
 };
 
-// Inheritance PetakAksi: PetakKartu, PetakFestival, PetakPajak, PetakSpesial.
+// Inheritance Petak :: Kelas PetakAksi
+class PetakAksi: public Petak{
+public:
+    PetakAksi();
+    ~PetakAksi();
+};
+
+// Inheritance PetakAksi: PetakKartu, PetakFestival, PetakPajak.
 class PetakKartu : public PetakAksi{
 private:
 
 public:
+    PetakKartu();
+    ~PetakKartu();
 
+    void onLanded(User& user) override;
+    std::string getType() override;
 };
 
 class PetakFestival : public PetakAksi{
@@ -84,15 +99,29 @@ public:
     ~PetakFestival();
 
     std::string getType() override;
-
-    void onLanded(User* user, Game* game);
-
-    void terapkanEfek(Properti* targetProperti);
 };
 
 class PetakPajak : public PetakAksi{
 private:
     float pajakFlat;
+public:
+    PetakPajak();
+    ~PetakPajak();
+    virtual void bayarPajak(User& user) = 0;
+};
+
+class PetakPPH : public PetakPajak{
+private:
+    float pajakPercent;
+public:
+    PetakPPH();
+    PetakPPH(float flat, float percent);
+    ~PetakPPH();
+
+    void bayarPajak(User& user) override;
+};
+
+class PetakPBM : public PetakPajak{    float pajakFlat;
 public:
     PetakPajak();
     ~PetakPajak();
@@ -119,21 +148,35 @@ public:
     void bayarPajak(User& user) override;
 };
 
-class PetakSpesial : public PetakAksi{
+class PetakSpesial : public Petak{
 private:
-    std::string category; // Start, Penjara, Bebas Parkir, dan Petak going to penjara
+    
 public:
     PetakSpesial();
     ~PetakSpesial();
 
-    std::string getCategory() const;
-
+    virtual void onLanded(User& user);
+    std::string getType() override;
 };
 
+class PetakGO : public PetakSpesial{
+public:
+    void onLanded(User& user) override;
+};
 
+class PetakPenjara : public PetakSpesial{
+public:
+    void onLanded(User& user) override;
+};
 
+class PetakBebasParkir : public PetakSpesial{
+public:
+    void onLanded(User& user) override;
+};
 
-
-
+class PetakPergiPenjara : public PetakSpesial{
+public:
+    void onLanded(User& user) override;
+};
 
 #endif
