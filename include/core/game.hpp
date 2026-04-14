@@ -1,9 +1,9 @@
 #ifndef GAME_HPP
 #define GAME_HPP
 
-
+#include "user.hpp" 
 #include "petak.hpp"
-#include "user.hpp"
+#include "board.hpp"
 #include <vector>
 
 
@@ -12,31 +12,23 @@ private:
     int MAX_TURN;
     static int turn;
     std::vector<User> pemain;
-    Board board;
     std::vector<Logger> Log;
+    Board board;
     bool end;
 public:
     Game();
+
     ~Game();
 
     bool isEnd(); // Kondisi 1 Player atau Config : Bangkrut
+
     void setMAXTURN(int max);
-    void turn();
+
+    void nextturn();
+
     int getTurn();
 
-    // Tambahan
     void leave(User& user);
-};
-
-
-
-class Board{
-private:
-    int size;
-    std::vector<Petak*> kotak;
-public: 
-    Board(int size);
-    ~Board();
 };
 
 #endif
