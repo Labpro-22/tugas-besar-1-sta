@@ -1,17 +1,14 @@
 #ifndef USER_HPP
 #define USER_HPP
 
-#include "petak.hpp"
-#include "properti.hpp"
-#include "kartu.hpp"
+#include <string>
 #include <vector>
-// Rancangan Awal [Bisa berubah ya nanti!]
-// 1. Vector: Simpan state user dan simpan data di class lain.
-// 2. Map : Hubungin user dan data di class lain
-// 3. Map :: user -> data lain (Vector)
+#include "properti.hpp"
 
-
-
+class Kartu; 
+class Street;
+class RailRoad;
+class Utility;
 
 class User{
 private:
@@ -19,14 +16,27 @@ private:
     int uang;
     int koordinat;                              // Kotak ke-?
     int status; // Penjara, ...
-    std::vector<Properti> listProperti;         //Properti yang dipunya
-    std::vector<Kartu> listKartu;
+    std::vector<Properti*> listProperti;         //Properti yang dipunya
+    std::vector<Kartu*> listKartu;
 
 public:
     User();
+    User(const std::string& username, int uangAwal);
     ~User();
 
     void move(int dadu); // Bergerak sesuai jumlah dadu
+
+    int getUang() const;
+
+    std::string getUsername() const;
+
+    int getKoordinat() const;
+
+    void addProperti(Properti* p); // Tambahkan properti ke daftar milik pemain
+
+    void removeProperti(Properti* p); // Hapus properti dari daftar milik pemain
+
+    const std::vector<Properti*>& getListProperti() const;
 
     std::vector<Street*> getStreetByColor(const std::string& warna) const;
 
@@ -35,6 +45,10 @@ public:
     int getRailroadCount() const; //Menghitung jumalh Railraod yang dimiliki pemain (maks 4)
 
     int getUtilityCount() const; // Menghitung jumlah Utility yang dimiliki pemain (maks 2)
+
+    User& operator+=(int jumlahUang);
+
+    User& operator-=(int jumlahUang);
 
 };
 
