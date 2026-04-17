@@ -43,6 +43,14 @@ public:
     void apply(Game* g, User& user) override;
 };
 
+class MoveCard : public KartuSpesial {
+private:
+    int langkah;
+public:
+    MoveCard();
+    void apply(Game* game, User& user) override;
+};
+
 class DiscountCard : public KartuSpesial {
 private:
     int persentasediskon;
@@ -77,7 +85,7 @@ private:
     std::vector<T> Kartu;
     std::string JenisDeck;
 public:
-    cardDeck();
+    CardDeck();
     ~CardDeck();
 };
 

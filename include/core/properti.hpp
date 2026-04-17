@@ -1,10 +1,12 @@
 #ifndef PROPERTI_HPP
 #define PROPERTI_HPP
 
-#include "petak.hpp"
-#include "user.hpp"
+#include <iostream>
+#include <string>
+#include <vector>
 
 class User;
+class Petak;
 
 // Enum untuk mendefinisikan status kepemilikan dari suatu properti
 enum class PropStatus {
@@ -22,9 +24,7 @@ protected:
     int nilaiGadai;
     PropStatus status;
     User* owner;
-    
-    //Atribut untuk festival
-    int duasiFestival;
+    int durasiFestival;
     int festivalMultiplier;
 
 public:
@@ -49,6 +49,19 @@ public:
     int getHargaBeli() const;
 
     int getId() const;
+
+    std::string getKode() const { return kode; }
+
+    int getFestivalMultiplier() const;
+
+    void setFestivalMultiplier(int m);
+
+    int getFestivalDuration() const;
+
+    void setFestivalDuration(int d);
+    
+    virtual int getSewaSaatIni(int dadu) const;
+
 };
 
 class Street : public Properti {
@@ -66,7 +79,7 @@ public:
 
     void bangunRumah(); //Membangun rumah di properti ini
 
-    void bangunHote(); //Melakkan upgrade dari 4 rumah menjadi hotel
+    void bangunHotel(); //Melakkan upgrade dari 4 rumah menjadi hotel
 
     void jualBangunan(); //Menjual bangunan ke bank dengan harga setengah dari harga beli. Dipanggil wajib sebelum properti digadaikan
 
@@ -79,6 +92,8 @@ public:
     void bangunRumah(const std::vector<Street*>& grupWarna); //Membangun rumah di properti ini
 
     void gadaikan(const std::vector<Street*>& grupWarna); //Menggadaikan properti khusus street
+
+    void hancurkanSatuTingkatBangunan();
 };
 
 class RailRoad : public Properti {
@@ -91,7 +106,9 @@ public:
 class Utility : public Properti {
 public:
     Utility(int id, std::string kode, std::string nama, int nilaiGadai);
+    
     int hitungSewa(int lemparanDadu) const override;
 };
+
 
 #endif

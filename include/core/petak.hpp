@@ -3,37 +3,49 @@
 
 #include <iostream>
 #include <vector>
+#include <string>
 #include "properti.hpp"
+
+class User;
+class Game;
 
 // Kelas Abstrak - Petak
 class Petak {
-private:
+protected:
     int index;
     std::string kodePetak;
     std::string name;
     std::string kategori;
 public:
     Petak();
-    ~Petak();
 
-    virtual void onLanded(User& user) = 0;
+    virtual ~Petak();
+
     virtual std::string getType() = 0;
+
     virtual int getIndex();
+
+    virtual void onLanded(User* user, Game* game) = 0;
+
+    std::string getKodePetak() const;
+
+    std::string getName() const;
+
+    void setIndex(int i);
 
 };
 
 // Inheritance Kelas Petak :: Kelas PetakProperti
 class PetakProperti : public Petak{
-private:
-    std::string nama;
-    std::string kode;
+protected:
     float hargaBeli;
     std::vector<float> hargaSewa;
     int nilaiGadai;
     Properti* sertifikat;
 public:
     virtual void beliLahan() = 0;
-    virtual void hitungSewa(User& user) = 0;
+
+    virtual void hitungSewa() = 0;
 };
 
 // Inheritance PetakProperti: Petak Lahan, Petak Stasiun, Petak utilitas. 
@@ -45,9 +57,24 @@ private:
 
 public:
     PetakLahan();
+
     PetakLahan(std::string warna);
+
     ~PetakLahan();
+
+    std::string getWarna() const;
+
     void beliLahan() override;
+
+    void hitungSewa() override;
+    
+    std::string getType() override;
+
+    void onLanded(User* user, Game* game) override;
+
+    std::string getOwnerName() const;
+    
+    void hancurkanBangunan();
 };
 
 class PetakStasiun : public PetakProperti{
@@ -55,8 +82,16 @@ private:
 
 public:
     PetakStasiun();
+
     ~PetakStasiun();
+
     void beliLahan() override;
+
+    void hitungSewa() override;
+
+    std::string getType() override;
+
+    void onLanded(User* user, Game* game) override;
 };
 
 class PetakUtilitas : public PetakProperti{
@@ -64,12 +99,16 @@ private:
 
 public:
     PetakUtilitas();
+
     ~PetakUtilitas();
 
-    void onLanded(User& user) override;
-    void hitungSewa(User& user) override;
+    void beliLahan() override;
+
+    void hitungSewa() override;
+
     std::string getType() override;
-    
+
+    void onLanded(User* user, Game* game) override;
 };
 
 // Inheritance Petak :: Kelas PetakAksi
@@ -85,10 +124,12 @@ private:
 
 public:
     PetakKartu();
+
     ~PetakKartu();
 
-    void onLanded(User& user) override;
     std::string getType() override;
+
+    void onLanded(User* user, Game* game) override;
 };
 
 class PetakFestival : public PetakAksi{
@@ -96,17 +137,24 @@ private:
 
 public:
     PetakFestival();
+
     ~PetakFestival();
 
     std::string getType() override;
+
+    void onLanded(User* user, Game* game) override;
+
+    void terapkanEfek(Properti* targetProperti);
 };
 
 class PetakPajak : public PetakAksi{
-private:
+protected:
     float pajakFlat;
 public:
     PetakPajak();
-    ~PetakPajak();
+
+    virtual ~PetakPajak();
+
     virtual void bayarPajak(User& user) = 0;
 };
 
@@ -115,17 +163,31 @@ private:
     float pajakPercent;
 public:
     PetakPPH();
+
     PetakPPH(float flat, float percent);
+
     ~PetakPPH();
 
     void bayarPajak(User& user) override;
+
+    std::string getType() override;
+
+    void onLanded(User* user, Game* game) override;
 };
 
 class PetakPBM : public PetakPajak{    float pajakFlat;
 public:
     PetakPBM();
+
+    PetakPBM(float flat);
+
     ~PetakPBM();
-    virtual void bayarPajak(User& user) = 0;
+
+    void bayarPajak(User& user) override;
+
+    std::string getType() override;
+
+    void onLanded(User* user, Game* game) override;
 };
 
 class PetakSpesial : public Petak{
@@ -133,30 +195,14 @@ private:
     
 public:
     PetakSpesial();
+
     ~PetakSpesial();
 
-    virtual void onLanded(User& user);
+    std::string getCategory() const;
+
     std::string getType() override;
-};
 
-class PetakGO : public PetakSpesial{
-public:
-    void onLanded(User& user) override;
-};
-
-class PetakPenjara : public PetakSpesial{
-public:
-    void onLanded(User& user) override;
-};
-
-class PetakBebasParkir : public PetakSpesial{
-public:
-    void onLanded(User& user) override;
-};
-
-class PetakPergiPenjara : public PetakSpesial{
-public:
-    void onLanded(User& user) override;
+    void onLanded(User* user, Game* game) override;
 };
 
 #endif
