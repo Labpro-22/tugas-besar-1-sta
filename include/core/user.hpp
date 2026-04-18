@@ -1,71 +1,55 @@
 #ifndef USER_HPP
 #define USER_HPP
 
-#include <iostream>
-#include <vector>
 #include <string>
+#include <vector>
+#include "properti.hpp"
 
-class User {
+class Kartu; 
+class Street;
+class RailRoad;
+class Utility;
+
+class User{
 private:
     std::string username;
     int uang;
-    int koordinat;                               // Kotak ke-?
-    std::string status;                          // "ACTIVE", "BANKRUPT", atau "JAILED"
-    
-    // Atribut Khusus Efek Kartu
-    int activeDiscount;                          
-    bool shieldActive;                           
-    
-    std::vector<Properti*> listProperti;         
-    std::vector<Kartu*> listKartu;               
+    int koordinat;                              // Kotak ke-?
+    int status; // Penjara, ...
+    std::vector<Properti*> listProperti;         //Properti yang dipunya
+    std::vector<Kartu*> listKartu;
 
 public:
     User();
+    User(const std::string& username, int uangAwal);
     ~User();
 
-    std::string getUsername() const;
-    void setUsername(const std::string& name);
-
-    std::string getStatus() const;
-    void setStatus(const std::string& newStatus);
+    void move(int dadu); // Bergerak sesuai jumlah dadu
 
     int getUang() const;
-    void kurangiUang(int jumlah);
-    void tambahUang(int jumlah);
-    
-    // Untuk PPH: Menghitung total kekayaan
-    int getTotalKekayaan() const; 
 
-    // Untuk Festival: Mencari properti berdasarkan kode
-    Properti* getPropertiByKode(const std::string& kode);
-    
-    // Getter untuk listProperti
+    std::string getUsername() const;
+
+    int getKoordinat() const;
+
+    void addProperti(Properti* p); // Tambahkan properti ke daftar milik pemain
+
+    void removeProperti(Properti* p); // Hapus properti dari daftar milik pemain
+
     const std::vector<Properti*>& getListProperti() const;
 
     std::vector<Street*> getStreetByColor(const std::string& warna) const;
 
     bool hasMonopoli(const std::string& warna, int totalDiPapan) const; 
     
-    int getRailroadCount() const; 
+    int getRailroadCount() const; //Menghitung jumalh Railraod yang dimiliki pemain (maks 4)
 
-    int getUtilityCount() const; 
+    int getUtilityCount() const; // Menghitung jumlah Utility yang dimiliki pemain (maks 2)
 
-    int getKoordinat() const;
-    void setKoordinat(int index);
-    void move(int langkah);      
+    User& operator+=(int jumlahUang);
 
-    void setActiveDiscount(int discountPercentage);
-    int getActiveDiscount() const;
+    User& operator-=(int jumlahUang);
 
-    void setShieldActive(bool active);
-    bool isShieldActive() const;
-};
-
-struct LogEntry {
-    int turn;
-    std::string username;
-    std::string jenisAksi;
-    std::string detail;
 };
 
 // Transaction Logger

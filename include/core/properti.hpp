@@ -1,12 +1,10 @@
 #ifndef PROPERTI_HPP
 #define PROPERTI_HPP
 
-#include <iostream>
 #include <string>
 #include <vector>
 
-class User;
-class Petak;
+class User; // Forward declaration untuk menghindari circular include
 
 // Enum untuk mendefinisikan status kepemilikan dari suatu properti
 enum class PropStatus {
@@ -24,6 +22,8 @@ protected:
     int nilaiGadai;
     PropStatus status;
     User* owner;
+    
+    //Atribut untuk festival
     int durasiFestival;
     int festivalMultiplier;
 
@@ -75,30 +75,32 @@ private:
 public:
     Street(int id, std::string kode, std::string nama, std::string warna, int hargaBeli, int nilaiGadai, int hargaBangunan, std::vector<int> sewa);
 
-    int hitungSewa(int lembaranDadu) const override;
+    int hitungSewa(int lemparanDadu) const override;
 
-    void bangunRumah(); //Membangun rumah di properti ini
+    int hitungSewa(int lemparanDadu, const std::vector<Street*>& grupWarna) const;
 
-    void bangunHotel(); //Melakkan upgrade dari 4 rumah menjadi hotel
+    void bangunHotel(const std::vector<Street*>& grupWarna); //Melakkan upgrade dari 4 rumah menjadi hotel
 
-    void jualBangunan(); //Menjual bangunan ke bank dengan harga setengah dari harga beli. Dipanggil wajib sebelum properti digadaikan
-
-    std::string getWarna() const;
-
-    int getJumlahBangunan() const;
+    void jualBangunan(const std::vector<Street*>& grupWarna); //Menjual bangunan ke bank dengan harga setengah dari harga beli. Dipanggil wajib sebelum properti digadaikan
 
     bool canBuild(const std::vector<Street*>& grupWarna) const; //Mengecek apakah rumah bisaa dibangun berdasarkan atruan pemerataan selisih miniaml 1
 
     void bangunRumah(const std::vector<Street*>& grupWarna); //Membangun rumah di properti ini
 
-    void gadaikan(const std::vector<Street*>& grupWarna); //Menggadaikan properti khusus street
+    void gadaikan(); //Menggadaikan properti Street (sekalian menjual semua bangunan dalam color group)
 
-    void hancurkanSatuTingkatBangunan();
+    std::string getWarna() const;
+
+    int getJumlahBangunan() const;
+
+    int getHargaBangunan() const;
 };
 
 class RailRoad : public Properti {
+private:
+    int hargaSewaDasar;
 public:
-    RailRoad(int id, std::string kode, std::string nama, int nilaiGadai);
+    RailRoad(int id, std::string kode, std::string nama, int nilaiGadai, int hargaBeli, int hargaSewaDasar);
 
     int hitungSewa(int lemparanDadu) const override;
 };
