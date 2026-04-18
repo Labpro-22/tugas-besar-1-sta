@@ -48,6 +48,10 @@ public:
     virtual void hitungSewa() = 0;
 };
 
+class PetakAksi: public Petak{
+
+};
+
 // Inheritance PetakProperti: Petak Lahan, Petak Stasiun, Petak utilitas. 
 class PetakLahan : public PetakProperti{
 private:
@@ -109,13 +113,6 @@ public:
     std::string getType() override;
 
     void onLanded(User* user, Game* game) override;
-};
-
-// Inheritance Petak :: Kelas PetakAksi
-class PetakAksi: public Petak{
-public:
-    PetakAksi();
-    ~PetakAksi();
 };
 
 // Inheritance PetakAksi: PetakKartu, PetakFestival, PetakPajak.
