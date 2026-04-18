@@ -1,119 +1,103 @@
-#include "petak.hpp"
-#include "user.hpp"
-#include "game.hpp"
+#include "../../include/core/petak.hpp"
+#include "../../include/core/user.hpp"
+#include "../../include/core/game.hpp"
 
+// [1] Abstract Class : Petak
 Petak::Petak() {}
-
+Petak::Petak(int index, std::string kodePetak, std::string name, std::string kategori)
+    :index(index),kodePetak(kodePetak),name(name),kategori(kategori){}
 Petak::~Petak() {}
 
-int Petak::getIndex() { 
-    return index;
+int Petak::getIndex() { return index;}
+std::string Petak::getKodePetak() const {return kodePetak;}
+std::string Petak::getName() const { return name;}
+std::string Petak::getKategori() const {return kategori;}
+void Petak::setIndex(int i) { index = i;}
+
+
+
+// [2] Abstract Class: PetakProperti {Inheritance dari Petak}
+PetakProperti::PetakProperti(){}
+PetakProperti::PetakProperti(int index, std::string kodePetak, std::string name, std::string kategori,float hargaBeli,std::vector<float> hargaSewa,int nilaiGadai,Properti* sertifikat)
+    :Petak(index,kodePetak,name,kategori),hargaBeli(hargaBeli),hargaSewa(hargaSewa),nilaiGadai(nilaiGadai),sertifikat(sertifikat){}
+PetakProperti::~PetakProperti(){}
+
+float PetakProperti::getHargaBeli() const{
+    return hargaBeli;
 }
-std::string Petak::getKodePetak() const {
-    return kodePetak;
+int PetakProperti::getNilaiGadai() const{
+    return nilaiGadai;
 }
-
-std::string Petak::getName() const { 
-    return name;
+std::vector<float> PetakProperti::getHargaSewa() const{
+    return hargaSewa;
 }
-
-void Petak::setIndex(int i) { 
-    index = i;
-}
-
-PetakPajak::PetakPajak() {}
-
-PetakPajak::~PetakPajak() {}
-
-// Implementasi Petak Pajak barang Mewah (PBM)
-PetakPBM::PetakPBM(float flat) {
-    name = "Pajak Barang Mewah";
-    kodePetak = "PBM";
-    kategori = "Pajak";
-    pajakFlat = flat;
-}
-
-PetakPBM::~PetakPBM() {}
-
-std::string PetakPBM::getType() { return "Pajak"; }
-
-void PetakPBM::onLanded(User* user, Game* game) {
-    std::cout << "[INFO] Mendarat di Pajak Barang Mewah (PBM)\n";
-    std::cout << "[INFO] Potongan pajak flat: M" << pajakFlat << "\n";
-    bayarPajak(*user);
+Properti* PetakProperti::getSertifikat() const{
+    return sertifikat;
 }
 
-void PetakPBM::bayarPajak(User& user) {
-    if (user.getUang() >= pajakFlat) {
-        user.kurangiUang(pajakFlat);
-        std::cout << "[SUCCESS] Pajak terbayar. Sisa uang: M" << user.getUang() << "\n";
+
+// [2.1] Class PetakLahan (Inheritance dari PetakProperti)
+PetakLahan::PetakLahan() {kategori="Lahan";kodePetak="LHN";}
+PetakLahan::PetakLahan(int index, std::string name, float hargaBeli,std::vector<float> hargaSewa,int nilaiGadai,Properti* sertifikat,std::string warna) 
+    :PetakProperti(index,"LHN",name,"Lahan",hargaBeli,hargaSewa,nilaiGadai,sertifikat),warna(warna){} 
+PetakLahan::~PetakLahan() {}
+
+std::string PetakLahan::getWarna() const { return warna;}
+std::string PetakLahan::getOwnerName() const {
+    if (sertifikat != nullptr && sertifikat->getOwner() != nullptr) {
+        return sertifikat->getOwner()->getUsername(); 
+    }
+    return "";
+}
+
+void PetakLahan::beliLahan() {}
+void PetakLahan::hitungSewa() {}
+void PetakLahan::onLanded(User* user, Game* game) {}
+
+void PetakLahan::hancurkanBangunan() {
+    Street* jalan = dynamic_cast<Street*>(sertifikat);
+    if (jalan != nullptr) {
+        jalan->hancurkanSatuTingkatBangunan();
     } else {
-        std::cout << "[WARNING] Saldo tidak mencukupi untuk membayar pajak!\n";
-        // TODO: Implementasi trigger kebangkrutan
+        std::cout << "[ERROR] Petak ini bukan jenis Street, tidak memiliki bangunan.\n";
     }
 }
 
-// Implementasi Petak Pajak Penghasilan (PPH)
-PetakPPH::PetakPPH(float flat, float percent) {
-    name = "Pajak Penghasilan";
-    kodePetak = "PPH";
-    kategori = "Pajak";
-    pajakFlat = flat;
-    pajakPercent = percent;
-}
+// [2.2] Class PetakStasiun (Inheritance dari PetakProperti)
+PetakStasiun::PetakStasiun() { kategori = "Stasiun"; kodePetak = "STA"; }
+PetakStasiun::~PetakStasiun() {}
 
-PetakPPH::~PetakPPH() {}
+void PetakStasiun::beliLahan() {}
+void PetakStasiun::hitungSewa() {}
+void PetakStasiun::onLanded(User* user, Game* game) {}
 
-std::string PetakPPH::getType() { return "Pajak"; }
+// [2.3] Class PetakUtilitas (Inheritance dari PetakProperti)
+PetakUtilitas::PetakUtilitas() { kategori = "Utilitas"; kodePetak = "UTL"; }
+PetakUtilitas::~PetakUtilitas() {}
 
-void PetakPPH::onLanded(User* user, Game* game) {
-    std::cout << "[INFO] Mendarat di Pajak Penghasilan (PPH)\n";
-    bayarPajak(*user);
-}
+void PetakUtilitas::beliLahan() {}
+void PetakUtilitas::hitungSewa() {}
+void PetakUtilitas::onLanded(User* user, Game* game) {}
 
-void PetakPPH::bayarPajak(User& user) {
-    int pilihan;
-    std::cout << "Opsi Pembayaran PPH:\n"
-              << "1. Bayar flat (M" << pajakFlat << ")\n"
-              << "2. Bayar " << pajakPercent << "% dari total aset/kekayaan\n"
-              << "> Pilihan (1/2): ";
-    std::cin >> pilihan;
 
-    if (pilihan == 1) {
-        if (user.getUang() >= pajakFlat) {
-            user.kurangiUang(pajakFlat);
-            std::cout << "[SUCCESS] Pajak flat terbayar. Sisa uang: M" << user.getUang() << "\n";
-        } else {
-            std::cout << "[WARNING] Saldo tidak mencukupi!\n";
-            // TODO: Implementasi trigger kebangkrutan
-        }
-    } 
-    else if (pilihan == 2) {
-        float totalKekayaan = user.getTotalKekayaan(); 
-        float pajakPersentase = totalKekayaan * (pajakPercent / 100.0f);
-        
-        std::cout << "[INFO] Total aset: M" << totalKekayaan << " | Potongan: M" << pajakPersentase << "\n";
 
-        if (user.getUang() >= pajakPersentase) {
-            user.kurangiUang(pajakPersentase);
-            std::cout << "[SUCCESS] Pajak persentase terbayar. Sisa uang: M" << user.getUang() << "\n";
-        } else {
-            std::cout << "[WARNING] Saldo tidak mencukupi!\n";
-            // TODO: Implementasi trigger kebangkrutan
-        }
-    }
-}
 
-// Implementasi Petak Festival
+// [3] Abstract Class : Class PetakAksi {Inheritance dari Petak}
+
+
+// [3.1] Class PetakKartu {Inheritance dari PetakAksi}
+PetakKartu::PetakKartu() { kategori = "Kartu"; kodePetak = "KRT"; }
+PetakKartu::~PetakKartu() {}
+std::string PetakKartu::getType() { return "Kartu"; }
+void PetakKartu::onLanded(User* user, Game* game) {}
+
+// [3.2] Class PetakFestival {Inheritance dari PetakAksi}
 PetakFestival::PetakFestival() {
     name = "Festival";
     kodePetak = "FES";
     kategori = "Aksi";
 }
-
 PetakFestival::~PetakFestival() {}
-
-std::string PetakFestival::getType() { return "Festival"; }
 
 void PetakFestival::onLanded(User* user, Game* game) {
     std::cout << "[INFO] Mendarat di petak Festival!\n";
@@ -156,60 +140,82 @@ void PetakFestival::terapkanEfek(Properti* targetProperti) {
               << " (Aktif 3 giliran)\n";
 }
 
-std::string PetakLahan::getOwnerName() const {
-    if (sertifikat != nullptr && sertifikat->getOwner() != nullptr) {
-        return sertifikat->getOwner()->getUsername(); 
-    }
-    return "";
+// [3.3] Class PetakPajak {Inheritance dari PetakAksi}
+PetakPajak::PetakPajak() {}
+PetakPajak::~PetakPajak() {}
+// [3.3.1] Class PetakPPH {Inheritance dari PetakPajak}
+PetakPPH::PetakPPH(float flat, float percent) {
+    name = "Pajak Penghasilan";
+    kodePetak = "PPH";
+    kategori = "Pajak";
+    pajakFlat = flat;
+    pajakPercent = percent;
 }
+PetakPPH::~PetakPPH() {}
 
-void PetakLahan::hancurkanBangunan() {
-    Street* jalan = dynamic_cast<Street*>(sertifikat);
-    if (jalan != nullptr) {
-        jalan->hancurkanSatuTingkatBangunan();
+void PetakPPH::onLanded(User* user, Game* game) {
+    std::cout << "[INFO] Mendarat di Pajak Penghasilan (PPH)\n";
+    bayarPajak(*user);
+}
+void PetakPPH::bayarPajak(User& user) {
+    int pilihan;
+    std::cout << "Opsi Pembayaran PPH:\n"
+              << "1. Bayar flat (M" << pajakFlat << ")\n"
+              << "2. Bayar " << pajakPercent << "% dari total aset/kekayaan\n"
+              << "> Pilihan (1/2): ";
+    std::cin >> pilihan;
+
+    if (pilihan == 1) {
+        if (user.getUang() >= pajakFlat) {
+            user.kurangiUang(pajakFlat);
+            std::cout << "[SUCCESS] Pajak flat terbayar. Sisa uang: M" << user.getUang() << "\n";
+        } else {
+            std::cout << "[WARNING] Saldo tidak mencukupi!\n";
+            // TODO: Implementasi trigger kebangkrutan
+        }
+    } 
+    else if (pilihan == 2) {
+        float totalKekayaan = user.getTotalKekayaan(); 
+        float pajakPersentase = totalKekayaan * (pajakPercent / 100.0f);
+        
+        std::cout << "[INFO] Total aset: M" << totalKekayaan << " | Potongan: M" << pajakPersentase << "\n";
+
+        if (user.getUang() >= pajakPersentase) {
+            user.kurangiUang(pajakPersentase);
+            std::cout << "[SUCCESS] Pajak persentase terbayar. Sisa uang: M" << user.getUang() << "\n";
+        } else {
+            std::cout << "[WARNING] Saldo tidak mencukupi!\n";
+            // TODO: Implementasi trigger kebangkrutan
+        }
+    }
+}
+// [3.3.2] Class PetakPBM {Inheritance dari PetakPajak}
+PetakPBM::PetakPBM(float flat) {
+    name = "Pajak Barang Mewah";
+    kodePetak = "PBM";
+    kategori = "Pajak";
+    pajakFlat = flat;
+}
+PetakPBM::~PetakPBM() {}
+
+void PetakPBM::onLanded(User* user, Game* game) {
+    std::cout << "[INFO] Mendarat di Pajak Barang Mewah (PBM)\n";
+    std::cout << "[INFO] Potongan pajak flat: M" << pajakFlat << "\n";
+    bayarPajak(*user);
+}
+void PetakPBM::bayarPajak(User& user) {
+    if (user.getUang() >= pajakFlat) {
+        user.kurangiUang(pajakFlat);
+        std::cout << "[SUCCESS] Pajak terbayar. Sisa uang: M" << user.getUang() << "\n";
     } else {
-        std::cout << "[ERROR] Petak ini bukan jenis Street, tidak memiliki bangunan.\n";
+        std::cout << "[WARNING] Saldo tidak mencukupi untuk membayar pajak!\n";
+        // TODO: Implementasi trigger kebangkrutan
     }
 }
 
-// HAPUS AJA KALO UDAH GA DIPAKE, INI CUMA BUAT NGE-TEST CETAK PALETNYA AJA, KARENA BELUM SEMUA IMPLEMENTASI FUNGSI-FUNGSINYA,
-// JADI BIAR GA ERROR DULU. ATAU MASUKIN KE IMPLEMENTASI KELAS LAIN YANG BUTUH, 
-// KARENA SEMUA KELAS INI TURUNAN DARI PETAK, JADI BISA DIPAKE SEMUA TEMPAT YANG BUTUH OBJEK PETAK
 
-PetakLahan::PetakLahan() {}
-PetakLahan::PetakLahan(std::string warna) { 
-    this->warna = warna; 
-    kategori = "Lahan"; 
-    kodePetak = "LHN"; 
-}
-PetakLahan::~PetakLahan() {}
-void PetakLahan::beliLahan() {}
-void PetakLahan::hitungSewa() {}
-std::string PetakLahan::getWarna() const { return warna;}
-std::string PetakLahan::getType() { return "Lahan"; }
-void PetakLahan::onLanded(User* user, Game* game) {}
 
-PetakStasiun::PetakStasiun() { kategori = "Stasiun"; kodePetak = "STA"; }
-PetakStasiun::~PetakStasiun() {}
-void PetakStasiun::beliLahan() {}
-void PetakStasiun::hitungSewa() {}
-std::string PetakStasiun::getType() { return "Stasiun"; }
-void PetakStasiun::onLanded(User* user, Game* game) {}
-
-PetakUtilitas::PetakUtilitas() { kategori = "Utilitas"; kodePetak = "UTL"; }
-PetakUtilitas::~PetakUtilitas() {}
-void PetakUtilitas::beliLahan() {}
-void PetakUtilitas::hitungSewa() {}
-std::string PetakUtilitas::getType() { return "Utilitas"; }
-void PetakUtilitas::onLanded(User* user, Game* game) {}
-
-PetakKartu::PetakKartu() { kategori = "Kartu"; kodePetak = "KRT"; }
-PetakKartu::~PetakKartu() {}
-std::string PetakKartu::getType() { return "Kartu"; }
-void PetakKartu::onLanded(User* user, Game* game) {}
-
+// [4] ===PetakSpesial===
 PetakSpesial::PetakSpesial() { kategori = "Spesial"; kodePetak = "SPS"; }
 PetakSpesial::~PetakSpesial() {}
-std::string PetakSpesial::getCategory() const { return kategori; }
-std::string PetakSpesial::getType() { return "Spesial"; }
 void PetakSpesial::onLanded(User* user, Game* game) {}
