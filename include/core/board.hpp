@@ -3,6 +3,9 @@
 
 #include <vector>
 #include <string>
+#include <iostream>
+#include <fstream>
+#include <sstream>
 #include "petak.hpp"
 
 class Board {
@@ -12,10 +15,11 @@ private:
 
 public:
     Board();
-
+    Board(int size);
     ~Board();
 
-    void buildBoard(const std::string& configFilename); 
+    void buildBoard(); // Default : 40
+    void buildBoard(const std::string& configFilename); // Dinamis : File Konfig
 
     Petak* getPetakAt(int index) const;
 

@@ -64,6 +64,7 @@ private:
 public:
     PetakLahan();
     PetakLahan(int index, std::string name, float hargaBeli,std::vector<float> hargaSewa,int nilaiGadai,Properti* sertifikat,std::string warna);
+    PetakLahan(std::string warna);
     ~PetakLahan();
 
     std::string getWarna() const;

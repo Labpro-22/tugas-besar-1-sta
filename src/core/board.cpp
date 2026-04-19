@@ -1,12 +1,16 @@
-#include "board.hpp"
-#include "petak.hpp"
-#include <iostream>
-#include <fstream>
-#include <sstream>
+#include "../../include/core/board.hpp"
+
 
 Board::Board() {
-    // [!] HardCode
+    // Default: 40
     this->size = 40;
+    // Isi papan dengan nullptr sementara agar tidak error saat di-loop
+    for (int i = 0; i < size; ++i) {
+        kotak.push_back(nullptr); 
+    }
+}
+
+Board::Board(int size) : size(size) {
     // Isi papan dengan nullptr sementara agar tidak error saat di-loop
     for (int i = 0; i < size; ++i) {
         kotak.push_back(nullptr); 
@@ -103,10 +107,19 @@ int Board::getSize() const {
     return size;
 }
 int Board::getGoIndex() const { 
-    // [!] HardCode
-    return 0;
+    for (auto it = kotak.begin(); it != kotak.end(); ++it) {
+        if (*it != nullptr && (*it)->getName() == "go") {
+            return static_cast<int>(it - kotak.begin());
+        }
+    }
+    return -1;
 }
 int Board::getPenjaraIndex() const {
     // [!] HardCode
-    return 10;
+    for (auto it = kotak.begin(); it != kotak.end(); ++it) {
+        if (*it != nullptr && (*it)->getName() == "penjara") {
+            return static_cast<int>(it - kotak.begin());
+        }
+    }
+    return -1;
 }

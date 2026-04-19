@@ -18,6 +18,8 @@ private:
 public:
     Game();
 
+    Game(int Maxturn);
+
     ~Game();
 
     bool isEnd(); // Kondisi 1 Player atau Config : Bangkrut

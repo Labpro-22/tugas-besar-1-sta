@@ -3,11 +3,9 @@
 // Inisialisasi Static Variabel
 int Game::turn = 1;
 
-Game::Game() {
-    this->MAX_TURN = 100; // Asumsi default batas giliran
-    this->end = false;
-    // Objek 'board' akan otomatis memanggil constructor Board() miliknya sendiri
-}
+Game::Game() : MAX_TURN(100), end(false) {} // Asumsi default batas giliran
+
+Game::Game(int Maxturn) : MAX_TURN(Maxturn),end(false){}
 
 Game::~Game() {
     pemain.clear();
@@ -16,11 +14,8 @@ Game::~Game() {
 
 
 bool Game::isEnd() {
-    if (pemain.size() <= 1 && !pemain.empty()) {
-        return true;
-    }
-    // Atau jika sudah mencapai MAX_TURN (variabel end = true)
-    return this->end;
+    // Jika Pemain tinggal satu atau end true
+    return (this->end || pemain.size()==1);
 }
 
 void Game::setMAXTURN(int max) {

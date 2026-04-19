@@ -40,6 +40,7 @@ Properti* PetakProperti::getSertifikat() const{
 PetakLahan::PetakLahan() {kategori="Lahan";kodePetak="LHN";}
 PetakLahan::PetakLahan(int index, std::string name, float hargaBeli,std::vector<float> hargaSewa,int nilaiGadai,Properti* sertifikat,std::string warna) 
     :PetakProperti(index,"LHN",name,"Lahan",hargaBeli,hargaSewa,nilaiGadai,sertifikat),warna(warna){} 
+PetakLahan::PetakLahan(std::string warna) : PetakLahan(){this->warna=warna;}
 PetakLahan::~PetakLahan() {}
 
 std::string PetakLahan::getWarna() const { return warna;}
@@ -88,7 +89,6 @@ void PetakUtilitas::onLanded(User* user, Game* game) {}
 // [3.1] Class PetakKartu {Inheritance dari PetakAksi}
 PetakKartu::PetakKartu() { kategori = "Kartu"; kodePetak = "KRT"; }
 PetakKartu::~PetakKartu() {}
-std::string PetakKartu::getType() { return "Kartu"; }
 void PetakKartu::onLanded(User* user, Game* game) {}
 
 // [3.2] Class PetakFestival {Inheritance dari PetakAksi}
@@ -167,7 +167,7 @@ void PetakPPH::bayarPajak(User& user) {
 
     if (pilihan == 1) {
         if (user.getUang() >= pajakFlat) {
-            user.kurangiUang(pajakFlat);
+            user -= (pajakFlat);
             std::cout << "[SUCCESS] Pajak flat terbayar. Sisa uang: M" << user.getUang() << "\n";
         } else {
             std::cout << "[WARNING] Saldo tidak mencukupi!\n";
@@ -181,7 +181,7 @@ void PetakPPH::bayarPajak(User& user) {
         std::cout << "[INFO] Total aset: M" << totalKekayaan << " | Potongan: M" << pajakPersentase << "\n";
 
         if (user.getUang() >= pajakPersentase) {
-            user.kurangiUang(pajakPersentase);
+            user -= (pajakPersentase);
             std::cout << "[SUCCESS] Pajak persentase terbayar. Sisa uang: M" << user.getUang() << "\n";
         } else {
             std::cout << "[WARNING] Saldo tidak mencukupi!\n";
@@ -205,7 +205,7 @@ void PetakPBM::onLanded(User* user, Game* game) {
 }
 void PetakPBM::bayarPajak(User& user) {
     if (user.getUang() >= pajakFlat) {
-        user.kurangiUang(pajakFlat);
+        user -= (pajakFlat);
         std::cout << "[SUCCESS] Pajak terbayar. Sisa uang: M" << user.getUang() << "\n";
     } else {
         std::cout << "[WARNING] Saldo tidak mencukupi untuk membayar pajak!\n";
