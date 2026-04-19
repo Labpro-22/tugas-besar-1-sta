@@ -29,6 +29,12 @@ public:
     int getTurn();
 
     void leave(User& user);
+
+    Board* getBoard();
+
+    std::vector<User>& getPemain();
+
+    std::vector<Logger> getLog();
 };
 
 #endif

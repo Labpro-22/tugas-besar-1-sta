@@ -19,6 +19,11 @@ void Dadu::shuffle(){
     this->angka2 = ((rand() % 6) + 1);
 }
 
+void Dadu::manual(int angka1,int angka2)  {
+    this->angka1 = angka1;
+    this->angka2 = angka2;
+}
+
 int Dadu::getAngka1(){
     return this->angka1;
 }

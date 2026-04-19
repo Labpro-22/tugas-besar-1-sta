@@ -1,5 +1,5 @@
-#include "include/core/bangkrut.hpp"
-#include "include/core/properti.hpp"
+#include "../../include/core/bangkrut.hpp"
+#include "../../include/core/properti.hpp"
 
 Bangkrut::Bangkrut(){}
 Bangkrut::~Bangkrut(){}
@@ -23,8 +23,8 @@ void Bangkrut::executeBangkrut(User& debtor, User* creditor, Game* game){
 }
 
 void Bangkrut::transferToPlayer(User& debtor, User& creditor){ // Bangkrut ke pemain lain
-    creditor.tambahUang(debtor.getUang());
-    debtor.kurangiUang(debtor.getUang());
+    creditor += (debtor.getUang());
+    debtor -= (debtor.getUang());
 
     const std::vector<Properti*>& listProperti = debtor.getListProperti();
     for (Properti* p : listProperti) {

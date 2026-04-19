@@ -5,6 +5,7 @@
 #include <sstream>
 
 Board::Board() {
+    // [!] HardCode
     this->size = 40;
     // Isi papan dengan nullptr sementara agar tidak error saat di-loop
     for (int i = 0; i < size; ++i) {
@@ -102,8 +103,10 @@ int Board::getSize() const {
     return size;
 }
 int Board::getGoIndex() const { 
+    // [!] HardCode
     return 0;
 }
 int Board::getPenjaraIndex() const {
+    // [!] HardCode
     return 10;
 }

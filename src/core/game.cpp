@@ -38,6 +38,7 @@ void Game::nextturn() {
 int Game::getTurn() {
     return turn;
 }
+
 void Game::leave(User& user) {
     for (auto it = pemain.begin(); it != pemain.end(); ++it) {
         if (&(*it) == &user) {
@@ -57,4 +58,8 @@ Board* Game::getBoard() {
 
 std::vector<User>& Game::getPemain() {
     return pemain;
+}
+
+std::vector<Logger> Game::getLog(){
+    return Log;
 }

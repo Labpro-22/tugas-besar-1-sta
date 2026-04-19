@@ -1,65 +1,83 @@
-#include "user.hpp"
-#include "properti.hpp"
-#include <iostream>
+#include "../../include/core/user.hpp"
+#include "../../include/core/petak.hpp"
 
-User::User() {
-    this->username = "Player";
-    this->uang = 1500; // Modal awal standar monopoli
-    this->koordinat = 0; // Mulai dari petak GO
-    this->status = "ACTIVE"; // Menggunakan string sesuai format save/load
-    this->activeDiscount = 0;
-    this->shieldActive = false;
+User::User() : username(""), uang(1500), koordinat(0), status(0) {}
+User::User(const std::string& username, int uangAwal)
+    : username(username), uang(uangAwal), koordinat(0), status(0) {}
+User::~User() {}
+
+int User::getUang() const { return uang;}
+
+std::string User::getUsername() const {return username;}
+
+int User::getKoordinat() const { return koordinat;}
+
+int User::getStatus() const {return status;}
+
+const std::vector<Properti*>& User::getListProperti() const { return listProperti;}
+
+std::vector<Street*> User::getStreetByColor (const std::string& warna) const {
+  std::vector<Street*> hasilPencarian;
+  for (Properti* p : this->listProperti) {
+    Street* jalan = dynamic_cast<Street*>(p);
+    if (jalan != nullptr) {
+      if (jalan->getWarna() == warna) {
+        hasilPencarian.push_back(jalan);
+      }
+    }
+  }
+  return hasilPencarian;
 }
 
-User::~User() {
-    // Properti diurus oleh Board/Game
+int User::getRailroadCount() const {
+  int jumlahStasiun = 0;
+  for(Properti* p : this->listProperti) {
+    RailRoad* stasiun = dynamic_cast<RailRoad*>(p);
+    if(stasiun != nullptr) {
+      jumlahStasiun++;
+    }
+  }
+
+  if (jumlahStasiun > 4) {
+    throw SyaratPropertiInvalidException("Jumlah stasiun yang dimiliki pemain melebihi batas maksimal dunia (4)!");
+  }
+
+  return jumlahStasiun;
 }
 
-std::string User::getUsername() const {
-    return username;
+int User::getUtilityCount() const {
+  int jumlahUtility = 0;
+  for(Properti* p : this->listProperti) {
+    Utility* utility = dynamic_cast<Utility*>(p);
+    if(utility != nullptr) {
+      jumlahUtility++;
+    }
+  }
+
+  if (jumlahUtility > 2) {
+    throw SyaratPropertiInvalidException("Jumlah fasilitas umum (Utility) melebihi batas maksimal dunia (2)!");
+  }
+
+  return jumlahUtility;
 }
 
-void User::setUsername(const std::string& name) {
-    this->username = name;
+int User::getTotalKekayaan() const{
+  int total = this->uang;
+
+  for (auto i=0; i<listProperti.size();++i){
+    if (listProperti[i]!=nullptr) total+=listProperti[i]->getHargaBeli();
+  }
 }
 
-std::string User::getStatus() const {
-    return status;
-}
-
-void User::setStatus(const std::string& newStatus) {
-    this->status = newStatus;
-}
-
-int User::getUang() const { 
-    return uang;
-}
-
-void User::kurangiUang(int jumlah) { 
-    uang -= jumlah;
-}
-
-void User::tambahUang(int jumlah) { 
-    uang += jumlah; 
-}
-
-int User::getKoordinat() const { 
-    return koordinat;
-}
-
-void User::setKoordinat(int index) {
-    this->koordinat = index;
-}
-
-void User::move(int langkah) {
+void User::move(int langkah, int boardSize) {
     int oldPos = this->koordinat;
     this->koordinat += langkah;
 
     if (this->koordinat < 0) {
-        this->koordinat += 40; // Asumsi papan fix 40
+        this->koordinat += boardSize; 
     }
-    else if (this->koordinat >= 40) {
-        this->koordinat %= 40;
+    else if (this->koordinat >= boardSize) {
+        this->koordinat %= boardSize;
         if (langkah > 0) {
             std::cout << username << " melewati GO! Mendapatkan gaji M200.\n";
             tambahUang(200);
@@ -67,19 +85,52 @@ void User::move(int langkah) {
     }
 }
 
-int User::getTotalKekayaan() const {
-    int total = this->uang; // Kekayaan dasar adalah uang tunai
-    
-    for (size_t i = 0; i < listProperti.size(); ++i) {
-        if (listProperti[i] != nullptr) {
-            total += listProperti[i]->getHargaBeli(); 
-            // TODO: Tambahkan juga total harga beli bangunan di atas properti ini
-            // total += listProperti[i]->getTotalHargaBangunan();
-        }
-    }
-    
-    return total;
+void User::addProperti(Properti* p) {this->listProperti.push_back(p);}
+
+void User::removeProperti(Properti* p) {
+  this->listProperti.erase(
+    std::remove(this->listProperti.begin(), this->listProperti.end(), p),
+    this->listProperti.end());
 }
+
+bool User::hasMonopoli(const std::string& warna, int totalDiPapan) const {
+  int counter = 0;
+  for (Properti* p : this->listProperti) {
+    Street* jalan = dynamic_cast<Street*>(p);
+    if (jalan != nullptr) {
+      if (jalan->getWarna() == warna) {
+        counter++;
+      }
+    }
+  }
+  return counter == totalDiPapan;
+}
+
+User& User::operator+=(int jumlahUang) {
+  this->uang += jumlahUang;
+  return *this;
+}
+
+User& User::operator-=(int jumlahUang) {
+  this->uang -= jumlahUang;
+  return *this;
+}
+
+
+void User::setUsername(const std::string& name) {
+    this->username = name;
+}
+
+void User::setStatus(const int newStatus) {
+    this->status = newStatus;
+}
+
+void User::setKoordinat(int index) {
+    this->koordinat = index;
+}
+
+
+
 
 Properti* User::getPropertiByKode(const std::string& kode) {
     for (size_t i = 0; i < listProperti.size(); ++i) {
@@ -90,9 +141,7 @@ Properti* User::getPropertiByKode(const std::string& kode) {
     return nullptr;
 }
 
-const std::vector<Properti*>& User::getListProperti() const { 
-    return listProperti;
-}
+
 
 void User::setActiveDiscount(int discountPercentage) {
     this->activeDiscount = discountPercentage;
@@ -110,8 +159,9 @@ bool User::isShieldActive() const {
     return shieldActive;
 }
 
-Logger::Logger() {}
 
+// === Class Log ===
+Logger::Logger() {}
 Logger::~Logger() {}
 
 void Logger::addLog(int turn, const std::string& username, const std::string& jenisAksi, const std::string& detail) {

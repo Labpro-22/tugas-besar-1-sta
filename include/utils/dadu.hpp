@@ -10,6 +10,7 @@ public:
     Dadu();
     ~Dadu();
     void shuffle();
+    void manual(int angka1,int angka2);
     int getAngka1();
     int getAngka2();
     int getTotal();
