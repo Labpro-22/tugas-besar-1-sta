@@ -14,6 +14,8 @@ int User::getKoordinat() const { return koordinat;}
 
 int User::getStatus() const {return status;}
 
+Properti* getPropertiByKode(const std::string& kode);
+
 const std::vector<Properti*>& User::getListProperti() const { return listProperti;}
 
 std::vector<Street*> User::getStreetByColor (const std::string& warna) const {

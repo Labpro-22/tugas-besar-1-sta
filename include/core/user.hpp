@@ -33,6 +33,7 @@ public:
     std::string getUsername() const;
     int getKoordinat() const;
     int getStatus() const;
+    Properti* getPropertiByKode(const std::string& kode);
     const std::vector<Properti*>& getListProperti() const;
     std::vector<Street*> getStreetByColor(const std::string& warna) const;
     int getRailroadCount() const; //Menghitung jumalh Railraod yang dimiliki pemain (maks 4)

@@ -12,6 +12,7 @@ class Board {
 private:
     std::vector<Petak*> kotak; // pointer ke semua petak (menggunakan Polymorphism)
     int size;
+    int maxTurn;
 
 public:
     Board();

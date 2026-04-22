@@ -34,6 +34,7 @@ User* Properti::getOwner() const {return this->owner;}
 std::string Properti::getNama() const {return this->nama;}
 int Properti::getHargaBeli() const {return this->hargaBeli;}
 int Properti::getId() const {return this->index;}
+std::string Properti::getKode() const {return this->kode;}
 int Properti::getFestivalMultiplier() const {return festivalMultiplier;}
 int Properti::getNilaiGadai() const {return nilaiGadai;}
 // Properti : Setter
