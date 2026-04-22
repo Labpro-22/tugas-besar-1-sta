@@ -92,7 +92,7 @@ namespace {
 std::string BoardView::getColorCode(const std::string& warna) {
     if (warna == "Coklat") return "\033[38;5;94m";
     if (warna == "BiruMuda") return "\033[38;5;117m"; 
-    if (warna == "MerahMuda") return "\033[38;5;213m";
+    if (warna == "MerahMuda" || warna == "Pink") return "\033[38;5;213m";
     if (warna == "Orange") return "\033[38;5;208m";
     if (warna == "Merah") return "\033[31m";
     if (warna == "Kuning") return "\033[33m";
