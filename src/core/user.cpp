@@ -80,12 +80,14 @@ void User::move(int langkah, int boardSize) {
         this->koordinat %= boardSize;
         if (langkah > 0) {
             std::cout << username << " melewati GO! Mendapatkan gaji M200.\n";
-            tambahUang(200);
+            *this += 200;
         }
     }
 }
 
-void User::addProperti(Properti* p) {this->listProperti.push_back(p);}
+void User::addProperti(Properti* p) {
+  this->listProperti.push_back(p);
+}
 
 void User::removeProperti(Properti* p) {
   this->listProperti.erase(
@@ -115,7 +117,6 @@ User& User::operator-=(int jumlahUang) {
   this->uang -= jumlahUang;
   return *this;
 }
-
 
 void User::setUsername(const std::string& name) {
     this->username = name;
@@ -159,27 +160,33 @@ bool User::isShieldActive() const {
     return shieldActive;
 }
 
+LogEntry::LogEntry(int turn, std::string username, std::string jenisAksi, std::string detail)
+    : turn(turn), username(username), jenisAksi(jenisAksi), detail(detail) {}
 
-// === Class Log ===
+int LogEntry::getTurn() const { return turn; }
+std::string LogEntry::getUsername() const { return username; }
+std::string LogEntry::getJenisAksi() const { return jenisAksi; }
+std::string LogEntry::getDetail() const { return detail; }
+
 Logger::Logger() {}
 Logger::~Logger() {}
 
 void Logger::addLog(int turn, const std::string& username, const std::string& jenisAksi, const std::string& detail) {
-    LogEntry entry = {turn, username, jenisAksi, detail};
+    LogEntry entry(turn, username, jenisAksi, detail); // [PERBAIKAN] Memakai constructor class
     logs.push_back(entry);
 }
 
 void Logger::cetakLogPenuh() const {
-    std::cout << "=== Log Transaksi Penuh ===\n";
+    std::cout << "Log Transaksi Penuh \n";
     for (size_t i = 0; i < logs.size(); ++i) {
         const auto& log = logs[i];
-        std::cout << "[Turn " << log.turn << "] " << log.username 
-                  << " | " << log.jenisAksi << " | " << log.detail << "\n";
+        std::cout << "[Turn " << log.getTurn() << "] " << log.getUsername() 
+                  << " | " << log.getJenisAksi() << " | " << log.getDetail() << "\n";
     }
 }
 
 void Logger::cetakLogTerbaru(int jumlah) const {
-    std::cout << "=== Log Transaksi (" << jumlah << " Terakhir) ===\n";
+    std::cout << "Log Transaksi (" << jumlah << " Terakhir)\n";
     
     size_t start = 0;
     if (logs.size() > static_cast<size_t>(jumlah)) {
@@ -188,8 +195,8 @@ void Logger::cetakLogTerbaru(int jumlah) const {
     
     for (size_t i = start; i < logs.size(); ++i) {
         const auto& log = logs[i];
-        std::cout << "[Turn " << log.turn << "] " << log.username 
-                  << " | " << log.jenisAksi << " | " << log.detail << "\n";
+        std::cout << "[Turn " << log.getTurn() << "] " << log.getUsername() 
+                  << " | " << log.getJenisAksi() << " | " << log.getDetail() << "\n";
     }
 }
 
