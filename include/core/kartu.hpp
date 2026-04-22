@@ -17,17 +17,17 @@ public:
     virtual void apply(Game* game, User& user) = 0;
 };
 
-enum class TipeAksi{
+/* enum class TipeAksi{
     Kesempatan,
     Dana_Umum,
-};
+}; */
 
 class KartuAksi : public Kartu {
 public:
     KartuAksi(std::string nama, std::string deskripsi);
     virtual ~KartuAksi() = default;
 };
-
+// Kesempatan
 class KartuStasiunTerdekat : public KartuAksi {
 public:
     KartuStasiunTerdekat();
@@ -46,6 +46,7 @@ public:
     void apply(Game* game, User& user) override;
 };
 
+// Dana Umum
 class KartuHadiahUlangTahun : public KartuAksi {
 public:
     KartuHadiahUlangTahun();
@@ -64,6 +65,7 @@ public:
     void apply(Game* game, User& user) override;
 };
 
+// Spesial
 class KartuSpesial : public Kartu {
 public:
     KartuSpesial(std::string nama, std::string deskripsi);
