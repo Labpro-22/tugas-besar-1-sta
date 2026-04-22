@@ -15,11 +15,17 @@ public:
     virtual void apply(Game* game, User& user) = 0;
 };
 
+enum class TipeAksi{
+    Kesempatan,
+    Dana_Umum,
+};
+
 class KartuAksi : public Kartu{
 private:
-    
+    TipeAksi kategori;
 public:
     KartuAksi();
+    KartuAksi(TipeAksi kategori);
     ~KartuAksi();
     void apply(Game* g, User& user) override;
 };
@@ -40,7 +46,7 @@ private:
 public:
     KartuSpesial();
     ~KartuSpesial();
-    void apply(Game* g, User& user) override;
+    virtual void apply(Game* game, User& user) = 0;
 };
 
 class MoveCard : public KartuSpesial {
@@ -78,7 +84,7 @@ public:
     void apply(Game* game, User& user) override;
 };
 
-// Deck Kartu
+// Deck Kartu [P.S. = Penggunaan Template untuk menghindari kartu yang berbeda jenis masuk ke carddeck lain.]
 template <class T>
 class CardDeck{
 private:

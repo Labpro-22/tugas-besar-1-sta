@@ -18,19 +18,9 @@ void Petak::setIndex(int i) { index = i;}
 
 // [2] Abstract Class: PetakProperti {Inheritance dari Petak}
 PetakProperti::PetakProperti(){}
-PetakProperti::PetakProperti(int index, std::string kodePetak, std::string name, std::string kategori,float hargaBeli,std::vector<float> hargaSewa,int nilaiGadai,Properti* sertifikat)
-    :Petak(index,kodePetak,name,kategori),hargaBeli(hargaBeli),hargaSewa(hargaSewa),nilaiGadai(nilaiGadai),sertifikat(sertifikat){}
+PetakProperti::PetakProperti(int index, std::string kodePetak, std::string name, std::string kategori,Properti* sertifikat)
+    :Petak(index,kodePetak,name,kategori),sertifikat(sertifikat){}
 PetakProperti::~PetakProperti(){}
-
-float PetakProperti::getHargaBeli() const{
-    return hargaBeli;
-}
-int PetakProperti::getNilaiGadai() const{
-    return nilaiGadai;
-}
-std::vector<float> PetakProperti::getHargaSewa() const{
-    return hargaSewa;
-}
 Properti* PetakProperti::getSertifikat() const{
     return sertifikat;
 }
@@ -38,9 +28,8 @@ Properti* PetakProperti::getSertifikat() const{
 
 // [2.1] Class PetakLahan (Inheritance dari PetakProperti)
 PetakLahan::PetakLahan() {kategori="Lahan";kodePetak="LHN";}
-PetakLahan::PetakLahan(int index, std::string name, float hargaBeli,std::vector<float> hargaSewa,int nilaiGadai,Properti* sertifikat,std::string warna) 
-    :PetakProperti(index,"LHN",name,"Lahan",hargaBeli,hargaSewa,nilaiGadai,sertifikat),warna(warna){} 
-PetakLahan::PetakLahan(std::string warna) : PetakLahan(){this->warna=warna;}
+PetakLahan::PetakLahan(int index, std::string name, float hargaBeli,std::vector<float> hargaSewa,int nilaiGadai,Street* sertifikat,std::string warna) 
+    :PetakProperti(index,"LHN",name,"Lahan",sertifikat),warna(warna){} 
 PetakLahan::~PetakLahan() {}
 
 std::string PetakLahan::getWarna() const { return warna;}
@@ -50,11 +39,13 @@ std::string PetakLahan::getOwnerName() const {
     }
     return "";
 }
+std::vector<float> PetakLahan::getHargaRumah() const {return hargaRumah;}
+std::vector<float> PetakLahan::getHargaHotel() const {return hargaHotel;}
 
+// [!] TODO : [TASK 1] 
 void PetakLahan::beliLahan() {}
 void PetakLahan::hitungSewa() {}
 void PetakLahan::onLanded(User* user, Game* game) {}
-
 void PetakLahan::hancurkanBangunan() {
     Street* jalan = dynamic_cast<Street*>(sertifikat);
     if (jalan != nullptr) {
@@ -66,16 +57,22 @@ void PetakLahan::hancurkanBangunan() {
 
 // [2.2] Class PetakStasiun (Inheritance dari PetakProperti)
 PetakStasiun::PetakStasiun() { kategori = "Stasiun"; kodePetak = "STA"; }
+PetakStasiun::PetakStasiun(int index, std::string kodePetak, std::string name, std::string kategori,RailRoad* sertifikat)
+: PetakProperti(index,kodePetak,name,kategori,sertifikat){}
 PetakStasiun::~PetakStasiun() {}
 
+// [!] TODO : [TASK 2] 
 void PetakStasiun::beliLahan() {}
 void PetakStasiun::hitungSewa() {}
 void PetakStasiun::onLanded(User* user, Game* game) {}
 
 // [2.3] Class PetakUtilitas (Inheritance dari PetakProperti)
 PetakUtilitas::PetakUtilitas() { kategori = "Utilitas"; kodePetak = "UTL"; }
+PetakUtilitas::PetakUtilitas(int index, std::string kodePetak, std::string name, std::string kategori,Utility* sertifikat) 
+: PetakProperti(index,kodePetak,name,kategori,sertifikat){}
 PetakUtilitas::~PetakUtilitas() {}
 
+// [!] TODO : [TASK 3]
 void PetakUtilitas::beliLahan() {}
 void PetakUtilitas::hitungSewa() {}
 void PetakUtilitas::onLanded(User* user, Game* game) {}
@@ -84,12 +81,16 @@ void PetakUtilitas::onLanded(User* user, Game* game) {}
 
 
 // [3] Abstract Class : Class PetakAksi {Inheritance dari Petak}
-
+PetakAksi::PetakAksi() {}
+PetakAksi::PetakAksi(int index, std::string kodePetak, std::string name, std::string kategori)
+: Petak(index,kodePetak,name,kategori){}
 
 // [3.1] Class PetakKartu {Inheritance dari PetakAksi}
-PetakKartu::PetakKartu() { kategori = "Kartu"; kodePetak = "KRT"; }
-PetakKartu::~PetakKartu() {}
-void PetakKartu::onLanded(User* user, Game* game) {}
+// Ada di HPP
+// PetakKartu::PetakKartu() : PetakAksi() {}
+// PetakKartu::~PetakKartu() {}
+template <class T>
+void PetakKartu<T>::onLanded(User* user, Game* game) {}
 
 // [3.2] Class PetakFestival {Inheritance dari PetakAksi}
 PetakFestival::PetakFestival() {

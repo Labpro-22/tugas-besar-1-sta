@@ -19,93 +19,105 @@ Kartu::~Kartu() {}
 
 // KartuAksi (Kesempatan & Dana Umum)
 KartuAksi::KartuAksi() {}
+KartuAksi::KartuAksi(TipeAksi kategori) : kategori(kategori){}
 KartuAksi::~KartuAksi() {}
 
-void KartuAksi::apply(Game* g, User& user) {
-    // Override dilakukan di child class
+void KartuAksi::apply(Game* game, User& user) {
+    // Kartu Kesempatan
+    if (kategori == TipeAksi::Kesempatan){
+        srand(time(NULL));
+        int acak = rand() % 3; 
+        
+        std::cout << "[KARTU KESEMPATAN] Mengambil kartu...\n";
+
+        if (acak == 0) {
+            std::cout << "Kartu: \"Pergi ke stasiun terdekat.\"\n";
+            int currentPos = user.getKoordinat();
+            int boardSize = game->getBoard()->getSize();
+            int closestStation = currentPos;
+            bool found = false;
+
+            for (int i = 1; i <= boardSize; ++i) {
+                int checkPos = (currentPos + i) % boardSize;
+                Petak* p = game->getBoard()->getPetakAt(checkPos);
+                if (p != nullptr && p->getKategori() == "STASIUN") {
+                    closestStation = checkPos;
+                    found = true;
+                    break;
+                }
+            }
+            if (found) {
+                std::cout << "Memindahkan " << user.getUsername() << " ke stasiun terdekat di indeks " << closestStation << ".\n";
+                user.setKoordinat(closestStation);
+            }
+        } 
+        else if (acak == 1) {
+            std::cout << "Kartu: \"Mundur 3 petak.\"\n";
+            user.move(-3); 
+        } 
+        else {
+            std::cout << "Kartu: \"Masuk Penjara.\"\n";
+            user.setKoordinat(game->getBoard()->getPenjaraIndex());
+            user.setStatus("JAILED"); 
+        }
+    }
+
+    // Kartu Dana Umum
+    else if (kategori == TipeAksi::Dana_Umum){
+        srand(time(NULL));
+        int acak = rand() % 3;
+
+        std::cout << "[KARTU DANA UMUM] Mengambil kartu...\n";
+
+        if (acak == 0) {
+            std::cout << "Kartu: \"Ini adalah hari ulang tahun Anda. Dapatkan M100 dari setiap pemain.\"\n";
+            int totalHadiah = 0;
+            for(auto& p : game->getPemain()) {
+                if(p.getUsername() != user.getUsername() && p.getStatus() != "BANKRUPT") {
+                    if(p.getUang() >= 100) {
+                        p -= (100);
+                        totalHadiah += 100;
+                    } else {
+                        totalHadiah += p.getUang();
+                        p -= (p.getUang());
+                        std::cout << p.getUsername() << " tidak memiliki cukup uang untuk membayar hadiah penuh!\n";
+                    }
+                }
+            }
+            user += (totalHadiah);
+            std::cout << "Anda mendapatkan total M" << totalHadiah << "!\n";
+        } 
+        else if (acak == 1) {
+            std::cout << "Kartu: \"Biaya dokter. Bayar M700.\"\n";
+            user -= (700);
+            std::cout << "Sisa uang Anda: M" << user.getUang() << "\n";
+        } 
+        else {
+            std::cout << "Kartu: \"Anda mau nyaleg. Bayar M200 kepada setiap pemain.\"\n";
+            int biayaPerPemain = 200;
+            for(auto& p : game->getPemain()) {
+                if(p.getUsername() != user.getUsername() && p.getStatus() != "BANKRUPT") {
+                    user-=(biayaPerPemain);
+                    p+=(biayaPerPemain);
+                    std::cout << "Membayar M200 kepada " << p.getUsername() << ".\n";
+                }
+            }
+            std::cout << "Sisa uang Anda: M" << user.getUang() << "\n";
+        }
+    }
+
+    // Case Lain
+    else {return;}
 }
 
 // Kartu Kesempatan
 void KartuKesempatan::apply(Game* game, User& user) {
-    srand(time(NULL));
-    int acak = rand() % 3; 
     
-    std::cout << "[KARTU KESEMPATAN] Mengambil kartu...\n";
-
-    if (acak == 0) {
-        std::cout << "Kartu: \"Pergi ke stasiun terdekat.\"\n";
-        int currentPos = user.getKoordinat();
-        int boardSize = game->getBoard()->getSize();
-        int closestStation = currentPos;
-        bool found = false;
-
-        for (int i = 1; i <= boardSize; ++i) {
-            int checkPos = (currentPos + i) % boardSize;
-            Petak* p = game->getBoard()->getPetakAt(checkPos);
-            if (p != nullptr && p->getType() == "STASIUN") {
-                closestStation = checkPos;
-                found = true;
-                break;
-            }
-        }
-        if (found) {
-            std::cout << "Memindahkan " << user.getUsername() << " ke stasiun terdekat di indeks " << closestStation << ".\n";
-            user.setKoordinat(closestStation);
-        }
-    } 
-    else if (acak == 1) {
-        std::cout << "Kartu: \"Mundur 3 petak.\"\n";
-        user.move(-3); 
-    } 
-    else {
-        std::cout << "Kartu: \"Masuk Penjara.\"\n";
-        user.setKoordinat(game->getBoard()->getPenjaraIndex());
-        user.setStatus("JAILED"); 
-    }
 }
 
 // Kartu Dana Umum
 void KartuDanaUmum::apply(Game* game, User& user) {
-    srand(time(NULL));
-    int acak = rand() % 3;
-
-    std::cout << "[KARTU DANA UMUM] Mengambil kartu...\n";
-
-    if (acak == 0) {
-        std::cout << "Kartu: \"Ini adalah hari ulang tahun Anda. Dapatkan M100 dari setiap pemain.\"\n";
-        int totalHadiah = 0;
-        for(auto& p : game->getPemain()) {
-            if(p.getUsername() != user.getUsername() && p.getStatus() != "BANKRUPT") {
-                if(p.getUang() >= 100) {
-                    p.kurangiUang(100);
-                    totalHadiah += 100;
-                } else {
-                    totalHadiah += p.getUang();
-                    p.kurangiUang(p.getUang());
-                    std::cout << p.getUsername() << " tidak memiliki cukup uang untuk membayar hadiah penuh!\n";
-                }
-            }
-        }
-        user.tambahUang(totalHadiah);
-        std::cout << "Anda mendapatkan total M" << totalHadiah << "!\n";
-    } 
-    else if (acak == 1) {
-        std::cout << "Kartu: \"Biaya dokter. Bayar M700.\"\n";
-        user.kurangiUang(700);
-        std::cout << "Sisa uang Anda: M" << user.getUang() << "\n";
-    } 
-    else {
-        std::cout << "Kartu: \"Anda mau nyaleg. Bayar M200 kepada setiap pemain.\"\n";
-        int biayaPerPemain = 200;
-        for(auto& p : game->getPemain()) {
-            if(p.getUsername() != user.getUsername() && p.getStatus() != "BANKRUPT") {
-                user.kurangiUang(biayaPerPemain);
-                p.tambahUang(biayaPerPemain);
-                std::cout << "Membayar M200 kepada " << p.getUsername() << ".\n";
-            }
-        }
-        std::cout << "Sisa uang Anda: M" << user.getUang() << "\n";
-    }
+    
 }
 
 // KartuSpesial
@@ -211,7 +223,7 @@ void DemolitionCard::apply(Game* game, User& user) {
         }
     }
 
-    if (targetPetak != nullptr && targetPetak->getType() == "LAHAN") {
+    if (targetPetak != nullptr && targetPetak->getKategori() == "LAHAN") {
         PetakLahan* lahan = dynamic_cast<PetakLahan*>(targetPetak);
         if (lahan != nullptr) {
             if(lahan->getOwnerName() != "" && lahan->getOwnerName() != user.getUsername()) {
@@ -236,8 +248,19 @@ template <class T>
 CardDeck<T>::~CardDeck() {
     this->Kartu.clear();
 }
-
+ /*
 template class CardDeck<KartuAksi>;
 template class CardDeck<KartuSpesial>;
 template class CardDeck<KartuKesempatan>;
 template class CardDeck<KartuDanaUmum>;
+*/
+
+template<>
+CardDeck<KartuAksi>::CardDeck(){
+
+}
+
+template<>
+CardDeck<KartuSpesial>::CardDeck(){
+
+}

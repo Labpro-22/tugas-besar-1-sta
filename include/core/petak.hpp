@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include "properti.hpp"
+#include "kartu.hpp"
 
 class User;
 class Game;
@@ -35,22 +36,16 @@ public:
 // [2] Inheritance Kelas Petak :: Kelas PetakProperti
 class PetakProperti : public Petak{
 protected:
-    float hargaBeli;
-    std::vector<float> hargaSewa;
-    int nilaiGadai;
     Properti* sertifikat;
 public:
     PetakProperti();
-    PetakProperti(int index, std::string kodePetak, std::string name, std::string kategori,float hargaBeli,std::vector<float> hargaSewa,int nilaiGadai,Properti* sertifikat);
+    PetakProperti(int index, std::string kodePetak, std::string name, std::string kategori,Properti* sertifikat);
     virtual ~PetakProperti();
 
     virtual void beliLahan() = 0;
     virtual void hitungSewa() = 0;
     virtual void onLanded(User* user, Game* game) = 0;
 
-    float getHargaBeli() const;
-    int getNilaiGadai() const;
-    std::vector<float> getHargaSewa() const;
     Properti* getSertifikat() const;
 };
 // Inheritance PetakProperti: Petak Lahan, Petak Stasiun, Petak utilitas. 
@@ -63,12 +58,13 @@ private:
 
 public:
     PetakLahan();
-    PetakLahan(int index, std::string name, float hargaBeli,std::vector<float> hargaSewa,int nilaiGadai,Properti* sertifikat,std::string warna);
-    PetakLahan(std::string warna);
+    PetakLahan(int index, std::string name, float hargaBeli,std::vector<float> hargaSewa,int nilaiGadai,Street* sertifikat,std::string warna);
     ~PetakLahan();
 
     std::string getWarna() const;
     std::string getOwnerName() const;
+    std::vector<float> getHargaRumah() const;
+    std::vector<float> getHargaHotel() const;
 
     void beliLahan() override;
     void hitungSewa() override;
@@ -77,10 +73,9 @@ public:
 };
 // [2.2]
 class PetakStasiun : public PetakProperti{
-private:
-
 public:
     PetakStasiun();
+    PetakStasiun(int index, std::string kodePetak, std::string name, std::string kategori,RailRoad* sertifikat);
     ~PetakStasiun();
 
     void beliLahan() override;
@@ -94,6 +89,7 @@ private:
 public:
     PetakUtilitas();
     ~PetakUtilitas();
+    PetakUtilitas(int index, std::string kodePetak, std::string name, std::string kategori,Utility* sertifikat);
 
     void beliLahan() override;
     void hitungSewa() override;
@@ -104,22 +100,30 @@ public:
 // [3] Inheritance Kelas Petak :: Kelas PetakAksi
 class PetakAksi: public Petak{
 private:
-
+    
 public:
+    PetakAksi();
+    PetakAksi(int index, std::string kodePetak, std::string name, std::string kategori);
+    virtual ~PetakAksi();
 
+    virtual void onLanded(User* user, Game* game) = 0;
 };
 
 // Inheritance PetakAksi: PetakKartu, PetakFestival, PetakPajak.
 // [3.1]
+template <class T>
 class PetakKartu : public PetakAksi{
 private:
-
+    CardDeck<T> deck;
 public:
-    PetakKartu();
+    PetakKartu() : PetakAksi(){}
+    PetakKartu(int index, std::string kodePetak, std::string name, std::string kategori)
+    : PetakAksi(index,kodePetak,name,kategori), deck(){}
     ~PetakKartu();
 
     void onLanded(User* user, Game* game) override;
 };
+
 // [3.2]
 class PetakFestival : public PetakAksi{
 private:
@@ -167,8 +171,8 @@ public:
 };
 
 
-// [4] === PetakSpesial ===
-class PetakSpesial : public Petak{
+// [3.4] === PetakSpesial ===
+class PetakSpesial : public PetakAksi{
 private:
     
 public:
