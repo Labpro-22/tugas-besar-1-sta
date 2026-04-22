@@ -4,14 +4,12 @@
 int Game::turn = 1;
 
 Game::Game() : MAX_TURN(100), end(false) {} // Asumsi default batas giliran
-
 Game::Game(int Maxturn) : MAX_TURN(Maxturn),end(false){}
 
 Game::~Game() {
     pemain.clear();
     Log.clear();
 }
-
 
 bool Game::isEnd() {
     // Jika Pemain tinggal satu atau end true
@@ -47,14 +45,6 @@ void Game::leave(User& user) {
     }
 }
 
-Board* Game::getBoard() {
-    return &board;
-}
-
-std::vector<User>& Game::getPemain() {
-    return pemain;
-}
-
-std::vector<Logger> Game::getLog(){
-    return Log;
-}
+Board* Game::getBoard() {return &board;}
+std::vector<User>& Game::getPemain() {return pemain;}
+std::vector<Logger> Game::getLog(){return Log;}

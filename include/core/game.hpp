@@ -5,7 +5,7 @@
 #include "petak.hpp"
 #include "board.hpp"
 #include <vector>
-
+#include <map>
 
 class Game{
 private:
@@ -15,27 +15,21 @@ private:
     std::vector<Logger> Log;
     Board board;
     bool end;
+
+    std::map<Properti*, PetakProperti*> lokasiSertifikat;
 public:
     Game();
-
     Game(int Maxturn);
-
     ~Game();
 
     bool isEnd(); // Kondisi 1 Player atau Config : Bangkrut
-
     void setMAXTURN(int max);
-
     void nextturn();
 
     int getTurn();
-
     void leave(User& user);
-
     Board* getBoard();
-
     std::vector<User>& getPemain();
-
     std::vector<Logger> getLog();
 };
 
