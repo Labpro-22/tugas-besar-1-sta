@@ -23,6 +23,7 @@ protected:
     int nilaiGadai;
     PropStatus status;
     User* owner;
+    std::string kode;
     
     //Atribut untuk festival
     int durasiFestival;
@@ -42,6 +43,7 @@ public:
     std::string getNama() const;
     int getHargaBeli() const;
     int getId() const;
+    std::string getKode() const;
     int getFestivalMultiplier() const;
     int getFestivalDuration() const;
     virtual int getSewaSaatIni(int dadu) const;
