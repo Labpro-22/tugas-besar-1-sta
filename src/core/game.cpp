@@ -48,3 +48,4 @@ void Game::leave(User& user) {
 Board* Game::getBoard() {return &board;}
 std::vector<User>& Game::getPemain() {return pemain;}
 std::vector<Logger> Game::getLog(){return Log;}
+Dadu* Game::getDadu() {return &dadu;}

@@ -4,6 +4,7 @@
 #include "user.hpp" 
 #include "petak.hpp"
 #include "board.hpp"
+#include "../utils/dadu.hpp"
 #include <vector>
 #include <map>
 
@@ -13,9 +14,11 @@ private:
     static int turn;
     std::vector<User> pemain;
     std::vector<Logger> Log;
+    std::vector<Properti> daftarProperti;
     Board board;
+    Dadu dadu;
+    
     bool end;
-
     std::map<Properti*, PetakProperti*> lokasiSertifikat;
 public:
     Game();
@@ -31,6 +34,7 @@ public:
     Board* getBoard();
     std::vector<User>& getPemain();
     std::vector<Logger> getLog();
+    Dadu* getDadu();
 };
 
 #endif

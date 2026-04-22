@@ -40,6 +40,7 @@ int Properti::getNilaiGadai() const {return nilaiGadai;}
 void Properti::setOwner(User* newOwner) {this->owner = newOwner;}
 void Properti::setFestivalMultiplier(int m){this->festivalMultiplier=m;}
 void Properti::setFestivalDuration(int d){this->durasiFestival=d;}
+void Properti::setStatus(PropStatus newStatus) {this->status = newStatus;}
 
 
 // === Class Street === {Inheritance dari Properti}

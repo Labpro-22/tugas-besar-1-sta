@@ -17,11 +17,6 @@ public:
     virtual void apply(Game* game, User& user) = 0;
 };
 
-/* enum class TipeAksi{
-    Kesempatan,
-    Dana_Umum,
-}; */
-
 class KartuAksi : public Kartu {
 public:
     KartuAksi(std::string nama, std::string deskripsi);

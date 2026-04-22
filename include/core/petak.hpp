@@ -37,25 +37,26 @@ public:
 class PetakProperti : public Petak{
 protected:
     Properti* sertifikat;
+
 public:
     PetakProperti();
     PetakProperti(int index, std::string kodePetak, std::string name, std::string kategori,Properti* sertifikat);
     virtual ~PetakProperti();
 
-    virtual void beliLahan() = 0;
-    virtual void hitungSewa() = 0;
     virtual void onLanded(User* user, Game* game) = 0;
 
     Properti* getSertifikat() const;
 };
 // Inheritance PetakProperti: Petak Lahan, Petak Stasiun, Petak utilitas. 
-// [2.1]
+// [2.1] PetakLahan :: Street
 class PetakLahan : public PetakProperti{
 private:
     std::vector<float> hargaRumah;
     std::vector<float> hargaHotel;
     std::string warna;
 
+    void beliLahan(User* user);
+    void bayarSewa(User* user);
 public:
     PetakLahan();
     PetakLahan(int index, std::string name, float hargaBeli,std::vector<float> hargaSewa,int nilaiGadai,Street* sertifikat,std::string warna);
@@ -66,33 +67,30 @@ public:
     std::vector<float> getHargaRumah() const;
     std::vector<float> getHargaHotel() const;
 
-    void beliLahan() override;
-    void hitungSewa() override;
     void onLanded(User* user, Game* game) override;
-    void hancurkanBangunan();
+    void hancurkanBangunan(); // Semua Dihancurkan (Oleh bank)
+    void hancurkanSatuBangunan(); // Oleh Pemain (Card)
 };
 // [2.2]
 class PetakStasiun : public PetakProperti{
+private:
+    void bayarSewa(User* user);
 public:
     PetakStasiun();
     PetakStasiun(int index, std::string kodePetak, std::string name, std::string kategori,RailRoad* sertifikat);
     ~PetakStasiun();
 
-    void beliLahan() override;
-    void hitungSewa() override;
     void onLanded(User* user, Game* game) override;
 };
 // [2.3]
 class PetakUtilitas : public PetakProperti{
 private:
-
+    void bayarSewa(User* user, Game* game);
 public:
     PetakUtilitas();
     ~PetakUtilitas();
     PetakUtilitas(int index, std::string kodePetak, std::string name, std::string kategori,Utility* sertifikat);
 
-    void beliLahan() override;
-    void hitungSewa() override;
     void onLanded(User* user, Game* game) override;
 };
 
@@ -127,18 +125,16 @@ public:
 // [3.2]
 class PetakFestival : public PetakAksi{
 private:
-
+    void terapkanEfek(Properti* targetProperti);
 public:
     PetakFestival();
     ~PetakFestival();
 
     void onLanded(User* user, Game* game) override;
-    void terapkanEfek(Properti* targetProperti);
 };
+
 // [3.3]
 class PetakPajak : public PetakAksi{
-protected:
-    float pajakFlat;
 public:
     PetakPajak();
     virtual ~PetakPajak();
@@ -148,25 +144,28 @@ public:
 // [3.3.1]
 class PetakPPH : public PetakPajak{
 private:
+    float pajakFlat;
     float pajakPercent;
+    
+    void bayarPajak(User& user) override;
 public:
     PetakPPH();
     PetakPPH(float flat, float percent);
     ~PetakPPH();
 
-    void bayarPajak(User& user) override;
     void onLanded(User* user, Game* game) override;
 };
 // [3.3.2]
 class PetakPBM : public PetakPajak{ 
 private:   
     float pajakFlat;
+
+    void bayarPajak(User& user) override;
 public:
     PetakPBM();
     PetakPBM(float flat);
     ~PetakPBM();
 
-    void bayarPajak(User& user) override;
     void onLanded(User* user, Game* game) override;
 };
 
@@ -177,9 +176,48 @@ private:
     
 public:
     PetakSpesial();
-    ~PetakSpesial();
+    virtual ~PetakSpesial();
+
+    virtual void onLanded(User* user, Game* game) = 0;
+};
+
+// [3.4.1] === PetakGo ===
+class PetakGo : public PetakSpesial{
+private:
+    int earnMoney;
+public:
+    PetakGo(int earnMoney);
+    ~PetakGo();
 
     void onLanded(User* user, Game* game) override;
 };
 
+// [3.4.2] === PetakPenjara ===
+class PetakPenjara : public PetakSpesial{
+private:
+    int denda;
+public:
+    PetakPenjara(int denda);
+    ~PetakPenjara();
+
+    void onLanded(User* user, Game* game) override;
+};
+
+// [3.4.3] === PetakBebasParkir ===
+class PetakBebasParkir : public PetakSpesial{
+public:    
+    PetakBebasParkir();
+    ~PetakBebasParkir();
+
+    void onLanded(User* user, Game* game) override;
+};
+
+// [3.4.4] === PetakPergiPenjara ===
+class PetakPergiPenjara : public PetakSpesial{
+public:
+    PetakPergiPenjara();
+    ~PetakPergiPenjara();
+
+    void onLanded(User* user, Game* game) override;
+};
 #endif

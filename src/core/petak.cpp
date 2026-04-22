@@ -43,13 +43,82 @@ std::vector<float> PetakLahan::getHargaRumah() const {return hargaRumah;}
 std::vector<float> PetakLahan::getHargaHotel() const {return hargaHotel;}
 
 // [!] TODO : [TASK 1] 
-void PetakLahan::beliLahan() {}
-void PetakLahan::hitungSewa() {}
-void PetakLahan::onLanded(User* user, Game* game) {}
+void PetakLahan::beliLahan(User* user) {
+    if (user->getUang() < sertifikat->getHargaBeli()) {
+        throw UangTidakCukupException();
+    }
+
+    *(user) -= sertifikat->getHargaBeli();
+    sertifikat->setOwner(user);
+    sertifikat->setStatus(PropStatus::OWNED);
+}
+void PetakLahan::bayarSewa(User* user) {
+    if (sertifikat->getOwner() == nullptr) {
+        throw BukanPemilikException();
+    }
+    int biayaSewa = sertifikat->hitungSewa(0); 
+    // [!] Monopoly Color Group
+   
+   
+    if (user->getUang() < biayaSewa) {
+        throw UangTidakCukupException();
+    }
+    *(user) -= biayaSewa;
+    *(sertifikat->getOwner()) += biayaSewa;
+}
+void PetakLahan::onLanded(User* user, Game* game) {
+    if (sertifikat->getStatus()==PropStatus::BANK){
+        // Print Akta Kepemilikan
+        std::cout << "Apakah anda mau membelinya (y/n)";
+        std::string input = "belum";
+        while (input != "y" && input != "n") {
+            std::cin >> input;
+        }   
+        if (input == "y") {
+            try {
+                beliLahan(user);
+                std::cout << "[SUCCESS] Properti berhasil dibeli!\n";
+            }catch (const UangTidakCukupException& e){
+                std::cout << "Kasian gak ada duit!\nWAKTUNYA LELANG!!!\n";
+                // WAKTUNYA LELANG
+            }catch (const std::exception& e) {
+                std::cout << "[ERROR] Kegagalan: " << e.what() << "\n";
+            }
+        } else {
+            std::cout << "[INFO] Anda memilih untuk tidak membeli properti.\n";
+            // WAKTUNYA LELANG
+        }                    
+    }
+
+    else if ((sertifikat->getStatus()==PropStatus::OWNED) && sertifikat->getOwner()!=user){
+        std::cout << "[INFO] Properti dimiliki oleh " << sertifikat->getOwner()->getUsername() << ".\n";
+        std::cout << "Waktunya bayar sewa!\n";
+        bayarSewa(user);
+    }
+    else{return;}
+}
 void PetakLahan::hancurkanBangunan() {
     Street* jalan = dynamic_cast<Street*>(sertifikat);
     if (jalan != nullptr) {
-        jalan->hancurkanSatuTingkatBangunan();
+        jalan->setJumlahRumah(0);
+        jalan->setHotel(false);
+    }else {
+        std::cout << "[ERROR] Petak ini bukan jenis Street, tidak memiliki bangunan.\n";
+    }
+}
+
+void PetakLahan::hancurkanSatuBangunan() {
+    Street* jalan = dynamic_cast<Street*>(sertifikat);
+    if (jalan != nullptr) {
+        if (jalan->isHotel()) {
+            jalan->setHotel(false);
+            std::cout << "[INFO] Hotel di properti " << getName() << " telah dihancurkan.\n";
+        } else if (jalan->getJumlahBangunan() > 0) {
+            jalan->setJumlahRumah(jalan->getJumlahBangunan() - 1);
+            std::cout << "[INFO] Satu rumah di properti " << getName() << " telah dihancurkan. Sisa rumah: " << jalan->getJumlahBangunan() << "\n";
+        } else {
+            std::cout << "[INFO] Tidak ada bangunan yang dapat dihancurkan di properti ini.\n";
+        }
     } else {
         std::cout << "[ERROR] Petak ini bukan jenis Street, tidak memiliki bangunan.\n";
     }
@@ -61,10 +130,28 @@ PetakStasiun::PetakStasiun(int index, std::string kodePetak, std::string name, s
 : PetakProperti(index,kodePetak,name,kategori,sertifikat){}
 PetakStasiun::~PetakStasiun() {}
 
-// [!] TODO : [TASK 2] 
-void PetakStasiun::beliLahan() {}
-void PetakStasiun::hitungSewa() {}
-void PetakStasiun::onLanded(User* user, Game* game) {}
+void PetakStasiun::bayarSewa(User* user) {
+    RailRoad* stasiun = dynamic_cast<RailRoad*>(sertifikat);
+    int biayaSewa = stasiun->hitungSewa(0);
+
+    if (user->getUang() < biayaSewa) {
+        throw UangTidakCukupException();
+    }
+    *(user) -= biayaSewa;
+    *(sertifikat->getOwner()) += biayaSewa;
+}
+void PetakStasiun::onLanded(User* user, Game* game) {
+    if (sertifikat->getStatus()==PropStatus::BANK){
+        std::cout << "Kamu mendapatkan stasiun kereta api "<< getName() << "!\n";
+        sertifikat->setOwner(user);
+        sertifikat->setStatus(PropStatus::OWNED);
+    }else if ((sertifikat->getStatus()==PropStatus::OWNED) && sertifikat->getOwner()!=user){
+        std::cout << "[INFO] Properti dimiliki oleh " << sertifikat->getOwner()->getUsername() << ".\n";
+        std::cout << "Waktunya bayar sewa!\n";
+        bayarSewa(user);
+    }
+    else{return;}
+}
 
 // [2.3] Class PetakUtilitas (Inheritance dari PetakProperti)
 PetakUtilitas::PetakUtilitas() { kategori = "Utilitas"; kodePetak = "UTL"; }
@@ -73,9 +160,28 @@ PetakUtilitas::PetakUtilitas(int index, std::string kodePetak, std::string name,
 PetakUtilitas::~PetakUtilitas() {}
 
 // [!] TODO : [TASK 3]
-void PetakUtilitas::beliLahan() {}
-void PetakUtilitas::hitungSewa() {}
-void PetakUtilitas::onLanded(User* user, Game* game) {}
+void PetakUtilitas::bayarSewa(User* user, Game* game) {
+    Utility* utilitas = dynamic_cast<Utility*>(sertifikat);
+    int biayaSewa = utilitas->hitungSewa(game->getDadu()->getTotal());
+
+    if (user->getUang() < biayaSewa) {
+        throw UangTidakCukupException();
+    }
+    *(user) -= biayaSewa;
+    *(sertifikat->getOwner()) += biayaSewa;
+}
+void PetakUtilitas::onLanded(User* user, Game* game) {
+    if (sertifikat->getStatus()==PropStatus::BANK){
+        std::cout << "Kamu mendapatkan utilitas "<< getName() << "!\n";
+        sertifikat->setOwner(user);
+        sertifikat->setStatus(PropStatus::OWNED);
+    }else if ((sertifikat->getStatus()==PropStatus::OWNED) && sertifikat->getOwner()!=user){
+        std::cout << "[INFO] Properti dimiliki oleh " << sertifikat->getOwner()->getUsername() << ".\n";
+        std::cout << "Waktunya bayar sewa!\n";
+        bayarSewa(user, game);
+    }
+    else{return;}
+}
 
 
 
@@ -216,7 +322,56 @@ void PetakPBM::bayarPajak(User& user) {
 
 
 
-// [4] ===PetakSpesial===
+// [3.4] ===PetakSpesial===
 PetakSpesial::PetakSpesial() { kategori = "Spesial"; kodePetak = "SPS"; }
 PetakSpesial::~PetakSpesial() {}
-void PetakSpesial::onLanded(User* user, Game* game) {}
+
+// [3.4.1] Class PetakGo {Inheritance dari PetakSpesial}
+PetakGo::PetakGo(int earnMoney){
+    this->earnMoney = earnMoney;
+}
+PetakGo::~PetakGo() {}
+
+void PetakGo::onLanded(User* user, Game* game) {
+    if (user->getKoordinat()==index) {
+        *(user) += earnMoney;
+        std::cout << "[INFO] Selamat datang di GO! Kamu mendapatkan M" << earnMoney << ". Total uang: M" << user->getUang() << "\n";
+    } else{
+        // Logika Melewati GO : Case dapat uang dan tidak 
+    }
+}
+
+// [3.4.2] Class PetakPenjara {Inheritance dari PetakSpesial}
+PetakPenjara::PetakPenjara(int denda) {
+    this->denda = denda;
+}
+PetakPenjara::~PetakPenjara() {}
+void PetakPenjara::onLanded(User* user, Game* game) {
+    std::cout << "[INFO] Kamu mendarat di Penjara! Denda: M" << denda << "\n";
+    user->setStatus(1); // Status penjara
+    if (user->getUang() >= denda) {
+        *(user) -= denda;
+        std::cout << "[SUCCESS] Denda terbayar. Sisa uang: M" << user->getUang() << "\n";
+    } else {
+        std::cout << "[WARNING] Saldo tidak mencukupi untuk membayar denda!\n";
+    }
+}
+
+
+// [3.4.3] Class PetakBebasParkir {Inheritance dari PetakSpesial}
+PetakBebasParkir::PetakBebasParkir() {}
+PetakBebasParkir::~PetakBebasParkir() {}
+void PetakBebasParkir::onLanded(User* user, Game* game) {
+    std::cout << "[INFO] Kamu mendarat di Bebas Parkir! Nikmati waktu santaimu tanpa denda atau bonus.\n";
+    // Tidak ada efek khusus, hanya tempat istirahat
+}
+
+// [3.4.4] Class PetakPergiPenjara {Inheritance dari PetakSpesial}
+PetakPergiPenjara::PetakPergiPenjara() {}
+PetakPergiPenjara::~PetakPergiPenjara() {}
+void PetakPergiPenjara::onLanded(User* user, Game* game) {
+    std::cout << "[INFO] Kamu mendarat di Petak Pergi Penjara! Kamu akan langsung dipindahkan ke penjara.\n";
+    user->setKoordinat(game->getBoard()->getPenjaraIndex()); // Asumsi index petak penjara adalah 10
+    user->setStatus(1); // Status penjara
+}
+

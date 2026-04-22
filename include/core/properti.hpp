@@ -50,6 +50,7 @@ public:
     void setFestivalMultiplier(int m);
     void setOwner(User* newOwner);
     void setFestivalDuration(int d);
+    void setStatus(PropStatus newStatus);
 };
 
 class Street : public Properti {
@@ -75,6 +76,9 @@ public:
     int getHargaBangunan() const;
     std::vector<int> getHargaSewa() const;
     bool isHotel() const;
+
+    void setHotel(bool status);
+    void setJumlahRumah(int jumlah);
 };
 
 class RailRoad : public Properti {
