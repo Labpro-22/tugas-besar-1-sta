@@ -21,6 +21,8 @@ private:
     int status; // Penjara, ...
     std::vector<Properti*> listProperti;         //Properti yang dipunya
 
+    int activeDiscount = 0;
+    bool shieldActive = false;
 public:
     User();
     User(const std::string& username, int uangAwal);
@@ -37,7 +39,7 @@ public:
     int getUtilityCount() const; // Menghitung jumlah Utility yang dimiliki pemain (maks 2)
     int getTotalKekayaan() const; // Menghitung total kekayaan (Uang dan Kepunyaan)
 
-    void move(int dadu); // Bergerak sesuai jumlah dadu
+    void move(int dadu, int boardSize); // Bergerak sesuai jumlah dadu
     void addProperti(Properti* p); // Tambahkan properti ke daftar milik pemain
     void removeProperti(Properti* p); // Hapus properti dari daftar milik pemain
     bool hasMonopoli(const std::string& warna, int totalDiPapan) const; 
@@ -45,21 +47,34 @@ public:
     User& operator+=(int jumlahUang);
     User& operator-=(int jumlahUang);
 
-    void User::setUsername(const std::string& name);
-    void User::setStatus(const int newStatus);
-    void User::setKoordinat(int index);
+    void setUsername(const std::string& name);
+    void setStatus(const int newStatus);
+    void setKoordinat(int index);
 
+    void setActiveDiscount(int discountPercentage);
+    int getActiveDiscount() const;
+    void setShieldActive(bool active);
+    bool isShieldActive() const;
 
 };
 
-struct LogEntry {
+class LogEntry {
+private:
     int turn;
     std::string username;
     std::string jenisAksi;
     std::string detail;
+
+public:
+    LogEntry(int turn, std::string username, std::string jenisAksi, std::string detail);
+    ~LogEntry() = default;
+
+    int getTurn() const;
+    std::string getUsername() const;
+    std::string getJenisAksi() const;
+    std::string getDetail() const;
 };
 
-// Transaction Logger
 class Logger {
 private:
     std::vector<LogEntry> logs;
