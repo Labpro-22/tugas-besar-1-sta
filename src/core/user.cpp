@@ -172,7 +172,7 @@ Logger::Logger() {}
 Logger::~Logger() {}
 
 void Logger::addLog(int turn, const std::string& username, const std::string& jenisAksi, const std::string& detail) {
-    LogEntry entry(turn, username, jenisAksi, detail); // [PERBAIKAN] Memakai constructor class
+    LogEntry entry(turn, username, jenisAksi, detail);
     logs.push_back(entry);
 }
 
