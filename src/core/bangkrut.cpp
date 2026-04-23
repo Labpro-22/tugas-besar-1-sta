@@ -8,47 +8,55 @@ bool Bangkrut::isPayable(const User& user, int amount) const{
     return user.getTotalKekayaan() >= amount;
 }
 
-void Bangkrut::executeBangkrut(User& debtor, User* creditor, Game* game){
+std::vector<Properti*> Bangkrut::executeBangkrut(User& debtor, User* creditor, Game* game){
+    std::vector<Properti*> propertiUntukDilelang;
+    
     if (creditor != nullptr){
         transferToPlayer(debtor, *creditor);
     }
 
     else{
-        transferToBank(debtor, game);
+        propertiUntukDilelang = transferToBank(debtor);
     }
 
     if (game != nullptr){
         game->leave(debtor);
     }
+
+    return propertiUntukDilelang;
 }
 
 void Bangkrut::transferToPlayer(User& debtor, User& creditor){ // Bangkrut ke pemain lain
     creditor += (debtor.getUang());
     debtor -= (debtor.getUang());
 
-    const std::vector<Properti*>& listProperti = debtor.getListProperti();
-    for (Properti* p : listProperti) {
+    std::vector<Properti*> copyList = debtor.getListProperti();
+    for (Properti* p : copyList) {
         if (p != nullptr) {
             p->setOwner(&creditor); 
         }
     }
 } 
 
-void Bangkrut::transferToBank(User& debtor, Game* game){ // Bangkrut ke bank
+std::vector<Properti*> Bangkrut::transferToBank(User& debtor){ // Bangkrut ke bank
+    std::vector<Properti*> daftarLelang;
     debtor -= (debtor.getUang());
 
-    const std::vector<Properti*>& listProperti = debtor.getListProperti();
-    for (Properti* p : listProperti) {
+    std::vector<Properti*> copyList = debtor.getListProperti();
+    for (Properti* p : copyList) {
         if (p != nullptr) {
-            // Ubah kepemilikan menjadi Bank (nullptr)
             p->setOwner(nullptr);
+            p->setStatus(PropStatus::BANK);
             
-            // Jika p adalah Street, hancurkan bangunannya
             Street* s = dynamic_cast<Street*>(p);
             if (s != nullptr) {
-                // TODO: fungsi hancurkanBangunan di kelas Street
+                s->setHotel(false);
+                s->setJumlahRumah(0);
             }
-            // TODO: lelang untuk properti p di kelas Game
+
+            daftarLelang.push_back(p);
         }
     }
+
+    return daftarLelang;
 } 
