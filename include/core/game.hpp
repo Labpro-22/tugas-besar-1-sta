@@ -8,6 +8,7 @@
 #include <vector>
 #include <map>
 #include <utility>
+#include <memory>
 
 class Game{
 private:

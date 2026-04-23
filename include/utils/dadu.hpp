@@ -14,6 +14,7 @@ public:
     int getAngka1();
     int getAngka2();
     int getTotal();
+    void reset();
     bool isDouble() const;
 };
 

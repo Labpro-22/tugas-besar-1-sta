@@ -264,4 +264,4 @@ Game gameBuilder::buildNewGame (configBase* config){
     return game;
 }
 
-Game buildLoadGame(configLoadSave* config);
+Game buildLoadGame(configBase* configB, configLoadSave* configS){}
