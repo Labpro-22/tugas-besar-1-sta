@@ -4,6 +4,8 @@
 #include "user.hpp"
 #include "properti.hpp"
 
+class Game;
+
 class Lelang{
 private:
     Properti* targetProperti;
@@ -14,7 +16,7 @@ private:
     bool isFirstBid;
     int currentPlayerIndex;
 public:
-    Lelang(Properti* target, std::vector<User*> semuaPemain);
+    Lelang(Properti* target, Game* game, User* pemicu);
     ~Lelang() = default;
 
     void pass(User* user);
@@ -28,4 +30,6 @@ public:
 
     User* getCurrentPlayer();
     void nextTurn();
+
+    void mulaiLelang();
 };

@@ -61,8 +61,6 @@ public:
     Dadu* getDadu();
     std::map<std::string, PetakProperti*>& getLokasiKode();
     std::map<std::string, std::vector<PetakProperti*>>& getLokasiColorGroup();
-
-    void mulaiLelang(Properti* properti, User* pemicu);
 };
 
 #endif
