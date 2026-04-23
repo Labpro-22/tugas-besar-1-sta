@@ -1,6 +1,8 @@
 #ifndef DADU_HPP
 #define DADU_HPP
 
+#include "../utils/gameException.hpp"
+
 class Dadu{
 private:
     int angka1;

@@ -20,6 +20,10 @@ void Dadu::shuffle(){
 }
 
 void Dadu::manual(int angka1,int angka2)  {
+    if ((angka1 < 1 || angka1 > 6) || (angka2 < 1 || angka2 > 6)){
+        throw AngkaDaduTidakValidException();
+    }
+
     this->angka1 = angka1;
     this->angka2 = angka2;
 }
@@ -38,4 +42,9 @@ int Dadu::getTotal(){
 
 bool Dadu::isDouble() const {
     return this->angka1 == this->angka2;
+}
+
+void Dadu::reset(){
+    this->angka1 = 0;
+    this->angka2 = 0;
 }
