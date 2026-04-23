@@ -20,7 +20,7 @@ private:
 public: 
     
     Game buildNewGame(configBase* config);
-    Game buildLoadGame(configLoadSave* config);
+    Game buildLoadGame(configBase* configB, configLoadSave* configS);
 };
 
 

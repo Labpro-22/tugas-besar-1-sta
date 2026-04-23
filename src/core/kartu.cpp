@@ -3,12 +3,7 @@
 #include "../../include/core/user.hpp"
 #include "../../include/core/board.hpp"
 #include "../../include/core/petak.hpp"
-#include <iostream>
-#include <cstdlib>
-#include <ctime>
-#include <limits>
-#include <string>
-#include <vector>
+
 
 Kartu::Kartu(std::string nama, std::string deskripsi) 
     : nama(nama), deskripsi(deskripsi) {}

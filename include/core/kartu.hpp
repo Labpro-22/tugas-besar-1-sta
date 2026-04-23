@@ -2,8 +2,16 @@
 #define KARTU_HPP
 
 #include <iostream>
-#include "game.hpp"
 #include "user.hpp"
+#include <iostream>
+#include <cstdlib>
+#include <ctime>
+#include <limits>
+#include <string>
+#include <vector>
+#include <random>
+
+class Game;
 
 class Kartu{
 protected:
