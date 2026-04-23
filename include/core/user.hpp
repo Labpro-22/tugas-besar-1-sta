@@ -18,7 +18,7 @@ private:
     std::string username;
     int uang;
     int koordinat;                              // Kotak ke-?
-    int status; // Penjara, ...
+    int status; // 1: Penjara, 2: Bangkrut, 3: Hidup
     std::vector<Properti*> listProperti;         //Properti yang dipunya
 
     int activeDiscount = 0;

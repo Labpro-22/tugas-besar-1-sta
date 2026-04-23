@@ -12,23 +12,18 @@ class Board {
 private:
     std::vector<Petak*> kotak; // pointer ke semua petak (menggunakan Polymorphism)
     int size;
-    int maxTurn;
 
 public:
     Board();
     Board(int size);
     ~Board();
 
-    void buildBoard(); // Default : 40
-    void buildBoard(const std::string& configFilename); // Dinamis : File Konfig
-
     Petak* getPetakAt(int index) const;
-
     int getSize() const;
-
     int getGoIndex() const;
-    
     int getPenjaraIndex() const;
+
+    void setPetak(int index, Petak* petak);
 };
 
 #endif

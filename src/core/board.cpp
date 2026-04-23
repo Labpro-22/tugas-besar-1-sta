@@ -24,86 +24,6 @@ Board::~Board() {
     kotak.clear();
 }
 
-void Board::buildBoard(const std::string& fileName) {
-    std::ifstream file(fileName);
-    std::string line;
-    
-    // Proteksi jika file tidak ditemukan
-    if (!file.is_open()) {
-        std::cerr << "ERROR: Gagal membuka file konfigurasi papan (" << fileName << ")!\n";
-        std::cerr << "Pastikan file .txt ada di folder yang sama dengan file .exe\n";
-        return;
-    }
-
-    
-    // Baca file baris per baris
-    while (std::getline(file, line)) {
-        // Skip baris kosong atau baris komentar yang diawali '#'
-        if (line.empty() || line[0] == '#') continue; 
-
-        std::stringstream ss(line);
-        std::string key;
-        ss >> key;
-
-        if (key == "MAX_TURN") {
-            ss >> this->maxTurn;
-        } else {
-            int index = std::stoi(key);
-            std::string type;
-            
-            // Ekstrak Indeks dan Tipe Petak
-            ss >> type;
-
-            // Validasi agar index tidak keluar batas vector (0-39)
-            if (index < 0 || index >= size) continue;
-
-            // Jika sebelumnya ada isinya (dummy), hapus dulu agar tidak memory leak
-            if (kotak[index] != nullptr) {
-                delete kotak[index];
-                kotak[index] = nullptr;
-            }
-
-            // Buat objek berdasarkan tipe di txt
-            if (type == "PBM") {
-                float flat;
-                ss >> flat; // Ekstrak nilai flat dari txt
-                kotak[index] = new PetakPBM(flat);
-            } 
-            else if (type == "PPH") {
-                float flat, percent;
-                ss >> flat >> percent; // Ekstrak flat dan persentase
-                kotak[index] = new PetakPPH(flat, percent);
-            } 
-            else if (type == "FESTIVAL") {
-                kotak[index] = new PetakFestival();
-            } 
-            else if (type == "LAHAN") {
-                std::string warna;
-                ss >> warna; // Ekstrak warna lahan
-                kotak[index] = new PetakLahan(warna);
-            } 
-            else if (type == "STASIUN") {
-                kotak[index] = new PetakStasiun();
-            } 
-            else if (type == "UTILITAS") {
-                kotak[index] = new PetakUtilitas();
-            } 
-            else if (type == "SPESIAL") {
-                kotak[index] = new PetakSpesial();
-            } 
-            else if (type == "KARTU") {
-                kotak[index] = new PetakKartu();
-            }
-
-            if (kotak[index] != nullptr) {
-                kotak[index]->setIndex(index);
-            }
-        }
-        
-    }
-
-    file.close();
-}
 
 Petak* Board::getPetakAt(int index) const {
     if (index >= 0 && index < size) {
@@ -132,3 +52,8 @@ int Board::getPenjaraIndex() const {
     }
     return -1;
 }
+
+void Board::setPetak(int index, Petak* petak){
+    kotak.insert(kotak.begin()+index,petak);
+    return;
+}   
