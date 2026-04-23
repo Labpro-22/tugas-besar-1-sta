@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <memory>
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -10,7 +11,7 @@
 
 class Board {
 private:
-    std::vector<Petak*> kotak; // pointer ke semua petak (menggunakan Polymorphism)
+    std::vector<std::shared_ptr<Petak>> kotak; // shared ownership agar aman saat Board dicopy/dipindah
     int size;
 
 public:
@@ -18,16 +19,12 @@ public:
     Board(int size);
     ~Board();
 
-    void buildBoard(); // Default : 40
-    void buildBoard(const std::string& configFilename); // Dinamis : File Konfig
-
     Petak* getPetakAt(int index) const;
-
     int getSize() const;
-
     int getGoIndex() const;
-    
     int getPenjaraIndex() const;
+
+    void setPetak(int index, const std::shared_ptr<Petak>& petak);
 };
 
 #endif

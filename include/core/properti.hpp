@@ -23,13 +23,15 @@ protected:
     int nilaiGadai;
     PropStatus status;
     User* owner;
-    
+    std::string kode;
+    std::string warna;
     //Atribut untuk festival
     int durasiFestival;
     int festivalMultiplier;
+    int applyFestivalMultiplier(int baseRent) const;
 
 public:
-    Properti(int id, std::string nama, int hargaBeli, int nilaiGadai);
+    Properti(int id, std::string kode, std::string nama, int hargaBeli, int nilaiGadai, std::string warna);
     virtual ~Properti();
 
     virtual int hitungSewa(int lemparanDadu) const = 0; //Menghitung biaya sewa
@@ -42,26 +44,30 @@ public:
     std::string getNama() const;
     int getHargaBeli() const;
     int getId() const;
+    std::string getKode() const;
+    std::string getWarna() const;
     int getFestivalMultiplier() const;
     int getFestivalDuration() const;
-    virtual int getSewaSaatIni(int dadu) const;
     int getNilaiGadai() const;
 
     void setFestivalMultiplier(int m);
     void setOwner(User* newOwner);
     void setFestivalDuration(int d);
+    void setStatus(PropStatus newStatus);
+    void tickFestival();
 };
 
 class Street : public Properti {
 private:
-    std::string warnaGrup; // [!!!]
     std::vector<int> hargaSewa;
     int hargaBangunan;
+    int hargaHotel;
     int jumlahRumah;
     bool hasHotel;
+    int totalDalamGrup;
 
 public:
-    Street(int id,std::string nama, std::string warna, int hargaBeli, int nilaiGadai, int hargaBangunan, std::vector<int> sewa);
+    Street(int id, std::string kode, std::string nama, std::string warna, int hargaBeli, int nilaiGadai, int hargaBangunan, int hargaHotel, std::vector<int> sewa);
 
     int hitungSewa(int lemparanDadu) const override;
     void bangunHotel(const std::vector<Street*>& grupWarna); //Melakkan upgrade dari 4 rumah menjadi hotel
@@ -70,18 +76,22 @@ public:
     void jualBangunan(const std::vector<Street*>& grupWarna); //Menjual bangunan ke bank dengan harga setengah dari harga beli. Dipanggil wajib sebelum properti digadaikan
     void gadaikan(); //Menggadaikan properti Street (sekalian menjual semua bangunan dalam color group)
 
-    std::string getWarna() const;
     int getJumlahBangunan() const;
     int getHargaBangunan() const;
+    int getHargaHotel() const;
     std::vector<int> getHargaSewa() const;
     bool isHotel() const;
+
+    void setHotel(bool status);
+    void setJumlahRumah(int jumlah);
+    void setTotalDalamGrup(int total);
 };
 
 class RailRoad : public Properti {
 private:
     std::vector<int> hargaSewa;
 public:
-    RailRoad(int id, std::string kode, std::string nama, int nilaiGadai, int hargaBeli, std::vector<int> hargaSewaDasar);
+    RailRoad(int id, std::string kode, std::string nama, int nilaiGadai, int hargaBeli, std::string warna, std::vector<int> hargaSewaDasar);
     int hitungSewa(int lemparanDadu) const override;
 };
 
@@ -89,7 +99,7 @@ class Utility : public Properti {
 private:
     std::vector<int> faktorPengali; // [Lihat Konfigurasi]
 public:
-    Utility(int id, std::string nama, int nilaiGadai, std::vector<int> faktor);
+    Utility(int id, std::string kode, std::string nama, int hargaBeli, int nilaiGadai, std::string warna, std::vector<int> faktor);
     int hitungSewa(int lemparanDadu) const override;
 };
 

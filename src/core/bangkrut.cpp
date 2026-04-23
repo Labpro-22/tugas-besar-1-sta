@@ -35,7 +35,7 @@ void Bangkrut::transferToPlayer(User& debtor, User& creditor){ // Bangkrut ke pe
 } 
 
 void Bangkrut::transferToBank(User& debtor, Game* game){ // Bangkrut ke bank
-    debtor.kurangiUang(debtor.getUang());
+    debtor -= (debtor.getUang());
 
     const std::vector<Properti*>& listProperti = debtor.getListProperti();
     for (Properti* p : listProperti) {

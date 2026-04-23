@@ -2,8 +2,16 @@
 #define KARTU_HPP
 
 #include <iostream>
-#include "game.hpp"
 #include "user.hpp"
+#include <iostream>
+#include <cstdlib>
+#include <ctime>
+#include <limits>
+#include <string>
+#include <vector>
+#include <random>
+
+class Game;
 
 class Kartu{
 protected:
@@ -16,11 +24,6 @@ public:
     std::string getDeskripsi() const;
     virtual void apply(Game* game, User& user) = 0;
 };
-
-/* enum class TipeAksi{
-    Kesempatan,
-    Dana_Umum,
-}; */
 
 class KartuAksi : public Kartu {
 public:

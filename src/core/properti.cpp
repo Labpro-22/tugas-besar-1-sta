@@ -5,8 +5,17 @@
 #include "../../include/core/user.hpp"
 
 // ===Class Properti===
-Properti::Properti(int id, std::string nama, int hargaBeli, int nilaiGadai)  
-: index(id),nama(nama),hargaBeli(hargaBeli),nilaiGadai(nilaiGadai),status(PropStatus::BANK),owner(nullptr),durasiFestival(0),festivalMultiplier(1){}
+Properti::Properti(int id, std::string kode, std::string nama, int hargaBeli, int nilaiGadai, std::string warna)
+: index(id),nama(nama),hargaBeli(hargaBeli),nilaiGadai(nilaiGadai),status(PropStatus::BANK),owner(nullptr),kode(kode),warna(warna),durasiFestival(0),festivalMultiplier(1){}
+
+Properti::~Properti() = default;
+
+int Properti::applyFestivalMultiplier(int baseRent) const {
+  if (durasiFestival > 0) {
+    return baseRent * festivalMultiplier;
+  }
+  return baseRent;
+}
 
 void Properti::gadaikan() {
   if (this->status != PropStatus::OWNED) {
@@ -34,19 +43,48 @@ User* Properti::getOwner() const {return this->owner;}
 std::string Properti::getNama() const {return this->nama;}
 int Properti::getHargaBeli() const {return this->hargaBeli;}
 int Properti::getId() const {return this->index;}
+std::string Properti::getKode() const {return this->kode;}
+std::string Properti::getWarna() const {return this->warna;}
 int Properti::getFestivalMultiplier() const {return festivalMultiplier;}
+int Properti::getFestivalDuration() const {return durasiFestival;}
 int Properti::getNilaiGadai() const {return nilaiGadai;}
 // Properti : Setter
-void Properti::setOwner(User* newOwner) {this->owner = newOwner;}
 void Properti::setFestivalMultiplier(int m){this->festivalMultiplier=m;}
-void Properti::setFestivalDuration(int d){this->durasiFestival=d;}
+void Properti::setOwner(User* newOwner) {
+  if (this->owner == newOwner) {
+    return;
+  }
+
+  if (this->owner != nullptr) {
+    this->owner->removeProperti(this);
+  }
+
+  this->owner = newOwner;
+
+  if (this->owner != nullptr) {
+    this->owner->addProperti(this);
+  }
+}
+void Properti::setFestivalDuration(int d){this->durasiFestival = std::max(0, d);}
+void Properti::setStatus(PropStatus newStatus) {this->status = newStatus;}
+void Properti::tickFestival() {
+  if (durasiFestival <= 0) {
+    return;
+  }
+
+  durasiFestival--;
+  if (durasiFestival == 0) {
+    festivalMultiplier = 1;
+  }
+}
 
 
 // === Class Street === {Inheritance dari Properti}
-Street::Street(int id,std::string nama, std::string warna, int hargaBeli, int nilaiGadai, int hargaBangunan, std::vector<int> sewa)
-    : Properti(id, nama, hargaBeli, nilaiGadai),warnaGrup(warna),hargaSewa(sewa),jumlahRumah(0),hargaBangunan(hargaBangunan),hasHotel(false) {}
+Street::Street(int id, std::string kode, std::string nama, std::string warna, int hargaBeli, int nilaiGadai, int hargaBangunan, int hargaHotel, std::vector<int> sewa)
+    : Properti(id, kode, nama, hargaBeli, nilaiGadai, warna),hargaSewa(sewa),hargaBangunan(hargaBangunan),hargaHotel(hargaHotel),jumlahRumah(0),hasHotel(false),totalDalamGrup(0) {}
 
 int Street::hitungSewa(int lemparanDadu) const {
+  (void) lemparanDadu;
   if (this->status == PropStatus::MORTGAGED) {return 0;}
 
   int currentBiayaSewa = 0;
@@ -54,14 +92,12 @@ int Street::hitungSewa(int lemparanDadu) const {
   else if (jumlahRumah > 0) {currentBiayaSewa = this->hargaSewa[this->jumlahRumah];} 
   else {
     currentBiayaSewa = this->hargaSewa[0];
-     // if (this->owner!=nullptr && this->owner->hasMonopoli(this->warnaGrup)) ===> KURANG LENGKAP
+    if (this->owner != nullptr && totalDalamGrup > 0 && this->owner->hasMonopoli(this->warna, totalDalamGrup)) {
+      currentBiayaSewa *= 2;
+    }
   }
 
-  if (this->durasiFestival > 0) {
-    currentBiayaSewa *= this->festivalMultiplier;
-  }
-
-  return currentBiayaSewa;
+  return applyFestivalMultiplier(currentBiayaSewa);
 }
 
 void Street::bangunHotel(const std::vector<Street*>& grupWarna) {
@@ -99,7 +135,7 @@ bool Street::canBuild(const std::vector<Street*>& grupWarna) const {
     return false;
   }
 
-  if (!this->owner->hasMonopoli(this->warnaGrup, grupWarna.size())) {
+  if (!this->owner->hasMonopoli(this->warna, grupWarna.size())) {
     return false;
   }
 
@@ -188,7 +224,7 @@ void Street::gadaikan() {
   }
 
   int duitGusur = 0;
-  for (Street* otherPetak : this->owner->getStreetByColor(this->warnaGrup)) {
+  for (Street* otherPetak : this->owner->getStreetByColor(this->warna)) {
     if (otherPetak->hasHotel) {
       duitGusur += (otherPetak->getHargaBangunan() * 5) * 0.5;
       otherPetak->hasHotel = false;
@@ -209,31 +245,41 @@ void Street::gadaikan() {
 
 }
 
-std::string Street::getWarna() const {return this->warnaGrup;}
 int Street::getJumlahBangunan() const {return this->jumlahRumah;}
 int Street::getHargaBangunan() const {return this->hargaBangunan;}
+int Street::getHargaHotel() const {return this->hargaHotel;}
 std::vector<int> Street::getHargaSewa() const {return this->hargaSewa;}
 bool Street::isHotel() const{return this->hasHotel;}
+void Street::setHotel(bool status) { this->hasHotel = status; }
+void Street::setJumlahRumah(int jumlah) { this->jumlahRumah = std::max(0, jumlah); }
+void Street::setTotalDalamGrup(int total) { this->totalDalamGrup = total; }
 
 
 // === Class RailRoad === {Inheritance dari Properti}
-RailRoad::RailRoad(int id, std::string kode, std::string nama, int nilaiGadai, int hargaBeli, std::vector<int> hargaSewaDasar) 
-: Properti(id,nama, hargaBeli, nilaiGadai) ,hargaSewa(hargaSewaDasar){}
+RailRoad::RailRoad(int id, std::string kode, std::string nama, int nilaiGadai, int hargaBeli, std::string warna, std::vector<int> hargaSewaDasar) 
+: Properti(id, kode, nama, hargaBeli, nilaiGadai, warna) ,hargaSewa(hargaSewaDasar){}
 
 int RailRoad::hitungSewa(int lemparanDadu) const {
+  (void) lemparanDadu;
   if (this->owner == nullptr || this->status == PropStatus::MORTGAGED) {return 0;}
-  return (this->hargaSewa[this->owner->getRailroadCount()]);
+
+  const int jumlahRailroad = this->owner->getRailroadCount();
+  if (jumlahRailroad <= 0 || jumlahRailroad > static_cast<int>(this->hargaSewa.size())) {
+    return 0;
+  }
+
+  return applyFestivalMultiplier(this->hargaSewa[jumlahRailroad - 1]);
 }
 
 // === Class Utility === {Inheritance dari Properti}
-Utility::Utility(int id, std::string nama, int nilaiGadai, std::vector<int> faktor)
-    : Properti(id, nama, 150, nilaiGadai),faktorPengali(faktor) {}
+Utility::Utility(int id, std::string kode, std::string nama, int hargaBeli, int nilaiGadai, std::string warna, std::vector<int> faktor)
+    : Properti(id, kode, nama, hargaBeli, nilaiGadai, warna),faktorPengali(faktor) {}
 
 int Utility::hitungSewa(int lemparanDadu) const {
   if (this->owner == nullptr || this->status == PropStatus::MORTGAGED) {return 0;}
 
   int jumlahUtil = this->owner->getUtilityCount();
-  if (jumlahUtil == 1) {return faktorPengali[0] * lemparanDadu;} 
-  else if (jumlahUtil == 2) {return faktorPengali[1] * lemparanDadu;} 
+  if (jumlahUtil == 1) {return applyFestivalMultiplier(faktorPengali[0] * lemparanDadu);} 
+  else if (jumlahUtil == 2) {return applyFestivalMultiplier(faktorPengali[1] * lemparanDadu);} 
   else {return 0;}
 }

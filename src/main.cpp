@@ -1,5 +1,6 @@
 #include "../include/core/game.hpp"
 #include "../include/utils/io.hpp"
+#include "../include/utils/builder.hpp"
 // === PERMAINAN MONOPOLI === 
 
 int main(){
@@ -10,17 +11,28 @@ int main(){
 
     std::string path;
     std::cin >> path;
-    IO config(path);
-
-    Game game = config.makeGame();
+    configBase config(path);
+    gameBuilder build;
+    
+    std::string option;
+    std::cout << "Apakah anda mau load/save (y/n): ";
+    std::cin >> option;
+    Game Nimonspoli;
+    if (option=="y") {
+        Nimonspoli;
+    }
+    else {
+        Nimonspoli = build.buildNewGame(&config);
+    }
+    
+    // === Game Nimonspoli ===
     while (match){
         // Command Match
-        Game monopoli;
-
+        
 
 
         // Validasi Kalau jadi end
-        match = !(monopoli.isEnd());
+        match = !(Nimonspoli.isEnd());
     }
 
     std::cout << "==== GAME OVER ====";

@@ -1,9 +1,10 @@
 #include "../../include/core/user.hpp"
+#include "../../include/core/board.hpp"
 #include "../../include/core/petak.hpp"
 
-User::User() : username(""), uang(1500), koordinat(0), status(0) {}
+User::User() : username(""), uang(1500), koordinat(0), status(3), jailTurns(0) {}
 User::User(const std::string& username, int uangAwal)
-    : username(username), uang(uangAwal), koordinat(0), status(0) {}
+    : username(username), uang(uangAwal), koordinat(0), status(3), jailTurns(0) {}
 User::~User() {}
 
 int User::getUang() const { return uang;}
@@ -13,6 +14,16 @@ std::string User::getUsername() const {return username;}
 int User::getKoordinat() const { return koordinat;}
 
 int User::getStatus() const {return status;}
+
+int User::getJailTurns() const { return jailTurns; }
+
+bool User::isJailed() const { return status == 1; }
+
+bool User::isBankrupt() const { return status == 2; }
+
+bool User::mustPayJailFine() const { return isJailed() && jailTurns >= 3; }
+
+Properti* getPropertiByKode(const std::string& kode);
 
 const std::vector<Properti*>& User::getListProperti() const { return listProperti;}
 
@@ -64,29 +75,65 @@ int User::getUtilityCount() const {
 int User::getTotalKekayaan() const{
   int total = this->uang;
 
-  for (auto i=0; i<listProperti.size();++i){
-    if (listProperti[i]!=nullptr) total+=listProperti[i]->getHargaBeli();
+  for (size_t i = 0; i < listProperti.size(); ++i) {
+    Properti* properti = listProperti[i];
+    if (properti == nullptr) {
+      continue;
+    }
+
+    total += properti->getHargaBeli();
+
+    Street* jalan = dynamic_cast<Street*>(properti);
+    if (jalan == nullptr) {
+      continue;
+    }
+
+    if (jalan->isHotel()) {
+      total += jalan->getHargaHotel();
+    } else {
+      total += jalan->getJumlahBangunan() * jalan->getHargaBangunan();
+    }
+  }
+
+  return total;
+}
+
+void User::move(int langkah, Board* board) {
+  if (board == nullptr) {
+      return;
+  }
+
+  const int boardSize = board->getSize();
+  this->koordinat += langkah;
+
+  if (this->koordinat < 0) {
+      this->koordinat += boardSize; 
+  }
+  else if (this->koordinat >= boardSize) {
+      this->koordinat %= boardSize;
+      if (langkah > 0) {
+          const int goIndex = board->getGoIndex();
+          if (goIndex >= 0 && this->koordinat != goIndex) {
+              Petak* goPetak = board->getPetakAt(goIndex);
+              PetakGo* petakGo = dynamic_cast<PetakGo*>(goPetak);
+              if (petakGo != nullptr) {
+                  const int salary = petakGo->getEarnMoney();
+                  std::cout << username << " melewati GO! Mendapatkan gaji M" << salary << ".\n";
+                  *this += salary;
+              }
+          }
+      }
   }
 }
 
-void User::move(int langkah, int boardSize) {
-    int oldPos = this->koordinat;
-    this->koordinat += langkah;
-
-    if (this->koordinat < 0) {
-        this->koordinat += boardSize; 
-    }
-    else if (this->koordinat >= boardSize) {
-        this->koordinat %= boardSize;
-        if (langkah > 0) {
-            std::cout << username << " melewati GO! Mendapatkan gaji M200.\n";
-            *this += 200;
-        }
-    }
-}
-
 void User::addProperti(Properti* p) {
-  this->listProperti.push_back(p);
+  if (p == nullptr) {
+    return;
+  }
+
+  if (std::find(this->listProperti.begin(), this->listProperti.end(), p) == this->listProperti.end()) {
+    this->listProperti.push_back(p);
+  }
 }
 
 void User::removeProperti(Properti* p) {
@@ -124,10 +171,30 @@ void User::setUsername(const std::string& name) {
 
 void User::setStatus(const int newStatus) {
     this->status = newStatus;
+    if (newStatus != 1) {
+        this->jailTurns = 0;
+    }
 }
 
 void User::setKoordinat(int index) {
     this->koordinat = index;
+}
+
+void User::sendToJail(int jailIndex) {
+    this->koordinat = jailIndex;
+    this->status = 1;
+    this->jailTurns = 0;
+}
+
+void User::releaseFromJail() {
+    this->status = 3;
+    this->jailTurns = 0;
+}
+
+void User::incrementJailTurns() {
+    if (isJailed()) {
+        ++jailTurns;
+    }
 }
 
 
