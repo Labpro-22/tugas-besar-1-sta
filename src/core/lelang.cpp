@@ -3,7 +3,7 @@
 #include "core/lelang.hpp"
 #include "utils/gameException.hpp"
 
-Lelang::Lelang(Properti* target, std::vector<User*> semuaPemain, User* pemicu) {
+Lelang::Lelang(Properti* target, Game* game, User* pemicu) {
   this->targetProperti = target;
   this->highestBidder = nullptr;
   this->currentHighestBid = 0;
@@ -11,12 +11,24 @@ Lelang::Lelang(Properti* target, std::vector<User*> semuaPemain, User* pemicu) {
   this->isFirstBid = true;
   this->currentPlayerIndex = 0;
 
-  if (pemicu != nullptr) {
-    auto it = std:find(semuaPemain.begin(), semuaPemain.end(), pemicu);
-    if (it != semuaPemain.end()) {
-      std::rotate(semuaPemain.begin(), it + 1, semuaPemain.end());
-    }
+  // 1. Filter pemain yang belum bangkrut langsung di dalam konstruktor
+  std::vector<User*> semuaPemain;
+  if (game != nullptr) {
+      for (auto& u : game->getPemain()) {
+          if (!u.isBankrupt()) {
+              semuaPemain.push_back(&u);
+          }
+      }
   }
+
+  // 2. Putar urutan supaya index [0] adalah pemain SETELAH pemicu
+  if (pemicu != nullptr && !semuaPemain.empty()) {
+      auto it = std::find(semuaPemain.begin(), semuaPemain.end(), pemicu);
+      if (it != semuaPemain.end()) {
+          std::rotate(semuaPemain.begin(), it + 1, semuaPemain.end());
+      }
+  }
+    
   this->peserta = semuaPemain;
 }
 
@@ -92,5 +104,50 @@ User* Lelang::getCurrentPlayer() {
 void Lelang::nextTurn() {
     if (!peserta.empty()) {
         currentPlayerIndex = (currentPlayerIndex + 1) % peserta.size();
+    }
+}
+
+void Lelang::mulaiLelang() {
+    std::cout << "\n=== LELANG DIBUKA UNTUK " << targetProperti->getNama() << " ===\n";
+
+    while (!this->isEnd()) {
+        User* currentUser = this->getCurrentPlayer();
+        
+        std::cout << "\nGiliran bid: " << currentUser->getUsername() << " (Uang: M" << currentUser->getUang() << ")\n";
+        std::cout << "Ketik nominal untuk bid (atau ketik -1 untuk PASS): ";
+        
+        int nominal;
+        std::cin >> nominal;
+
+        if (nominal == -1) {
+            this->pass(currentUser);
+            std::cout << currentUser->getUsername() << " memilih PASS.\n";
+            this->nextTurn(); // Lanjut ke pemain berikutnya
+        } else {
+            try {
+                this->bid(currentUser, nominal);
+                std::cout << "[SUCCESS] " << currentUser->getUsername() << " memimpin lelang dengan bid M" << nominal << "!\n";
+                this->nextTurn(); // Lanjut ke pemain berikutnya jika sukses bid
+            } catch (const std::exception& e) {
+                std::cout << "[ERROR] " << e.what() << "\n";
+                std::cout << "Silakan masukkan bid yang valid atau PASS.\n";
+            }
+        }
+    }
+
+    // Selesaikan lelang dan proses pemenang
+    User* pemenang = this->getWinner();
+    if (pemenang != nullptr) {
+        int hargaFinal = this->getFinalPrice();
+        std::cout << "\n=== LELANG SELESAI ===\n";
+        std::cout << "Pemenang: " << pemenang->getUsername() << " dengan harga M" << hargaFinal << "!\n";
+        
+        // Potong uang pemenang dan berikan sertifikat
+        *(pemenang) -= hargaFinal;
+        targetProperti->setOwner(pemenang);
+        targetProperti->setStatus(PropStatus::OWNED); 
+    } else {
+        std::cout << "\n=== LELANG BATAL ===\n";
+        std::cout << "Semua pemain PASS. Properti kembali ke Bank.\n";
     }
 }
