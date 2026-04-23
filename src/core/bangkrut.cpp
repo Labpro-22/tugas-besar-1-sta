@@ -40,15 +40,20 @@ void Bangkrut::transferToBank(User& debtor, Game* game){ // Bangkrut ke bank
     const std::vector<Properti*>& listProperti = debtor.getListProperti();
     for (Properti* p : listProperti) {
         if (p != nullptr) {
-            // Ubah kepemilikan menjadi Bank (nullptr)
+            // Ubah kepemilikan menjadi Bank
             p->setOwner(nullptr);
+            p->setStatus(PropStatus::BANK); 
             
-            // Jika p adalah Street, hancurkan bangunannya
+            // Hancurkan bangunan jika bertipe Street
             Street* s = dynamic_cast<Street*>(p);
             if (s != nullptr) {
-                // TODO: fungsi hancurkanBangunan di kelas Street
+                s->setJumlahRumah(0);
+                s->setHotel(false);
             }
-            // TODO: lelang untuk properti p di kelas Game
+            
+            if (game != nullptr) {
+                game->mulaiLelang(p, nullptr); 
+            }
         }
     }
 } 
