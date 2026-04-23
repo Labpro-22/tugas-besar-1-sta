@@ -236,62 +236,44 @@ void DemolitionCard::apply(Game* game, User& user) {
     }
 }
 
-KartuKesempatan::KartuKesempatan() : Kartu("Kesempatan", "Pengelola Deck Kesempatan") {
-    deck.addCard(new KartuStasiunTerdekat());
-    deck.addCard(new KartuMundurTigaPetak());
-    deck.addCard(new KartuMasukPenjara());
-    deck.shuffle();
-}
-
-void KartuKesempatan::apply(Game* game, User& user) {
-    std::cout << "\n[KESEMPATAN] Menarik kartu dari tumpukan...\n";
-    KartuAksi* ditarik = deck.draw();
-    if (ditarik != nullptr) {
-        ditarik->apply(game, user);
-        deck.discard(ditarik); // Kembalikan ke deck buangan
+CardDeck<KartuAksi>& getKesempatanDeck() {
+    static CardDeck<KartuAksi> instance;
+    static bool initialized = false;
+    if (!initialized) {
+        instance.addCard(new KartuStasiunTerdekat());
+        instance.addCard(new KartuMundurTigaPetak());
+        instance.addCard(new KartuMasukPenjara());
+        instance.shuffle();
+        initialized = true;
     }
+    return instance;
 }
 
-KartuDanaUmum::KartuDanaUmum() : Kartu("Dana Umum", "Pengelola Deck Dana Umum") {
-    deck.addCard(new KartuHadiahUlangTahun());
-    deck.addCard(new KartuBiayaDokter());
-    deck.addCard(new KartuNyaleg());
-    deck.shuffle();
-}
-
-void KartuDanaUmum::apply(Game* game, User& user) {
-    std::cout << "\n[DANA UMUM] Menarik kartu dari tumpukan...\n";
-    KartuAksi* ditarik = deck.draw();
-    if (ditarik != nullptr) {
-        ditarik->apply(game, user);
-        deck.discard(ditarik); // Kembalikan ke deck buangan
+CardDeck<KartuAksi>& getDanaUmumDeck() {
+    static CardDeck<KartuAksi> instance;
+    static bool initialized = false;
+    if (!initialized) {
+        instance.addCard(new KartuHadiahUlangTahun());
+        instance.addCard(new KartuBiayaDokter());
+        instance.addCard(new KartuNyaleg());
+        instance.shuffle();
+        initialized = true;
     }
+    return instance;
 }
 
-KartuKesempatan* getKartuKesempatanInstance() {
-    static KartuKesempatan instanceKesempatan; 
-    return &instanceKesempatan;
-}
-
-KartuDanaUmum* getKartuDanaUmumInstance() {
-    static KartuDanaUmum instanceDanaUmum;
-    return &instanceDanaUmum;
-}
-
-CardDeck<KartuSpesial>& getDeckSpesialInstance() {
-    static CardDeck<KartuSpesial> deckSpesial;
-    static bool isInitialized = false;
-    
-    if (!isInitialized) {
-        deckSpesial.addCard(new MoveCard());
-        deckSpesial.addCard(new DiscountCard());
-        deckSpesial.addCard(new ShieldCard());
-        deckSpesial.addCard(new TeleportCard());
-        deckSpesial.addCard(new LassoCard());
-        deckSpesial.addCard(new DemolitionCard());
-        
-        deckSpesial.shuffle();
-        isInitialized = true;
+CardDeck<KartuSpesial>& getSpesialDeck() {
+    static CardDeck<KartuSpesial> instance;
+    static bool initialized = false;
+    if (!initialized) {
+        instance.addCard(new MoveCard());
+        instance.addCard(new DiscountCard());
+        instance.addCard(new ShieldCard());
+        instance.addCard(new TeleportCard());
+        instance.addCard(new LassoCard());
+        instance.addCard(new DemolitionCard());
+        instance.shuffle();
+        initialized = true;
     }
-    return deckSpesial;
+    return instance;
 }
