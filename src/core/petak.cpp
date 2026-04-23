@@ -58,9 +58,7 @@ void PetakLahan::bayarSewa(User* user) {
     if (sertifikat->getOwner() == nullptr) {
         throw BukanPemilikException();
     }
-    int biayaSewa = sertifikat->hitungSewa(0); 
-    // [!] Monopoly Color Group
-   
+    int biayaSewa = sertifikat->hitungSewa(0);
    
     if (user->getUang() < biayaSewa) {
         throw UangTidakCukupException();
@@ -193,6 +191,7 @@ void PetakUtilitas::onLanded(User* user, Game* game) {
 PetakAksi::PetakAksi() {}
 PetakAksi::PetakAksi(int index, std::string kodePetak, std::string name, std::string kategori, std::string warna)
 : Petak(index, kodePetak, name, kategori, warna){}
+PetakAksi::~PetakAksi() {}
 
 // [3.1] Class PetakKartu {Inheritance dari PetakAksi}
 // Ada di HPP
@@ -263,6 +262,7 @@ PetakPPH::PetakPPH(int index, std::string kodePetak, std::string name, std::stri
 PetakPPH::~PetakPPH() {}
 
 void PetakPPH::onLanded(User* user, Game* game) {
+    (void) game;
     std::cout << "[INFO] Mendarat di Pajak Penghasilan (PPH)\n";
     bayarPajak(*user);
 }
@@ -307,6 +307,7 @@ PetakPBM::PetakPBM(int index, std::string kodePetak, std::string name, std::stri
 PetakPBM::~PetakPBM() {}
 
 void PetakPBM::onLanded(User* user, Game* game) {
+    (void) game;
     std::cout << "[INFO] Mendarat di Pajak Barang Mewah (PBM)\n";
     std::cout << "[INFO] Potongan pajak flat: M" << pajakFlat << "\n";
     bayarPajak(*user);
@@ -330,6 +331,7 @@ PetakSpesial::PetakSpesial(int index, std::string kodePetak, std::string name, s
 PetakSpesial::~PetakSpesial() {}
 
 // [3.4.1] Class PetakGo {Inheritance dari PetakSpesial}
+PetakGo::PetakGo(){}
 PetakGo::PetakGo(int index, std::string kodePetak, std::string name, std::string kategori, std::string warna, int earnMoney)
     : PetakSpesial(index, kodePetak, name, kategori, warna), earnMoney(earnMoney) {}
 PetakGo::~PetakGo() {}
@@ -355,10 +357,15 @@ PetakPenjara::~PetakPenjara() {}
 void PetakPenjara::onLanded(User* user, Game* game) {
     (void) game;
     if (user->getStatus() == 1) {
-        std::cout << "[INFO] Kamu berada di dalam Penjara.\n";
+        std::cout << "[INFO] Kamu berada di dalam Penjara. Percobaan keluar: "
+                  << user->getJailTurns() << "/3.\n";
     } else {
         std::cout << "[INFO] Kamu hanya mampir di Penjara. Tidak ada denda atau status tahanan.\n";
     }
+}
+
+int PetakPenjara::getDenda() const {
+    return denda;
 }
 
 
@@ -368,6 +375,8 @@ PetakBebasParkir::PetakBebasParkir(int index, std::string kodePetak, std::string
     : PetakSpesial(index, kodePetak, name, kategori, warna) {}
 PetakBebasParkir::~PetakBebasParkir() {}
 void PetakBebasParkir::onLanded(User* user, Game* game) {
+    (void) user;
+    (void) game;
     std::cout << "[INFO] Kamu mendarat di Bebas Parkir! Nikmati waktu santaimu tanpa denda atau bonus.\n";
     // Tidak ada efek khusus, hanya tempat istirahat
 }
@@ -381,6 +390,5 @@ void PetakPergiPenjara::onLanded(User* user, Game* game) {
     std::cout << "[INFO] Kamu mendarat di Petak Pergi Penjara! Kamu akan langsung dipindahkan ke penjara.\n";
     std::cout << "[INFO] Kamu tidak mendapatkan gaji GO meskipun posisi dipindahkan melewati papan.\n";
     std::cout << "[INFO] Giliran pemain berakhir setelah masuk penjara.\n";
-    user->setKoordinat(game->getBoard()->getPenjaraIndex());
-    user->setStatus(1); // Status penjara
+    game->sendPlayerToJail(*user);
 }

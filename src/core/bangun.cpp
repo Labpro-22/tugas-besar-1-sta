@@ -7,6 +7,9 @@ void Bangun::eksekusiBangun(User* pemain, Street* properti, const std::vector<St
     }
 
     int hargaBangunan = properti->getHargaBangunan();
+    if (properti->getJumlahBangunan() == 4 && !properti->isHotel()) {
+        hargaBangunan = properti->getHargaHotel();
+    }
 
     // 1. Cek apakah pemain punya cukup uang
     if (pemain->getUang() < hargaBangunan) {

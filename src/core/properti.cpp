@@ -10,6 +10,13 @@ Properti::Properti(int id, std::string kode, std::string nama, int hargaBeli, in
 
 Properti::~Properti() = default;
 
+int Properti::applyFestivalMultiplier(int baseRent) const {
+  if (durasiFestival > 0) {
+    return baseRent * festivalMultiplier;
+  }
+  return baseRent;
+}
+
 void Properti::gadaikan() {
   if (this->status != PropStatus::OWNED) {
     throw StatusPropertiInvalidException("Gagal Gadai: Properti harus berstatus OWNED!");
@@ -74,7 +81,7 @@ void Properti::tickFestival() {
 
 // === Class Street === {Inheritance dari Properti}
 Street::Street(int id, std::string kode, std::string nama, std::string warna, int hargaBeli, int nilaiGadai, int hargaBangunan, int hargaHotel, std::vector<int> sewa)
-    : Properti(id, kode, nama, hargaBeli, nilaiGadai, warna),hargaSewa(sewa),jumlahRumah(0),hargaBangunan(hargaBangunan),hargaHotel(hargaHotel),hasHotel(false) {}
+    : Properti(id, kode, nama, hargaBeli, nilaiGadai, warna),hargaSewa(sewa),hargaBangunan(hargaBangunan),hargaHotel(hargaHotel),jumlahRumah(0),hasHotel(false),totalDalamGrup(0) {}
 
 int Street::hitungSewa(int lemparanDadu) const {
   (void) lemparanDadu;
@@ -85,13 +92,12 @@ int Street::hitungSewa(int lemparanDadu) const {
   else if (jumlahRumah > 0) {currentBiayaSewa = this->hargaSewa[this->jumlahRumah];} 
   else {
     currentBiayaSewa = this->hargaSewa[0];
+    if (this->owner != nullptr && totalDalamGrup > 0 && this->owner->hasMonopoli(this->warna, totalDalamGrup)) {
+      currentBiayaSewa *= 2;
+    }
   }
 
-  if (this->durasiFestival > 0) {
-    currentBiayaSewa *= this->festivalMultiplier;
-  }
-
-  return currentBiayaSewa;
+  return applyFestivalMultiplier(currentBiayaSewa);
 }
 
 void Street::bangunHotel(const std::vector<Street*>& grupWarna) {
@@ -244,6 +250,9 @@ int Street::getHargaBangunan() const {return this->hargaBangunan;}
 int Street::getHargaHotel() const {return this->hargaHotel;}
 std::vector<int> Street::getHargaSewa() const {return this->hargaSewa;}
 bool Street::isHotel() const{return this->hasHotel;}
+void Street::setHotel(bool status) { this->hasHotel = status; }
+void Street::setJumlahRumah(int jumlah) { this->jumlahRumah = std::max(0, jumlah); }
+void Street::setTotalDalamGrup(int total) { this->totalDalamGrup = total; }
 
 
 // === Class RailRoad === {Inheritance dari Properti}
@@ -259,7 +268,7 @@ int RailRoad::hitungSewa(int lemparanDadu) const {
     return 0;
   }
 
-  return this->hargaSewa[jumlahRailroad - 1];
+  return applyFestivalMultiplier(this->hargaSewa[jumlahRailroad - 1]);
 }
 
 // === Class Utility === {Inheritance dari Properti}
@@ -270,7 +279,7 @@ int Utility::hitungSewa(int lemparanDadu) const {
   if (this->owner == nullptr || this->status == PropStatus::MORTGAGED) {return 0;}
 
   int jumlahUtil = this->owner->getUtilityCount();
-  if (jumlahUtil == 1) {return faktorPengali[0] * lemparanDadu;} 
-  else if (jumlahUtil == 2) {return faktorPengali[1] * lemparanDadu;} 
+  if (jumlahUtil == 1) {return applyFestivalMultiplier(faktorPengali[0] * lemparanDadu);} 
+  else if (jumlahUtil == 2) {return applyFestivalMultiplier(faktorPengali[1] * lemparanDadu);} 
   else {return 0;}
 }

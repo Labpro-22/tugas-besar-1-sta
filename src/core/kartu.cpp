@@ -61,8 +61,7 @@ KartuMasukPenjara::KartuMasukPenjara()
 
 void KartuMasukPenjara::apply(Game* game, User& user) {
     std::cout << "\n[KESEMPATAN] \"" << deskripsi << "\"\n";
-    user.setKoordinat(game->getBoard()->getPenjaraIndex());
-    user.setStatus(1); 
+    game->sendPlayerToJail(user);
     std::cout << "> " << user.getUsername() << " langsung dijebloskan ke Penjara!\n";
 }
 

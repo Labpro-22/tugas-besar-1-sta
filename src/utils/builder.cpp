@@ -2,6 +2,7 @@
 
 std::vector<std::unique_ptr<Properti>> gameBuilder::buildProperti(configBase* config){
     std::vector<std::unique_ptr<Properti>> daftarProperti;
+    std::map<std::string, int> totalStreetPerColor;
     std::vector<int> railroadRent;
     for (const auto& entry : config->getRailroadConfig()) {
         railroadRent.push_back(entry.second);
@@ -12,10 +13,17 @@ std::vector<std::unique_ptr<Properti>> gameBuilder::buildProperti(configBase* co
         utilityFactor.push_back(entry.second);
     }
 
+    for (const PropertyConfig& pro : config->getPropertyConfig()) {
+        if (pro.getJenis() == "STREET") {
+            totalStreetPerColor[pro.getWarna()]++;
+        }
+    }
+
     for (const PropertyConfig& pro : config->getPropertyConfig()){
         if (pro.getJenis() == "STREET"){
             auto prop = std::make_unique<Street>(pro.getId(), pro.getKode(), pro.getNama(), pro.getWarna(), pro.getHargaLahan(), pro.getNilaiGadai(),
                 pro.getUpgradeRumah(), pro.getUpgradeHotel(),pro.getRentLevel());
+            prop->setTotalDalamGrup(totalStreetPerColor[pro.getWarna()]);
             daftarProperti.push_back(std::move(prop));
         }else if (pro.getJenis() == "RAILROAD"){
             auto prop = std::make_unique<RailRoad>(pro.getId(), pro.getKode(), pro.getNama(),
@@ -48,127 +56,137 @@ Board gameBuilder::buildBoard(configBase* config, const std::vector<std::unique_
     for (const auto& pro : sertifikat){
         if (Street* street = dynamic_cast<Street*>(pro.get())) {
             const std::string kode = street->getKode().empty() ? "LHN" : street->getKode();
+            int petakIndex = street->getId() - 1;
             auto petak = std::make_shared<PetakLahan>(
-                street->getId(),
+                petakIndex,
                 kode,
                 street->getNama(),
                 "Lahan",
                 street,
                 street->getWarna()
             );
-            board.setPetak(street->getId()-1,petak);
+            board.setPetak(petakIndex,petak);
         } else if (RailRoad* rail = dynamic_cast<RailRoad*>(pro.get())) {
             const std::string kode = rail->getKode().empty() ? "STA" : rail->getKode();
+            int petakIndex = rail->getId() - 1;
             auto petak = std::make_shared<PetakStasiun>(
-                rail->getId(),
+                petakIndex,
                 kode,
                 rail->getNama(),
                 "Stasiun",
                 rail,
                 rail->getWarna()
             );
-            board.setPetak(rail->getId()-1,petak);
+            board.setPetak(petakIndex,petak);
         } else if (Utility* utility = dynamic_cast<Utility*>(pro.get())) {
             const std::string kode = utility->getKode().empty() ? "UTL" : utility->getKode();
+            int petakIndex = utility->getId() - 1;
             auto petak = std::make_shared<PetakUtilitas>(
-                utility->getId(),
+                petakIndex,
                 kode,
                 utility->getNama(),
                 "Utilitas",
                 utility,
                 utility->getWarna()
             );
-            board.setPetak(utility->getId()-1,petak);
+            board.setPetak(petakIndex,petak);
         }
     }
 
     // Petak Aksi
     for (const auto& pro: config->getAksiConfig()){
-        if (pro.getJenis() == "Festival"){
+        if (pro.getNama() == "Festival"){
+            int petakIndex = pro.getId() - 1;
             auto petak = std::make_shared<PetakFestival>(
-                pro.getId(),
+                petakIndex,
                 pro.getKode(),
                 pro.getNama(),
-                "Festival",
+                pro.getJenis(),
                 pro.getWarna()
             );
 
-            board.setPetak(pro.getId()-1,petak);
+            board.setPetak(petakIndex,petak);
         }
-        else if (pro.getJenis() == "Dana_Umum"){
+        else if (pro.getNama() == "Dana_Umum"){
             
         }
-        else if (pro.getJenis() == "Kesempatan"){
+        else if (pro.getNama() == "Kesempatan"){
 
         }
-        else if (pro.getJenis() == "Pajak_Barang_Mewah"){
+        else if (pro.getNama() == "Pajak_Barang_Mewah"){
+            int petakIndex = pro.getId() - 1;
             auto petak = std::make_shared<PetakPBM>(
-                pro.getId(),
+                petakIndex,
                 pro.getKode(),
                 pro.getNama(),
-                "Pajak_Barang_Mewah",
+                pro.getJenis(),
                 pro.getWarna(),
                 config->getPbmFlat()
             );
-            board.setPetak(pro.getId()-1,petak);
+            board.setPetak(petakIndex,petak);
         }
-        else if (pro.getJenis() == "Pajak_Penghasilan"){
+        else if (pro.getNama() == "Pajak_Penghasilan"){
+            int petakIndex = pro.getId() - 1;
             auto petak = std::make_shared<PetakPPH>(
-                pro.getId(),
+                petakIndex,
                 pro.getKode(),
                 pro.getNama(),
-                "Pajak_Penghasilan",
+                pro.getJenis(),
                 pro.getWarna(),
                 config->getPphFlat(),
                 config->getPphPersentase()
             );
-            board.setPetak(pro.getId()-1,petak);
+            board.setPetak(petakIndex,petak);
         }
-        else if (pro.getJenis() == "Petak_Mulai"){
+        else if (pro.getNama() == "Petak_Mulai"){
+            int petakIndex = pro.getId() - 1;
             auto petak = std::make_shared<PetakGo>(
-                pro.getId(),
+                petakIndex,
                 pro.getKode(),
                 pro.getNama(),
-                "Petak_Mulai",
+                pro.getJenis(),
                 pro.getWarna(),
                 config->getGoSalary()
             );
-            board.setPetak(pro.getId()-1,petak);
+            board.setPetak(petakIndex,petak);
         }
-        else if (pro.getJenis() == "Penjara"){
+        else if (pro.getNama() == "Penjara"){
+            int petakIndex = pro.getId() - 1;
             auto petak = std::make_shared<PetakPenjara>(
-                pro.getId(),
+                petakIndex,
                 pro.getKode(),
                 pro.getNama(),
-                "Penjara",
+                pro.getJenis(),
                 pro.getWarna(),
                 config->getJailFine()
             );
-            board.setPetak(pro.getId()-1,petak);
+            board.setPetak(petakIndex,petak);
         }
-        else if (pro.getJenis() == "Bebas_Parkir"){
+        else if (pro.getNama() == "Bebas_Parkir"){
+            int petakIndex = pro.getId() - 1;
             auto petak = std::make_shared<PetakBebasParkir>(
-                pro.getId(),
+                petakIndex,
                 pro.getKode(),
                 pro.getNama(),
-                "Bebas_Parkir",
+                pro.getJenis(),
                 pro.getWarna()
             );
-            board.setPetak(pro.getId()-1,petak);
+            board.setPetak(petakIndex,petak);
         }
-        else if (pro.getJenis() == "Petak_Pergi_ke_Penjara"){
+        else if (pro.getNama() == "Petak_Pergi_ke_Penjara"){
+            int petakIndex = pro.getId() - 1;
             auto petak = std::make_shared<PetakPergiPenjara>(
-                pro.getId(),
+                petakIndex,
                 pro.getKode(),
                 pro.getNama(),
-                "Petak_Pergi_ke_Penjara",
+                pro.getJenis(),
                 pro.getWarna()
             );
-            board.setPetak(pro.getId()-1,petak);
+            board.setPetak(petakIndex,petak);
         }
         else{
             // [CHANGE] into throw
-            std::cout<< "[Config Error] Jenis " << pro.getJenis() << " itu salah\n";
+            std::cout<< "[Config Error] Jenis " << pro.getNama() << " itu salah\n";
         }
 
     }
@@ -264,4 +282,8 @@ Game gameBuilder::buildNewGame (configBase* config){
     return game;
 }
 
-Game buildLoadGame(configBase* configB, configLoadSave* configS){}
+Game gameBuilder::buildLoadGame(configBase* configB, configLoadSave* configS){
+    (void) configB;
+    (void) configS;
+    return Game();
+}

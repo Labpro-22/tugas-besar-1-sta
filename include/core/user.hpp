@@ -20,6 +20,7 @@ private:
     int uang;
     int koordinat;                              // Kotak ke-?
     int status; // 1: Penjara, 2: Bangkrut, 3: Hidup
+    int jailTurns;
     std::vector<Properti*> listProperti;         //Properti yang dipunya
 
     int activeDiscount = 0;
@@ -34,6 +35,10 @@ public:
     std::string getUsername() const;
     int getKoordinat() const;
     int getStatus() const;
+    int getJailTurns() const;
+    bool isJailed() const;
+    bool isBankrupt() const;
+    bool mustPayJailFine() const;
     Properti* getPropertiByKode(const std::string& kode);
     const std::vector<Properti*>& getListProperti() const;
     std::vector<Street*> getStreetByColor(const std::string& warna) const;
@@ -52,6 +57,9 @@ public:
     void setUsername(const std::string& name);
     void setStatus(const int newStatus);
     void setKoordinat(int index);
+    void sendToJail(int jailIndex);
+    void releaseFromJail();
+    void incrementJailTurns();
 
     void setActiveDiscount(int discountPercentage);
     int getActiveDiscount() const;

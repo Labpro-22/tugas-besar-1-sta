@@ -36,13 +36,23 @@ public:
     Game(int Maxturn);
     Game(int maxTurn,int turn,bool end,std::vector<User> pemain,std::vector<std::unique_ptr<Properti>>&& daftarProperti,
         Board board,Dadu dadu,std::map<std::string, PetakProperti*> lokasiKode,std::map<std::string, std::vector<PetakProperti*>> lokasiColorGroup);
-    ~Game();
+    Game(const Game&) = delete;
+    Game& operator=(const Game&) = delete;
+    Game(Game&&) noexcept = default;
+    Game& operator=(Game&&) noexcept = default;
+    ~Game() = default;
 
     bool isEnd(); // Kondisi Max Turn atau Config : Bangkrut
     void setMAXTURN(int max);
-    void nextturn();
+    void nextturn(); // Ganti cycle
+    void nextPlayer();
 
     int getTurn();
+    int getCurrentPemainIndex() const;
+    int getActivePlayerCount() const;
+    int getJailFine() const;
+    bool handleJailTurn(User& user);
+    void sendPlayerToJail(User& user);
     void leave(User& user);
     Board* getBoard();
     std::vector<User>& getPemain();

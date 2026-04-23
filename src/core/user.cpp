@@ -2,9 +2,9 @@
 #include "../../include/core/board.hpp"
 #include "../../include/core/petak.hpp"
 
-User::User() : username(""), uang(1500), koordinat(0), status(0) {}
+User::User() : username(""), uang(1500), koordinat(0), status(3), jailTurns(0) {}
 User::User(const std::string& username, int uangAwal)
-    : username(username), uang(uangAwal), koordinat(0), status(0) {}
+    : username(username), uang(uangAwal), koordinat(0), status(3), jailTurns(0) {}
 User::~User() {}
 
 int User::getUang() const { return uang;}
@@ -14,6 +14,14 @@ std::string User::getUsername() const {return username;}
 int User::getKoordinat() const { return koordinat;}
 
 int User::getStatus() const {return status;}
+
+int User::getJailTurns() const { return jailTurns; }
+
+bool User::isJailed() const { return status == 1; }
+
+bool User::isBankrupt() const { return status == 2; }
+
+bool User::mustPayJailFine() const { return isJailed() && jailTurns >= 3; }
 
 Properti* getPropertiByKode(const std::string& kode);
 
@@ -163,10 +171,30 @@ void User::setUsername(const std::string& name) {
 
 void User::setStatus(const int newStatus) {
     this->status = newStatus;
+    if (newStatus != 1) {
+        this->jailTurns = 0;
+    }
 }
 
 void User::setKoordinat(int index) {
     this->koordinat = index;
+}
+
+void User::sendToJail(int jailIndex) {
+    this->koordinat = jailIndex;
+    this->status = 1;
+    this->jailTurns = 0;
+}
+
+void User::releaseFromJail() {
+    this->status = 3;
+    this->jailTurns = 0;
+}
+
+void User::incrementJailTurns() {
+    if (isJailed()) {
+        ++jailTurns;
+    }
 }
 
 

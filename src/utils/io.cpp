@@ -1,6 +1,27 @@
 #include "../../include/utils/io.hpp"
+#include <cctype>
 #include <fstream>
 #include <sstream>
+
+namespace {
+bool isIntegerToken(const std::string& token) {
+    if (token.empty()) {
+        return false;
+    }
+
+    size_t start = (token[0] == '-' || token[0] == '+') ? 1 : 0;
+    if (start >= token.size()) {
+        return false;
+    }
+
+    for (size_t i = start; i < token.size(); ++i) {
+        if (!std::isdigit(static_cast<unsigned char>(token[i]))) {
+            return false;
+        }
+    }
+    return true;
+}
+}
 
 configBase::configBase(std::string path) : path(path) {
     std::string line;
@@ -66,6 +87,7 @@ configBase::configBase(std::string path) : path(path) {
         std::vector<std::string> tokens;
         std::string token;
         while (ss>>token) {tokens.push_back(token);}
+        if (tokens.size() < 2 || !isIntegerToken(tokens[0]) || !isIntegerToken(tokens[1])) continue;
         confRailroad.insert({std::stoi(tokens[0]), std::stoi(tokens[1])});
     }
     railFile.close();
@@ -78,6 +100,7 @@ configBase::configBase(std::string path) : path(path) {
         std::vector<std::string> tokens;
         std::string token;
         while (ss>>token) {tokens.push_back(token);}
+        if (tokens.size() < 2 || !isIntegerToken(tokens[0]) || !isIntegerToken(tokens[1])) continue;
         confUtility.insert({std::stoi(tokens[0]), std::stoi(tokens[1])});
     }
     utilFile.close();
@@ -90,6 +113,7 @@ configBase::configBase(std::string path) : path(path) {
         std::vector<std::string> tokens;
         std::string token;
         while (ss>>token) {tokens.push_back(token);}
+        if (tokens.size() < 3 || !isIntegerToken(tokens[0]) || !isIntegerToken(tokens[1]) || !isIntegerToken(tokens[2])) continue;
         pphFlat = std::stoi(tokens[0]);
         pphPersentase = std::stoi(tokens[1]);
         pbmFlat = std::stoi(tokens[2]);
@@ -104,6 +128,7 @@ configBase::configBase(std::string path) : path(path) {
         std::vector<std::string> tokens;
         std::string token;
         while (ss>>token) {tokens.push_back(token);}
+        if (tokens.size() < 2 || !isIntegerToken(tokens[0]) || !isIntegerToken(tokens[1])) continue;
         goSalary = std::stoi(tokens[0]);
         jailFine = std::stoi(tokens[1]);
     }
@@ -117,6 +142,7 @@ configBase::configBase(std::string path) : path(path) {
         std::vector<std::string> tokens;
         std::string token;
         while (ss>>token) {tokens.push_back(token);}
+        if (tokens.size() < 2 || !isIntegerToken(tokens[0]) || !isIntegerToken(tokens[1])) continue;
         MAX_TURN = std::stoi(tokens[0]);
         SALDO_AWAL = std::stoi(tokens[1]);
     }

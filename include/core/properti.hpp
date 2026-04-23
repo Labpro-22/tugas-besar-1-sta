@@ -28,6 +28,7 @@ protected:
     //Atribut untuk festival
     int durasiFestival;
     int festivalMultiplier;
+    int applyFestivalMultiplier(int baseRent) const;
 
 public:
     Properti(int id, std::string kode, std::string nama, int hargaBeli, int nilaiGadai, std::string warna);
@@ -63,6 +64,7 @@ private:
     int hargaHotel;
     int jumlahRumah;
     bool hasHotel;
+    int totalDalamGrup;
 
 public:
     Street(int id, std::string kode, std::string nama, std::string warna, int hargaBeli, int nilaiGadai, int hargaBangunan, int hargaHotel, std::vector<int> sewa);
@@ -82,6 +84,7 @@ public:
 
     void setHotel(bool status);
     void setJumlahRumah(int jumlah);
+    void setTotalDalamGrup(int total);
 };
 
 class RailRoad : public Properti {

@@ -113,7 +113,7 @@ public:
     PetakKartu() : PetakAksi(){}
     PetakKartu(int index, std::string kodePetak, std::string name, std::string kategori, std::string warna)
     : PetakAksi(index,kodePetak,name,kategori,warna), deck(){}
-    ~PetakKartu();
+    ~PetakKartu() = default;
 
     void onLanded(User* user, Game* game) override;
 };
@@ -206,6 +206,7 @@ public:
     PetakPenjara(int index, std::string kodePetak, std::string name, std::string kategori, std::string warna, int denda);
     ~PetakPenjara();
 
+    int getDenda() const;
     void onLanded(User* user, Game* game) override;
 };
 
