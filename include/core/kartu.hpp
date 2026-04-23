@@ -155,4 +155,25 @@ public:
     }
 };
 
+class KartuKesempatan : public Kartu {
+private:
+    CardDeck<KartuAksi> deck;
+public:
+    KartuKesempatan();
+    void apply(Game* game, User& user) override;
+};
+
+class KartuDanaUmum : public Kartu {
+private:
+    CardDeck<KartuAksi> deck;
+public:
+    KartuDanaUmum();
+    void apply(Game* game, User& user) override;
+};
+
+KartuKesempatan* getKartuKesempatanInstance();
+KartuDanaUmum* getKartuDanaUmumInstance();
+
+CardDeck<KartuSpesial>& getDeckSpesialInstance();
+
 #endif

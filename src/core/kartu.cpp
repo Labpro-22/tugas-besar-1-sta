@@ -235,3 +235,63 @@ void DemolitionCard::apply(Game* game, User& user) {
          std::cout << "Target tidak valid (belum dimiliki atau milik sendiri).\n";
     }
 }
+
+KartuKesempatan::KartuKesempatan() : Kartu("Kesempatan", "Pengelola Deck Kesempatan") {
+    deck.addCard(new KartuStasiunTerdekat());
+    deck.addCard(new KartuMundurTigaPetak());
+    deck.addCard(new KartuMasukPenjara());
+    deck.shuffle();
+}
+
+void KartuKesempatan::apply(Game* game, User& user) {
+    std::cout << "\n[KESEMPATAN] Menarik kartu dari tumpukan...\n";
+    KartuAksi* ditarik = deck.draw();
+    if (ditarik != nullptr) {
+        ditarik->apply(game, user);
+        deck.discard(ditarik); // Kembalikan ke deck buangan
+    }
+}
+
+KartuDanaUmum::KartuDanaUmum() : Kartu("Dana Umum", "Pengelola Deck Dana Umum") {
+    deck.addCard(new KartuHadiahUlangTahun());
+    deck.addCard(new KartuBiayaDokter());
+    deck.addCard(new KartuNyaleg());
+    deck.shuffle();
+}
+
+void KartuDanaUmum::apply(Game* game, User& user) {
+    std::cout << "\n[DANA UMUM] Menarik kartu dari tumpukan...\n";
+    KartuAksi* ditarik = deck.draw();
+    if (ditarik != nullptr) {
+        ditarik->apply(game, user);
+        deck.discard(ditarik); // Kembalikan ke deck buangan
+    }
+}
+
+KartuKesempatan* getKartuKesempatanInstance() {
+    static KartuKesempatan instanceKesempatan; 
+    return &instanceKesempatan;
+}
+
+KartuDanaUmum* getKartuDanaUmumInstance() {
+    static KartuDanaUmum instanceDanaUmum;
+    return &instanceDanaUmum;
+}
+
+CardDeck<KartuSpesial>& getDeckSpesialInstance() {
+    static CardDeck<KartuSpesial> deckSpesial;
+    static bool isInitialized = false;
+    
+    if (!isInitialized) {
+        deckSpesial.addCard(new MoveCard());
+        deckSpesial.addCard(new DiscountCard());
+        deckSpesial.addCard(new ShieldCard());
+        deckSpesial.addCard(new TeleportCard());
+        deckSpesial.addCard(new LassoCard());
+        deckSpesial.addCard(new DemolitionCard());
+        
+        deckSpesial.shuffle();
+        isInitialized = true;
+    }
+    return deckSpesial;
+}
