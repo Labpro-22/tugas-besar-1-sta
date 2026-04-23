@@ -27,39 +27,50 @@ public:
     KartuAksi(std::string nama, std::string deskripsi);
     virtual ~KartuAksi() = default;
 };
+
+class KartuKesempatan : public KartuAksi {
+public:
+    KartuKesempatan(std::string nama, std::string deskripsi);
+};
+
+class KartuDanaUmum : public KartuAksi {
+public:
+    KartuDanaUmum(std::string nama, std::string deskripsi);
+};
+
 // Kesempatan
-class KartuStasiunTerdekat : public KartuAksi {
+class KartuStasiunTerdekat : public KartuKesempatan {
 public:
     KartuStasiunTerdekat();
     void apply(Game* game, User& user) override;
 };
 
-class KartuMundurTigaPetak : public KartuAksi {
+class KartuMundurTigaPetak : public KartuKesempatan {
 public:
     KartuMundurTigaPetak();
     void apply(Game* game, User& user) override;
 };
 
-class KartuMasukPenjara : public KartuAksi {
+class KartuMasukPenjara : public KartuKesempatan {
 public:
     KartuMasukPenjara();
     void apply(Game* game, User& user) override;
 };
 
 // Dana Umum
-class KartuHadiahUlangTahun : public KartuAksi {
+class KartuHadiahUlangTahun : public KartuDanaUmum {
 public:
     KartuHadiahUlangTahun();
     void apply(Game* game, User& user) override;
 };
 
-class KartuBiayaDokter : public KartuAksi {
+class KartuBiayaDokter : public KartuDanaUmum {
 public:
     KartuBiayaDokter();
     void apply(Game* game, User& user) override;
 };
 
-class KartuNyaleg : public KartuAksi {
+class KartuNyaleg : public KartuDanaUmum {
 public:
     KartuNyaleg();
     void apply(Game* game, User& user) override;
@@ -155,8 +166,8 @@ public:
     }
 };
 
-CardDeck<KartuAksi>& getKesempatanDeck();
-CardDeck<KartuAksi>& getDanaUmumDeck();
+CardDeck<KartuKesempatan>& getKesempatanDeck();
+CardDeck<KartuDanaUmum>& getDanaUmumDeck();
 CardDeck<KartuSpesial>& getSpesialDeck();
 
 #endif
