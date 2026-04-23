@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 #include <map>
-#include "../core/game.hpp"
+#include "core/game.hpp"
 
 class PropertyConfig {
 private:

@@ -151,3 +151,5 @@ Board* Game::getBoard() {return &board;}
 std::vector<User>& Game::getPemain() {return pemain;}
 std::vector<Logger> Game::getLog(){return Log;}
 Dadu* Game::getDadu() {return &dadu;}
+std::map<std::string, PetakProperti*>& Game::getLokasiKode() {return lokasiKode;}
+std::map<std::string, std::vector<PetakProperti*>>& Game::getLokasiColorGroup() {return lokasiColorGroup;}

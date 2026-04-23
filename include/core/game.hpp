@@ -54,10 +54,13 @@ public:
     bool handleJailTurn(User& user);
     void sendPlayerToJail(User& user);
     void leave(User& user);
+
     Board* getBoard();
     std::vector<User>& getPemain();
     std::vector<Logger> getLog();
     Dadu* getDadu();
+    std::map<std::string, PetakProperti*>& getLokasiKode();
+    std::map<std::string, std::vector<PetakProperti*>>& getLokasiColorGroup();
 };
 
 #endif
