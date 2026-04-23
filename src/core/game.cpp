@@ -151,3 +151,53 @@ Board* Game::getBoard() {return &board;}
 std::vector<User>& Game::getPemain() {return pemain;}
 std::vector<Logger> Game::getLog(){return Log;}
 Dadu* Game::getDadu() {return &dadu;}
+
+void Game::mulaiLelang(Properti* properti, User* pemicu) {
+    std::vector<User*> pesertaLelang;
+    for (auto& u : pemain) {
+        if (!u.isBankrupt()) {
+            pesertaLelang.push_back(&u);
+        }
+    }
+
+    Lelang lelang(properti, pesertaLelang, pemicu);
+    std::cout << "\n=== LELANG DIBUKA UNTUK " << properti->getNama() << " ===\n";
+
+    while (!lelang.isEnd()) {
+        User* currentUser = lelang.getCurrentPlayer();
+
+        std::cout << "\nGiliran bid: " << currentUser->getUsername() << " (Uang: M" << currentUser->getUang() << ")\n";
+        std::cout << "Ketik nominal untuk bid (atau ketik -1 untuk PASS): ";
+
+        int nominal;
+        std::cin >> nominal;
+
+        if (nominal == -1 ) {
+            lelang.pass(currentUser);
+            std::cout << currentUser->getUsername() << " memilih PASS.\n";
+            lelang.nextTurn();
+        } else {
+            try {
+                lelang.bid(currentUser, nominal);
+                std::cout << "[SUCCESS] " << currentUser->getUsername() << " memilih lelang dengan bid M" << nominal << "!\n";
+                lelang.nextTurn();
+            } catch (const std::exception& e) {
+                std::cout << "[ERROR] " << e.what() << "\n";
+                std::cout << "Silahkan masukkan bid yang valid atau PASS.\n";
+            }
+        }
+    }
+
+    User* pemenang = lelang.getWinner();
+    if (pemenang != nullptr) {
+        int hargaFinal = lelang.getFinalPrice();
+        std::cout << "\n=== LELANG SELESAI ===\n";
+        std::cout << "Pemenang: " << pemenang->getUsername() << " dengan harga M" << hargaFinal <<"!\n";
+
+        *(pemenang) -= hargaFinal;
+        properti->setOwner(pemenang);
+    } else {
+        std::cout << "\n=== LELANG BATAL ===\n";
+        std::cout << "Semua pemain PASS. Properti kembali ke Bank. \n";
+    } 
+}

@@ -81,12 +81,18 @@ void PetakLahan::onLanded(User* user, Game* game) {
             }catch (const UangTidakCukupException& e){
                 std::cout << "Kasian gak ada duit!\nWAKTUNYA LELANG!!!\n";
                 // WAKTUNYA LELANG
+                if (game != nullptr) {
+                    game->mulaiLelang(sertifikat, user);
+                }
             }catch (const std::exception& e) {
                 std::cout << "[ERROR] Kegagalan: " << e.what() << "\n";
             }
         } else {
             std::cout << "[INFO] Anda memilih untuk tidak membeli properti.\n";
             // WAKTUNYA LELANG
+            if (game != nullptr) {
+                game->mulaiLelang(sertifikat, user);
+            }
         }                    
     }
 

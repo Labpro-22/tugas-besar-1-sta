@@ -58,6 +58,8 @@ public:
     std::vector<User>& getPemain();
     std::vector<Logger> getLog();
     Dadu* getDadu();
+
+    void mulaiLelang(Properti* properti, User* pemicu);
 };
 
 #endif
