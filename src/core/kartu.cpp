@@ -235,3 +235,45 @@ void DemolitionCard::apply(Game* game, User& user) {
          std::cout << "Target tidak valid (belum dimiliki atau milik sendiri).\n";
     }
 }
+
+CardDeck<KartuAksi>& getKesempatanDeck() {
+    static CardDeck<KartuAksi> instance;
+    static bool initialized = false;
+    if (!initialized) {
+        instance.addCard(new KartuStasiunTerdekat());
+        instance.addCard(new KartuMundurTigaPetak());
+        instance.addCard(new KartuMasukPenjara());
+        instance.shuffle();
+        initialized = true;
+    }
+    return instance;
+}
+
+CardDeck<KartuAksi>& getDanaUmumDeck() {
+    static CardDeck<KartuAksi> instance;
+    static bool initialized = false;
+    if (!initialized) {
+        instance.addCard(new KartuHadiahUlangTahun());
+        instance.addCard(new KartuBiayaDokter());
+        instance.addCard(new KartuNyaleg());
+        instance.shuffle();
+        initialized = true;
+    }
+    return instance;
+}
+
+CardDeck<KartuSpesial>& getSpesialDeck() {
+    static CardDeck<KartuSpesial> instance;
+    static bool initialized = false;
+    if (!initialized) {
+        instance.addCard(new MoveCard());
+        instance.addCard(new DiscountCard());
+        instance.addCard(new ShieldCard());
+        instance.addCard(new TeleportCard());
+        instance.addCard(new LassoCard());
+        instance.addCard(new DemolitionCard());
+        instance.shuffle();
+        initialized = true;
+    }
+    return instance;
+}

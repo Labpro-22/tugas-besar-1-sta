@@ -150,4 +150,8 @@ public:
     }
 };
 
+CardDeck<KartuAksi>& getKesempatanDeck();
+CardDeck<KartuAksi>& getDanaUmumDeck();
+CardDeck<KartuSpesial>& getSpesialDeck();
+
 #endif
