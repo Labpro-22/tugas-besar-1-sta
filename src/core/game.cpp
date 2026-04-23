@@ -1,10 +1,10 @@
 #include "game.hpp"
 Game::Game() : MAX_TURN(100), turn(1), end(false), currentPemain(0) {} // Asumsi default batas giliran
 Game::Game(int Maxturn) : MAX_TURN(Maxturn), turn(1), end(false), currentPemain(0) {}
-Game::Game(int maxTurn,int turn,bool end,std::vector<User> pemain,std::vector<std::unique_ptr<Properti>> daftarProperti,
+Game::Game(int maxTurn,int turn,bool end,std::vector<User> pemain,std::vector<std::unique_ptr<Properti>>&& daftarProperti,
 Board board,Dadu dadu,std::map<std::string, PetakProperti*> lokasiKode,std::map<std::string, std::vector<PetakProperti*>> lokasiColorGroup) 
 : MAX_TURN(maxTurn),turn(turn),end(end),pemain(std::move(pemain)),
-daftarProperti(daftarProperti),currentPemain(0),board(std::move(board)),
+daftarProperti(std::move(daftarProperti)),currentPemain(0),board(std::move(board)),
 dadu(std::move(dadu)),lokasiKode(std::move(lokasiKode)),lokasiColorGroup(std::move(lokasiColorGroup)) {}
 
 Game::~Game() {
@@ -22,6 +22,12 @@ void Game::setMAXTURN(int max) {
 }
 
 void Game::nextturn() {
+    for (const auto& properti : daftarProperti) {
+        if (properti != nullptr) {
+            properti->tickFestival();
+        }
+    }
+
     turn++;
 
     if (turn > MAX_TURN) {

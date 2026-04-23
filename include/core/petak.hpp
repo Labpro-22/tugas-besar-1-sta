@@ -193,6 +193,7 @@ public:
     PetakGo(int index, std::string kodePetak, std::string name, std::string kategori, std::string warna, int earnMoney);
     ~PetakGo();
 
+    int getEarnMoney() const;
     void onLanded(User* user, Game* game) override;
 };
 

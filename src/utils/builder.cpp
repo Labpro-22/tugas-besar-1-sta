@@ -14,7 +14,7 @@ std::vector<std::unique_ptr<Properti>> gameBuilder::buildProperti(configBase* co
 
     for (const PropertyConfig& pro : config->getPropertyConfig()){
         if (pro.getJenis() == "STREET"){
-            auto prop = std::make_unique<Street>(pro.getId(), pro.getNama(), pro.getWarna(), pro.getHargaLahan(), pro.getNilaiGadai(),
+            auto prop = std::make_unique<Street>(pro.getId(), pro.getKode(), pro.getNama(), pro.getWarna(), pro.getHargaLahan(), pro.getNilaiGadai(),
                 pro.getUpgradeRumah(), pro.getUpgradeHotel(),pro.getRentLevel());
             daftarProperti.push_back(std::move(prop));
         }else if (pro.getJenis() == "RAILROAD"){
@@ -22,12 +22,12 @@ std::vector<std::unique_ptr<Properti>> gameBuilder::buildProperti(configBase* co
                 pro.getNilaiGadai(), pro.getHargaLahan(),pro.getWarna(), railroadRent);
             daftarProperti.push_back(std::move(prop));
         }else if (pro.getJenis() == "UTILITY"){
-            auto prop = std::make_unique<Utility>(pro.getId(), pro.getNama(), pro.getHargaLahan(),
+            auto prop = std::make_unique<Utility>(pro.getId(), pro.getKode(), pro.getNama(), pro.getHargaLahan(),
                 pro.getNilaiGadai(), pro.getWarna(), utilityFactor);
             daftarProperti.push_back(std::move(prop));
         }else {
             // Case Else - dibuat jadi Utility aja
-            auto prop = std::make_unique<Utility>(pro.getId(), pro.getNama(), pro.getHargaLahan(),
+            auto prop = std::make_unique<Utility>(pro.getId(), pro.getKode(), pro.getNama(), pro.getHargaLahan(),
                 pro.getNilaiGadai(), pro.getWarna(), utilityFactor);
             daftarProperti.push_back(std::move(prop));
         }
@@ -48,7 +48,7 @@ Board gameBuilder::buildBoard(configBase* config, const std::vector<std::unique_
     for (const auto& pro : sertifikat){
         if (Street* street = dynamic_cast<Street*>(pro.get())) {
             const std::string kode = street->getKode().empty() ? "LHN" : street->getKode();
-            auto petak = std::make_unique<PetakLahan>(
+            auto petak = std::make_shared<PetakLahan>(
                 street->getId(),
                 kode,
                 street->getNama(),
@@ -56,10 +56,10 @@ Board gameBuilder::buildBoard(configBase* config, const std::vector<std::unique_
                 street,
                 street->getWarna()
             );
-            board.setPetak(street->getId()-1,petak.get());
+            board.setPetak(street->getId()-1,petak);
         } else if (RailRoad* rail = dynamic_cast<RailRoad*>(pro.get())) {
             const std::string kode = rail->getKode().empty() ? "STA" : rail->getKode();
-            auto petak = std::make_unique<PetakStasiun>(
+            auto petak = std::make_shared<PetakStasiun>(
                 rail->getId(),
                 kode,
                 rail->getNama(),
@@ -67,10 +67,10 @@ Board gameBuilder::buildBoard(configBase* config, const std::vector<std::unique_
                 rail,
                 rail->getWarna()
             );
-            board.setPetak(rail->getId()-1,petak.get());
+            board.setPetak(rail->getId()-1,petak);
         } else if (Utility* utility = dynamic_cast<Utility*>(pro.get())) {
             const std::string kode = utility->getKode().empty() ? "UTL" : utility->getKode();
-            auto petak = std::make_unique<PetakUtilitas>(
+            auto petak = std::make_shared<PetakUtilitas>(
                 utility->getId(),
                 kode,
                 utility->getNama(),
@@ -78,14 +78,14 @@ Board gameBuilder::buildBoard(configBase* config, const std::vector<std::unique_
                 utility,
                 utility->getWarna()
             );
-            board.setPetak(utility->getId()-1,petak.get());
+            board.setPetak(utility->getId()-1,petak);
         }
     }
 
     // Petak Aksi
     for (const auto& pro: config->getAksiConfig()){
         if (pro.getJenis() == "Festival"){
-            auto petak = std::make_unique<PetakFestival>(
+            auto petak = std::make_shared<PetakFestival>(
                 pro.getId(),
                 pro.getKode(),
                 pro.getNama(),
@@ -93,7 +93,7 @@ Board gameBuilder::buildBoard(configBase* config, const std::vector<std::unique_
                 pro.getWarna()
             );
 
-            board.setPetak(pro.getId()-1,petak.get());
+            board.setPetak(pro.getId()-1,petak);
         }
         else if (pro.getJenis() == "Dana_Umum"){
             
@@ -102,7 +102,7 @@ Board gameBuilder::buildBoard(configBase* config, const std::vector<std::unique_
 
         }
         else if (pro.getJenis() == "Pajak_Barang_Mewah"){
-            auto petak = std::make_unique<PetakPBM>(
+            auto petak = std::make_shared<PetakPBM>(
                 pro.getId(),
                 pro.getKode(),
                 pro.getNama(),
@@ -110,10 +110,10 @@ Board gameBuilder::buildBoard(configBase* config, const std::vector<std::unique_
                 pro.getWarna(),
                 config->getPbmFlat()
             );
-            board.setPetak(pro.getId()-1,petak.get());
+            board.setPetak(pro.getId()-1,petak);
         }
         else if (pro.getJenis() == "Pajak_Penghasilan"){
-            auto petak = std::make_unique<PetakPPH>(
+            auto petak = std::make_shared<PetakPPH>(
                 pro.getId(),
                 pro.getKode(),
                 pro.getNama(),
@@ -122,10 +122,10 @@ Board gameBuilder::buildBoard(configBase* config, const std::vector<std::unique_
                 config->getPphFlat(),
                 config->getPphPersentase()
             );
-            board.setPetak(pro.getId()-1,petak.get());
+            board.setPetak(pro.getId()-1,petak);
         }
         else if (pro.getJenis() == "Petak_Mulai"){
-            auto petak = std::make_unique<PetakGo>(
+            auto petak = std::make_shared<PetakGo>(
                 pro.getId(),
                 pro.getKode(),
                 pro.getNama(),
@@ -133,10 +133,10 @@ Board gameBuilder::buildBoard(configBase* config, const std::vector<std::unique_
                 pro.getWarna(),
                 config->getGoSalary()
             );
-            board.setPetak(pro.getId()-1,petak.get());
+            board.setPetak(pro.getId()-1,petak);
         }
         else if (pro.getJenis() == "Penjara"){
-            auto petak = std::make_unique<PetakPenjara>(
+            auto petak = std::make_shared<PetakPenjara>(
                 pro.getId(),
                 pro.getKode(),
                 pro.getNama(),
@@ -144,27 +144,27 @@ Board gameBuilder::buildBoard(configBase* config, const std::vector<std::unique_
                 pro.getWarna(),
                 config->getJailFine()
             );
-            board.setPetak(pro.getId()-1,petak.get());
+            board.setPetak(pro.getId()-1,petak);
         }
         else if (pro.getJenis() == "Bebas_Parkir"){
-            auto petak = std::make_unique<PetakBebasParkir>(
+            auto petak = std::make_shared<PetakBebasParkir>(
                 pro.getId(),
                 pro.getKode(),
                 pro.getNama(),
                 "Bebas_Parkir",
                 pro.getWarna()
             );
-            board.setPetak(pro.getId()-1,petak.get());
+            board.setPetak(pro.getId()-1,petak);
         }
         else if (pro.getJenis() == "Petak_Pergi_ke_Penjara"){
-            auto petak = std::make_unique<PetakPergiPenjara>(
+            auto petak = std::make_shared<PetakPergiPenjara>(
                 pro.getId(),
                 pro.getKode(),
                 pro.getNama(),
                 "Petak_Pergi_ke_Penjara",
                 pro.getWarna()
             );
-            board.setPetak(pro.getId()-1,petak.get());
+            board.setPetak(pro.getId()-1,petak);
         }
         else{
             // [CHANGE] into throw
@@ -183,7 +183,7 @@ std::vector<User> gameBuilder::buildPemain(configBase* config){
     std::cout << "Masukkan Jumlah Pemain : ";
     std::cin >> n;
     std::cout << "\n";
-    while (n!="2"||n!="3"||n!="4"){
+    while (n != "2" && n != "3" && n != "4"){
         std::cout << "Masukkan Jumlah Pemain : ";
         std::cin >> n;
         std::cout << "\n";
@@ -260,7 +260,7 @@ Game gameBuilder::buildNewGame (configBase* config){
     std::map<std::string, PetakProperti*> lokasiKode = buildMapKodeToPetak(board);
     std::map<std::string, std::vector<PetakProperti*>> lokasiColorGroup = buildMapWarnaGroup(board);
 
-    Game game(MAX_TURN,0,false,pemain,daftarProperti,board,dadu,lokasiKode,lokasiColorGroup);
+    Game game(MAX_TURN,0,false,pemain,std::move(daftarProperti),board,dadu,lokasiKode,lokasiColorGroup);
     return game;
 }
 

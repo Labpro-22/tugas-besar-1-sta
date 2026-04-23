@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <memory>
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -10,7 +11,7 @@
 
 class Board {
 private:
-    std::vector<Petak*> kotak; // pointer ke semua petak (menggunakan Polymorphism)
+    std::vector<std::shared_ptr<Petak>> kotak; // shared ownership agar aman saat Board dicopy/dipindah
     int size;
 
 public:
@@ -23,7 +24,7 @@ public:
     int getGoIndex() const;
     int getPenjaraIndex() const;
 
-    void setPetak(int index, Petak* petak);
+    void setPetak(int index, const std::shared_ptr<Petak>& petak);
 };
 
 #endif

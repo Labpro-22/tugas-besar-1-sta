@@ -56,7 +56,7 @@ KartuMundurTigaPetak::KartuMundurTigaPetak()
 
 void KartuMundurTigaPetak::apply(Game* game, User& user) {
     std::cout << "\n[KESEMPATAN] \"" << deskripsi << "\"\n";
-    user.move(-3, game->getBoard()->getSize());
+    user.move(-3, game->getBoard());
     std::cout << "> " << user.getUsername() << " mundur ke petak indeks " << user.getKoordinat() << ".\n";
 }
 
@@ -135,7 +135,7 @@ MoveCard::MoveCard() : KartuSpesial("Move Card", "Maju sekian petak secara insta
 
 void MoveCard::apply(Game* game, User& user) {
     std::cout << "\n[SPESIAL] Menggunakan Move Card! Bidak melesat " << langkah << " petak.\n";
-    user.move(langkah, game->getBoard()->getSize());
+    user.move(langkah, game->getBoard());
 }
 
 DiscountCard::DiscountCard() : KartuSpesial("Discount Card", "Diskon sewa untuk 1 giliran") {

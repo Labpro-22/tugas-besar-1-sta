@@ -30,7 +30,7 @@ protected:
     int festivalMultiplier;
 
 public:
-    Properti(int id, std::string nama, int hargaBeli, int nilaiGadai, std::string warna);
+    Properti(int id, std::string kode, std::string nama, int hargaBeli, int nilaiGadai, std::string warna);
     virtual ~Properti();
 
     virtual int hitungSewa(int lemparanDadu) const = 0; //Menghitung biaya sewa
@@ -47,13 +47,13 @@ public:
     std::string getWarna() const;
     int getFestivalMultiplier() const;
     int getFestivalDuration() const;
-    virtual int getSewaSaatIni(int dadu) const;
     int getNilaiGadai() const;
 
     void setFestivalMultiplier(int m);
     void setOwner(User* newOwner);
     void setFestivalDuration(int d);
     void setStatus(PropStatus newStatus);
+    void tickFestival();
 };
 
 class Street : public Properti {
@@ -65,7 +65,7 @@ private:
     bool hasHotel;
 
 public:
-    Street(int id,std::string nama, std::string warna, int hargaBeli, int nilaiGadai, int hargaBangunan, int hargaHotel, std::vector<int> sewa);
+    Street(int id, std::string kode, std::string nama, std::string warna, int hargaBeli, int nilaiGadai, int hargaBangunan, int hargaHotel, std::vector<int> sewa);
 
     int hitungSewa(int lemparanDadu) const override;
     void bangunHotel(const std::vector<Street*>& grupWarna); //Melakkan upgrade dari 4 rumah menjadi hotel
@@ -96,7 +96,7 @@ class Utility : public Properti {
 private:
     std::vector<int> faktorPengali; // [Lihat Konfigurasi]
 public:
-    Utility(int id, std::string nama, int hargaBeli, int nilaiGadai, std::string warna, std::vector<int> faktor);
+    Utility(int id, std::string kode, std::string nama, int hargaBeli, int nilaiGadai, std::string warna, std::vector<int> faktor);
     int hitungSewa(int lemparanDadu) const override;
 };
 

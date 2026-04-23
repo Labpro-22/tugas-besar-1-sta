@@ -17,17 +17,12 @@ Board::Board(int size) : size(size) {
     }
 }
 
-Board::~Board() {
-    for (auto p : kotak) {
-        delete p;
-    }
-    kotak.clear();
-}
+Board::~Board() = default;
 
 
 Petak* Board::getPetakAt(int index) const {
     if (index >= 0 && index < size) {
-        return kotak[index];
+        return kotak[index].get();
     }
     return nullptr;
 }
@@ -37,23 +32,24 @@ int Board::getSize() const {
 }
 int Board::getGoIndex() const { 
     for (auto it = kotak.begin(); it != kotak.end(); ++it) {
-        if (*it != nullptr && (*it)->getName() == "go") {
+        if (*it != nullptr && (*it)->getKodePetak() == "GO") {
             return static_cast<int>(it - kotak.begin());
         }
     }
     return -1;
 }
 int Board::getPenjaraIndex() const {
-    // [!] HardCode
     for (auto it = kotak.begin(); it != kotak.end(); ++it) {
-        if (*it != nullptr && (*it)->getName() == "penjara") {
+        if (*it != nullptr && (*it)->getKodePetak() == "PEN") {
             return static_cast<int>(it - kotak.begin());
         }
     }
     return -1;
 }
 
-void Board::setPetak(int index, Petak* petak){
-    kotak.insert(kotak.begin()+index,petak);
-    return;
-}   
+void Board::setPetak(int index, const std::shared_ptr<Petak>& petak){
+    if (index < 0 || index >= size) {
+        return;
+    }
+    kotak[index] = petak;
+}

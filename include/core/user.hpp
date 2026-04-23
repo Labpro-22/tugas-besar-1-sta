@@ -6,12 +6,13 @@
 #include <algorithm>
 #include <iostream>
 #include "properti.hpp"
-#include "gameException.hpp"
+#include "utils/gameException.hpp"
 
 
 class Street;
 class RailRoad;
 class Utility;
+class Board;
 
 class User{
 private:
@@ -40,7 +41,7 @@ public:
     int getUtilityCount() const; // Menghitung jumlah Utility yang dimiliki pemain (maks 2)
     int getTotalKekayaan() const; // Menghitung total kekayaan (Uang dan Kepunyaan)
 
-    void move(int dadu, int boardSize); // Bergerak sesuai jumlah dadu
+    void move(int dadu, Board* board); // Bergerak sesuai jumlah dadu
     void addProperti(Properti* p); // Tambahkan properti ke daftar milik pemain
     void removeProperti(Properti* p); // Hapus properti dari daftar milik pemain
     bool hasMonopoli(const std::string& warna, int totalDiPapan) const; 

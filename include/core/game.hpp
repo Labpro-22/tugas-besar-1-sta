@@ -7,6 +7,7 @@
 #include "../utils/dadu.hpp"
 #include <vector>
 #include <map>
+#include <memory>
 #include <utility>
 
 class Game{
@@ -32,7 +33,7 @@ private:
 public:
     Game();
     Game(int Maxturn);
-    Game(int maxTurn,int turn,bool end,std::vector<User> pemain,std::vector<std::unique_ptr<Properti>> daftarProperti,
+    Game(int maxTurn,int turn,bool end,std::vector<User> pemain,std::vector<std::unique_ptr<Properti>>&& daftarProperti,
         Board board,Dadu dadu,std::map<std::string, PetakProperti*> lokasiKode,std::map<std::string, std::vector<PetakProperti*>> lokasiColorGroup);
     ~Game();
 

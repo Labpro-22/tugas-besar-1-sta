@@ -143,6 +143,7 @@ void PetakStasiun::bayarSewa(User* user) {
     *(sertifikat->getOwner()) += biayaSewa;
 }
 void PetakStasiun::onLanded(User* user, Game* game) {
+    (void) game;
     if (sertifikat->getStatus()==PropStatus::BANK){
         std::cout << "Kamu mendapatkan stasiun kereta api "<< getName() << "!\n";
         sertifikat->setOwner(user);
@@ -207,6 +208,7 @@ PetakFestival::PetakFestival(int index, std::string kodePetak, std::string name,
 PetakFestival::~PetakFestival() {}
 
 void PetakFestival::onLanded(User* user, Game* game) {
+    (void) game;
     std::cout << "[INFO] Mendarat di petak Festival!\n";
     
     const auto& props = user->getListProperti();
@@ -243,7 +245,7 @@ void PetakFestival::terapkanEfek(Properti* targetProperti) {
     }
     
     targetProperti->setFestivalDuration(3);
-    std::cout << "[INFO] Nilai sewa saat ini menjadi: M" << targetProperti->getSewaSaatIni(0) 
+    std::cout << "[INFO] Nilai sewa saat ini menjadi: M" << targetProperti->hitungSewa(0)
               << " (Aktif 3 giliran)\n";
 }
 
@@ -333,6 +335,7 @@ PetakGo::PetakGo(int index, std::string kodePetak, std::string name, std::string
 PetakGo::~PetakGo() {}
 
 void PetakGo::onLanded(User* user, Game* game) {
+    (void) game;
     if (user->getKoordinat()==index) {
         *(user) += earnMoney;
         std::cout << "[INFO] Selamat datang di GO! Kamu mendapatkan M" << earnMoney << ". Total uang: M" << user->getUang() << "\n";
@@ -341,18 +344,20 @@ void PetakGo::onLanded(User* user, Game* game) {
     }
 }
 
+int PetakGo::getEarnMoney() const {
+    return earnMoney;
+}
+
 // [3.4.2] Class PetakPenjara {Inheritance dari PetakSpesial}
 PetakPenjara::PetakPenjara(int index, std::string kodePetak, std::string name, std::string kategori, std::string warna, int denda)
     : PetakSpesial(index, kodePetak, name, kategori, warna), denda(denda) {}
 PetakPenjara::~PetakPenjara() {}
 void PetakPenjara::onLanded(User* user, Game* game) {
-    std::cout << "[INFO] Kamu mendarat di Penjara! Denda: M" << denda << "\n";
-    user->setStatus(1); // Status penjara
-    if (user->getUang() >= denda) {
-        *(user) -= denda;
-        std::cout << "[SUCCESS] Denda terbayar. Sisa uang: M" << user->getUang() << "\n";
+    (void) game;
+    if (user->getStatus() == 1) {
+        std::cout << "[INFO] Kamu berada di dalam Penjara.\n";
     } else {
-        std::cout << "[WARNING] Saldo tidak mencukupi untuk membayar denda!\n";
+        std::cout << "[INFO] Kamu hanya mampir di Penjara. Tidak ada denda atau status tahanan.\n";
     }
 }
 
@@ -374,7 +379,8 @@ PetakPergiPenjara::PetakPergiPenjara(int index, std::string kodePetak, std::stri
 PetakPergiPenjara::~PetakPergiPenjara() {}
 void PetakPergiPenjara::onLanded(User* user, Game* game) {
     std::cout << "[INFO] Kamu mendarat di Petak Pergi Penjara! Kamu akan langsung dipindahkan ke penjara.\n";
-    user->setKoordinat(game->getBoard()->getPenjaraIndex()); // Asumsi index petak penjara adalah 10
+    std::cout << "[INFO] Kamu tidak mendapatkan gaji GO meskipun posisi dipindahkan melewati papan.\n";
+    std::cout << "[INFO] Giliran pemain berakhir setelah masuk penjara.\n";
+    user->setKoordinat(game->getBoard()->getPenjaraIndex());
     user->setStatus(1); // Status penjara
 }
-
