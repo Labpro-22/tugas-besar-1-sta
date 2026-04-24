@@ -21,11 +21,16 @@ std::string Kartu::getDeskripsi() const {
 KartuAksi::KartuAksi(std::string nama, std::string deskripsi) 
 : Kartu(nama, deskripsi) {}
 
+KartuKesempatan::KartuKesempatan(std::string nama, std::string deskripsi) 
+: KartuAksi(nama, deskripsi) {}
+
+KartuDanaUmum::KartuDanaUmum(std::string nama, std::string deskripsi) 
+: KartuAksi(nama, deskripsi) {}
 
 // Kartu Kesempatan
 // 1. "Pergi ke stasiun terdekat."
 KartuStasiunTerdekat::KartuStasiunTerdekat() 
-    : KartuAksi("Kartu Kesempatan", "Pergi ke stasiun terdekat.") {}
+    : KartuKesempatan("Kartu Kesempatan", "Pergi ke stasiun terdekat.") {}
 
 void KartuStasiunTerdekat::apply(Game* game, User& user) {
     std::cout << "\n[KESEMPATAN] \"" << deskripsi << "\"\n";
@@ -47,7 +52,7 @@ void KartuStasiunTerdekat::apply(Game* game, User& user) {
 
 // 2. "Mundur 3 petak."
 KartuMundurTigaPetak::KartuMundurTigaPetak() 
-    : KartuAksi("Kartu Kesempatan", "Mundur 3 petak.") {}
+    : KartuKesempatan("Kartu Kesempatan", "Mundur 3 petak.") {}
 
 void KartuMundurTigaPetak::apply(Game* game, User& user) {
     std::cout << "\n[KESEMPATAN] \"" << deskripsi << "\"\n";
@@ -57,7 +62,7 @@ void KartuMundurTigaPetak::apply(Game* game, User& user) {
 
 // 3. "Masuk Penjara."
 KartuMasukPenjara::KartuMasukPenjara() 
-    : KartuAksi("Kartu Kesempatan", "Masuk Penjara.") {}
+    : KartuKesempatan("Kartu Kesempatan", "Masuk Penjara.") {}
 
 void KartuMasukPenjara::apply(Game* game, User& user) {
     std::cout << "\n[KESEMPATAN] \"" << deskripsi << "\"\n";
@@ -68,7 +73,7 @@ void KartuMasukPenjara::apply(Game* game, User& user) {
 // Kartu Dana Umum
 // 1. "Ini adalah hari ulang tahun Anda. Dapatkan M100 dari setiap pemain."
 KartuHadiahUlangTahun::KartuHadiahUlangTahun() 
-    : KartuAksi("Kartu Dana Umum", "Ini adalah hari ulang tahun Anda. Dapatkan M100 dari setiap pemain.") {}
+    : KartuDanaUmum("Kartu Dana Umum", "Ini adalah hari ulang tahun Anda. Dapatkan M100 dari setiap pemain.") {}
 
 void KartuHadiahUlangTahun::apply(Game* game, User& user) {
     std::cout << "\n[DANA UMUM] \"" << deskripsi << "\"\n";
@@ -93,7 +98,7 @@ void KartuHadiahUlangTahun::apply(Game* game, User& user) {
 
 // 2. "Biaya dokter. Bayar M700."
 KartuBiayaDokter::KartuBiayaDokter() 
-    : KartuAksi("Kartu Dana Umum", "Biaya dokter. Bayar M700.") {}
+    : KartuDanaUmum("Kartu Dana Umum", "Biaya dokter. Bayar M700.") {}
 
 void KartuBiayaDokter::apply(Game* game, User& user) {
     std::cout << "\n[DANA UMUM] \"" << deskripsi << "\"\n";
@@ -103,7 +108,7 @@ void KartuBiayaDokter::apply(Game* game, User& user) {
 
 // 3. "Anda mau nyaleg. Bayar M200 kepada setiap pemain."
 KartuNyaleg::KartuNyaleg() 
-    : KartuAksi("Kartu Dana Umum", "Anda mau nyaleg. Bayar M200 kepada setiap pemain.") {}
+    : KartuDanaUmum("Kartu Dana Umum", "Anda mau nyaleg. Bayar M200 kepada setiap pemain.") {}
 
 void KartuNyaleg::apply(Game* game, User& user) {
     std::cout << "\n[DANA UMUM] \"" << deskripsi << "\"\n";
@@ -230,8 +235,8 @@ void DemolitionCard::apply(Game* game, User& user) {
     }
 }
 
-CardDeck<KartuAksi>& getKesempatanDeck() {
-    static CardDeck<KartuAksi> instance;
+CardDeck<KartuKesempatan>& getKesempatanDeck() {
+    static CardDeck<KartuKesempatan> instance;
     static bool initialized = false;
     if (!initialized) {
         instance.addCard(new KartuStasiunTerdekat());
@@ -243,8 +248,8 @@ CardDeck<KartuAksi>& getKesempatanDeck() {
     return instance;
 }
 
-CardDeck<KartuAksi>& getDanaUmumDeck() {
-    static CardDeck<KartuAksi> instance;
+CardDeck<KartuDanaUmum>& getDanaUmumDeck() {
+    static CardDeck<KartuDanaUmum> instance;
     static bool initialized = false;
     if (!initialized) {
         instance.addCard(new KartuHadiahUlangTahun());
@@ -261,10 +266,19 @@ CardDeck<KartuSpesial>& getSpesialDeck() {
     static bool initialized = false;
     if (!initialized) {
         instance.addCard(new MoveCard());
+        instance.addCard(new MoveCard());
+        instance.addCard(new MoveCard());
+        instance.addCard(new MoveCard());
+        instance.addCard(new DiscountCard());
+        instance.addCard(new DiscountCard());
         instance.addCard(new DiscountCard());
         instance.addCard(new ShieldCard());
+        instance.addCard(new ShieldCard());
+        instance.addCard(new TeleportCard());
         instance.addCard(new TeleportCard());
         instance.addCard(new LassoCard());
+        instance.addCard(new LassoCard());
+        instance.addCard(new DemolitionCard());
         instance.addCard(new DemolitionCard());
         instance.shuffle();
         initialized = true;
