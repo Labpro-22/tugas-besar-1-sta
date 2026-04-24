@@ -13,6 +13,9 @@ class Street;
 class RailRoad;
 class Utility;
 class Board;
+class KartuSpesial;
+template <class T>
+class CardDeck;
 
 class User{
 private:
@@ -22,6 +25,7 @@ private:
     int status; // 1: Penjara, 2: Bangkrut, 3: Hidup
     int jailTurns;
     std::vector<Properti*> listProperti;         //Properti yang dipunya
+    std::vector<KartuSpesial*> kartuSpesial;
 
     int activeDiscount = 0;
     bool shieldActive = false;
@@ -50,6 +54,9 @@ public:
     void addProperti(Properti* p); // Tambahkan properti ke daftar milik pemain
     void removeProperti(Properti* p); // Hapus properti dari daftar milik pemain
     bool hasMonopoli(const std::string& warna, int totalDiPapan) const; 
+    void addKartuSpesial(KartuSpesial* kartu, CardDeck<KartuSpesial>* deck);
+    KartuSpesial* dropKartuSpesial();
+    const std::vector<KartuSpesial*>& getKartuSpesial() const;
     
     User& operator+=(int jumlahUang);
     User& operator-=(int jumlahUang);
@@ -65,6 +72,7 @@ public:
     int getActiveDiscount() const;
     void setShieldActive(bool active);
     bool isShieldActive() const;
+    void resetEfekKartuSpesial();
 
 };
 

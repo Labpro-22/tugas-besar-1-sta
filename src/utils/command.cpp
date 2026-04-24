@@ -4,7 +4,7 @@
 Command::Command() = default;
 Command::~Command() = default;
 
-bool Command::execute(User& user, const std::string& input, Game& game, int consecutiveDadu) {
+bool Command::execute(User& user, const std::string& input, Game& game, int& consecutiveDadu) {
     std::istringstream iss(input);
     std::string first;
     iss >> first;
@@ -19,20 +19,19 @@ bool Command::execute(User& user, const std::string& input, Game& game, int cons
         return true;
     }
     else if ((first == "LEMPAR_DADU" || first == "ATUR_DADU") && consecutiveDadu >= 0){
-        Dadu dadu;
         if (first == "LEMPAR_DADU") {
             int x, y;
             std::string extra;
             if ((iss >> x >> y) && !(iss >> extra)) {
-                dadu.manual(x,y);
+                game.getDadu()->manual(x,y);
             }else{
                 std::cout << "Format ATUR_DADU salah. Gunakan: ATUR_DADU <X> <Y>\n";
                 return false;
             }
         }else{
-            dadu.shuffle();
+            game.getDadu()->shuffle();
         }
-        if (dadu.isDouble()) consecutiveDadu += 1;
+        if (game.getDadu()->isDouble()) consecutiveDadu += 1;
         else consecutiveDadu -= 1;
 
         if (consecutiveDadu >= 3) {
@@ -40,7 +39,9 @@ bool Command::execute(User& user, const std::string& input, Game& game, int cons
             std::cout << "Anda melempar dadu 3 kali berturut-turut! Anda dikirim ke penjara.\n";
             return false;
         }
-        user.move(dadu.getTotal(),game.getBoard());
+        user.move(game.getDadu()->getTotal(),game.getBoard());
+        game.getBoard()->getPetakAt(user.getKoordinat())->onLanded(&user, &game);
+        game.getDadu()->reset();
         return true;
     }
     else if (first == "CETAK_AKTA"){

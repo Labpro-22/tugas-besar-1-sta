@@ -110,10 +110,26 @@ Board gameBuilder::buildBoard(configBase* config, const std::vector<std::unique_
             board.setPetak(petakIndex,petak);
         }
         else if (pro.getNama() == "Dana_Umum"){
-            
+            int petakIndex = pro.getId() - 1;
+            auto petak = std::make_shared<PetakKartu<KartuDanaUmum>>(
+                petakIndex,
+                pro.getKode(),
+                pro.getNama(),
+                pro.getJenis(),
+                pro.getWarna()
+            );
+            board.setPetak(petakIndex, petak);
         }
         else if (pro.getNama() == "Kesempatan"){
-
+            int petakIndex = pro.getId() - 1;
+            auto petak = std::make_shared<PetakKartu<KartuKesempatan>>(
+                petakIndex,
+                pro.getKode(),
+                pro.getNama(),
+                pro.getJenis(),
+                pro.getWarna()
+            );
+            board.setPetak(petakIndex, petak);
         }
         else if (pro.getNama() == "Pajak_Barang_Mewah"){
             int petakIndex = pro.getId() - 1;

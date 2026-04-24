@@ -4,12 +4,11 @@
 #include <iostream>
 #include "user.hpp"
 #include <iostream>
-#include <cstdlib>
-#include <ctime>
 #include <limits>
 #include <string>
 #include <vector>
 #include <random>
+#include <algorithm>
 
 class Game;
 
@@ -92,6 +91,7 @@ private:
 public:
     MoveCard();
     void apply(Game* game, User& user) override;
+    void randomize();
 };
 
 class DiscountCard : public KartuSpesial {
@@ -100,6 +100,7 @@ private:
 public:
     DiscountCard();
     void apply(Game* game, User& user) override;
+    void randomize();
 };
 
 class ShieldCard : public KartuSpesial {
@@ -133,7 +134,12 @@ private:
     std::vector<T*> drawPile;
     std::vector<T*> discardPile;
 public:
-    CardDeck() {}
+    CardDeck();
+    CardDeck(const CardDeck&) = delete;
+    CardDeck& operator=(const CardDeck&) = delete;
+    CardDeck(CardDeck&&) noexcept = default;
+    CardDeck& operator=(CardDeck&&) noexcept = default;
+
     ~CardDeck() {
         for(T* card : drawPile) delete card;
         for(T* card : discardPile) delete card;
@@ -168,9 +174,5 @@ public:
         }
     }
 };
-
-CardDeck<KartuKesempatan>& getKesempatanDeck();
-CardDeck<KartuDanaUmum>& getDanaUmumDeck();
-CardDeck<KartuSpesial>& getSpesialDeck();
 
 #endif

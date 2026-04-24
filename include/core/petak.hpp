@@ -64,8 +64,7 @@ public:
     std::string getOwnerName() const;
 
     void onLanded(User* user, Game* game) override;
-    void hancurkanBangunan(); // Semua Dihancurkan (Oleh bank)
-    void hancurkanSatuBangunan(); // Oleh Pemain (Card)
+    void hancurkanBangunan(); // Semua Dihancurkan
 };
 // [2.2]
 class PetakStasiun : public PetakProperti{
@@ -110,9 +109,8 @@ class PetakKartu : public PetakAksi{
 private:
     CardDeck<T> deck;
 public:
-    PetakKartu() : PetakAksi(){}
-    PetakKartu(int index, std::string kodePetak, std::string name, std::string kategori, std::string warna)
-    : PetakAksi(index,kodePetak,name,kategori,warna), deck(){}
+    PetakKartu();
+    PetakKartu(int index, std::string kodePetak, std::string name, std::string kategori, std::string warna);
     ~PetakKartu() = default;
 
     void onLanded(User* user, Game* game) override;

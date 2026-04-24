@@ -9,7 +9,7 @@ public:
     Command();
     ~Command();
 
-    bool execute(User& user, const std::string& input, Game& game, int consecutiveDadu);
+    bool execute(User& user, const std::string& input, Game& game, int& consecutiveDadu);
 };
 
 
