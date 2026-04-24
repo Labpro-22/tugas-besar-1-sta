@@ -180,3 +180,44 @@ Dadu* Game::getDadu() {return &dadu;}
 std::map<std::string, PetakProperti*>& Game::getLokasiKode() {return lokasiKode;}
 std::map<std::string, std::vector<PetakProperti*>>& Game::getLokasiColorGroup() {return lokasiColorGroup;}
 CardDeck<KartuSpesial>& Game::getDeckKartuSpesial() {return deckKartuSpesial;}
+
+void Game::move(int langkah, User& user) {
+    user.move(langkah, &board);
+    board.getPetakAt(user.getKoordinat())->onLanded(&user, this);
+}
+
+void Game::prosesGadai(User& user, Properti& properti) {
+    // Implementasi proses gadai
+    // 1. Beri list properti yang bisa digadaikan (status Owned) Jika masih ada bangunan di color group, tidak bisa digadaikan.
+    std::string opsi;
+    std::cout << "Pilih nomor properti (0 untuk batal): ";
+    std::cin >> opsi;
+    std::cout << "Jakarta berhasil digadaikan." << std::endl << "Kamu menerima M200 dari Bank."
+    << std::endl << "Uang kamu sekarang: " << user.getUang() << std::endl << "Catatan: Properti yang digadaikan tidak akan menghasilkan sewa." << std::endl;
+}
+
+void Game::prosesTebus(User& user, Properti& properti) {
+    // Implementasi proses tebus
+    /*
+        1. Traversal semua properti yang bisa ditebus (status Mortgaged) dan tampilkan ke user
+        2. User pilih properti yang mau ditebus, jika uang cukup, proses tebus berhasil, jika tidak cukup, tampilkan pesan error
+    */
+}
+
+void Game::prosesBangun(Properti& properti) {
+    // Implementasi proses bangun
+    /*
+        1. Berikan list properti yang bisa dibangun (Hanya Street dengan status Owned, dan ketentuan Bangun (colorgroup))
+        2. Pilih color group
+        3. Pilih properti
+        4. Kalo gak ada, lewatkan!
+    */
+}
+
+void Game::prosesLoad() {
+    // Implementasi proses load
+}
+
+void Game::prosesSave() {
+    // Implementasi proses save
+}
