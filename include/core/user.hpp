@@ -34,46 +34,54 @@ public:
     User(const std::string& username, int uangAwal);
     ~User();
 
-
+    // Getter 
     int getUang() const;
     std::string getUsername() const;
     int getKoordinat() const;
     int getStatus() const;
     int getJailTurns() const;
-    bool isJailed() const;
-    bool isBankrupt() const;
-    bool mustPayJailFine() const;
     Properti* getPropertiByKode(const std::string& kode);
     const std::vector<Properti*>& getListProperti() const;
     std::vector<Street*> getStreetByColor(const std::string& warna) const;
     int getRailroadCount() const; //Menghitung jumalh Railraod yang dimiliki pemain (maks 4)
     int getUtilityCount() const; // Menghitung jumlah Utility yang dimiliki pemain (maks 2)
     int getTotalKekayaan() const; // Menghitung total kekayaan (Uang dan Kepunyaan)
-
-    void move(int dadu, Board* board); // Bergerak sesuai jumlah dadu
-    void addProperti(Properti* p); // Tambahkan properti ke daftar milik pemain
-    void removeProperti(Properti* p); // Hapus properti dari daftar milik pemain
-    bool hasMonopoli(const std::string& warna, int totalDiPapan) const; 
-    void addKartuSpesial(KartuSpesial* kartu, CardDeck<KartuSpesial>* deck);
-    KartuSpesial* dropKartuSpesial();
     const std::vector<KartuSpesial*>& getKartuSpesial() const;
+    int getActiveDiscount() const;
+
+    // Boolean
+    bool isJailed() const;
+    bool isBankrupt() const;
+    bool mustPayJailFine() const;
+    bool hasMonopoli(const std::string& warna, int totalDiPapan) const; 
+    bool isShieldActive() const;
     
+    
+    // Overloading
     User& operator+=(int jumlahUang);
     User& operator-=(int jumlahUang);
 
+    // Aksi - Pergerakan dan Properti
+    void move(int dadu, Board* board); // Bergerak sesuai jumlah dadu
+    void addProperti(Properti* p); // Tambahkan properti ke daftar milik pemain
+    void removeProperti(Properti* p); // Hapus properti dari daftar milik pemain
+
+    // Setters
     void setUsername(const std::string& name);
     void setStatus(const int newStatus);
     void setKoordinat(int index);
+    void setActiveDiscount(int discountPercentage);
+    void setShieldActive(bool active);
+
+    // Aksi - Kartu
+    void resetEfekKartuSpesial();
+    void addKartuSpesial(KartuSpesial* kartu, CardDeck<KartuSpesial>* deck);
+    KartuSpesial* dropKartuSpesial();
+    
+    // Aksi - Penjara
     void sendToJail(int jailIndex);
     void releaseFromJail();
     void incrementJailTurns();
-
-    void setActiveDiscount(int discountPercentage);
-    int getActiveDiscount() const;
-    void setShieldActive(bool active);
-    bool isShieldActive() const;
-    void resetEfekKartuSpesial();
-
 };
 
 class LogEntry {
