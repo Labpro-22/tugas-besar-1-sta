@@ -1,5 +1,7 @@
 #include <algorithm>
+#include <iostream>
 
+#include "core/game.hpp"
 #include "core/lelang.hpp"
 #include "utils/gameException.hpp"
 
