@@ -6,19 +6,21 @@
 #include <algorithm>
 #include <iostream>
 #include "properti.hpp"
-#include "gameException.hpp"
+#include "utils/gameException.hpp"
 
 
 class Street;
 class RailRoad;
 class Utility;
+class Board;
 
 class User{
 private:
     std::string username;
     int uang;
     int koordinat;                              // Kotak ke-?
-    int status; // Penjara, ...
+    int status; // 1: Penjara, 2: Bangkrut, 3: Hidup
+    int jailTurns;
     std::vector<Properti*> listProperti;         //Properti yang dipunya
 
     int activeDiscount = 0;
@@ -33,6 +35,10 @@ public:
     std::string getUsername() const;
     int getKoordinat() const;
     int getStatus() const;
+    int getJailTurns() const;
+    bool isJailed() const;
+    bool isBankrupt() const;
+    bool mustPayJailFine() const;
     Properti* getPropertiByKode(const std::string& kode);
     const std::vector<Properti*>& getListProperti() const;
     std::vector<Street*> getStreetByColor(const std::string& warna) const;
@@ -40,7 +46,7 @@ public:
     int getUtilityCount() const; // Menghitung jumlah Utility yang dimiliki pemain (maks 2)
     int getTotalKekayaan() const; // Menghitung total kekayaan (Uang dan Kepunyaan)
 
-    void move(int dadu, int boardSize); // Bergerak sesuai jumlah dadu
+    void move(int dadu, Board* board); // Bergerak sesuai jumlah dadu
     void addProperti(Properti* p); // Tambahkan properti ke daftar milik pemain
     void removeProperti(Properti* p); // Hapus properti dari daftar milik pemain
     bool hasMonopoli(const std::string& warna, int totalDiPapan) const; 
@@ -51,6 +57,9 @@ public:
     void setUsername(const std::string& name);
     void setStatus(const int newStatus);
     void setKoordinat(int index);
+    void sendToJail(int jailIndex);
+    void releaseFromJail();
+    void incrementJailTurns();
 
     void setActiveDiscount(int discountPercentage);
     int getActiveDiscount() const;

@@ -7,34 +7,60 @@
 #include "../utils/dadu.hpp"
 #include <vector>
 #include <map>
+#include <memory>
+#include <utility>
+#include <memory>
 
 class Game{
 private:
+    // Atribut Langsung game
     int MAX_TURN;
-    static int turn;
+    int turn;
+    bool end;
     std::vector<User> pemain;
     std::vector<Logger> Log;
-    std::vector<Properti> daftarProperti;
+    std::vector<std::unique_ptr<Properti>> daftarProperti;
+    
+    // Urutan Pemain (Angka melambangkan indeks di vector pemain)
+    std::vector<int> urutanPemain;
+    int currentPemain;
+
+    // Composition
     Board board;
     Dadu dadu;
-    
-    bool end;
-    std::map<Properti*, PetakProperti*> lokasiSertifikat;
+    // Mapping
+    std::map<std::string, PetakProperti*> lokasiKode; // Kode -> Petak
+    std::map<std::string, std::vector<PetakProperti*>> lokasiColorGroup; // Color X -> Semua Petak dengan color X
 public:
     Game();
     Game(int Maxturn);
-    ~Game();
+    Game(int maxTurn,int turn,bool end,std::vector<User> pemain,std::vector<std::unique_ptr<Properti>>&& daftarProperti,
+        Board board,Dadu dadu,std::map<std::string, PetakProperti*> lokasiKode,std::map<std::string, std::vector<PetakProperti*>> lokasiColorGroup);
+    Game(const Game&) = delete;
+    Game& operator=(const Game&) = delete;
+    Game(Game&&) noexcept = default;
+    Game& operator=(Game&&) noexcept = default;
+    ~Game() = default;
 
-    bool isEnd(); // Kondisi 1 Player atau Config : Bangkrut
+    bool isEnd(); // Kondisi Max Turn atau Config : Bangkrut
     void setMAXTURN(int max);
-    void nextturn();
+    void nextturn(); // Ganti cycle
+    void nextPlayer();
 
     int getTurn();
+    int getCurrentPemainIndex() const;
+    int getActivePlayerCount() const;
+    int getJailFine() const;
+    bool handleJailTurn(User& user);
+    void sendPlayerToJail(User& user);
     void leave(User& user);
+
     Board* getBoard();
     std::vector<User>& getPemain();
     std::vector<Logger> getLog();
     Dadu* getDadu();
+    std::map<std::string, PetakProperti*>& getLokasiKode();
+    std::map<std::string, std::vector<PetakProperti*>>& getLokasiColorGroup();
 };
 
 #endif

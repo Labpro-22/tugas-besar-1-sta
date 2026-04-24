@@ -1,7 +1,7 @@
 #include <algorithm>
 
-#include "lelang.hpp"
-#include "gameException.hpp"
+#include "core/lelang.hpp"
+#include "utils/gameException.hpp"
 
 Lelang::Lelang(Properti* target, std::vector<User*> semuaPemain) {
   this->targetProperti = target;

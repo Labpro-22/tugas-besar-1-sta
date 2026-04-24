@@ -1,5 +1,5 @@
-#include "boardView.hpp"
-#include "petak.hpp"
+#include "views/boardView.hpp"
+#include "core/petak.hpp"
 #include <iostream>
 #include <string>
 #include <vector>
