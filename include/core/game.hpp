@@ -5,6 +5,7 @@
 #include "petak.hpp"
 #include "board.hpp"
 #include "../utils/dadu.hpp"
+#include "lelang.hpp"
 #include <vector>
 #include <map>
 #include <memory>
