@@ -4,7 +4,7 @@
 Command::Command() = default;
 Command::~Command() = default;
 
-bool Command::execute(const std::string& input, Game& game) {
+bool Command::execute(User& user, const std::string& input, Game& game, int consecutiveDadu) {
     std::istringstream iss(input);
     std::string first;
     iss >> first;
@@ -15,21 +15,33 @@ bool Command::execute(const std::string& input, Game& game) {
     }
 
     if (first == "CETAK_PAPAN"){
-        // BoardView
+        BoardView::cetakPapan(*game.getBoard(), game.getPemain());
         return true;
     }
-    else if (first == "LEMPAR_DADU"){
-
-        return true;
-    }
-    else if (first == "ATUR_DADU"){
-        int x, y;
-        std::string input;
-        if ((iss >> x >> y) && !(iss >> input)) {
-            return true;
+    else if ((first == "LEMPAR_DADU" || first == "ATUR_DADU") && consecutiveDadu >= 0){
+        Dadu dadu;
+        if (first == "LEMPAR_DADU") {
+            int x, y;
+            std::string extra;
+            if ((iss >> x >> y) && !(iss >> extra)) {
+                dadu.manual(x,y);
+            }else{
+                std::cout << "Format ATUR_DADU salah. Gunakan: ATUR_DADU <X> <Y>\n";
+                return false;
+            }
+        }else{
+            dadu.shuffle();
         }
-        std::cout << "Format ATUR_DADU salah. Gunakan: ATUR_DADU <X> <Y>\n";
-        return false;
+        if (dadu.isDouble()) consecutiveDadu += 1;
+        else consecutiveDadu -= 1;
+
+        if (consecutiveDadu >= 3) {
+            user.sendToJail(game.getBoard()->getPenjaraIndex());
+            std::cout << "Anda melempar dadu 3 kali berturut-turut! Anda dikirim ke penjara.\n";
+            return false;
+        }
+        user.move(dadu.getTotal(),game.getBoard());
+        return true;
     }
     else if (first == "CETAK_AKTA"){
         std::string input;
@@ -55,15 +67,19 @@ bool Command::execute(const std::string& input, Game& game) {
         return false;
     }
     else if (first == "GADAI"){
+        // JALANIN FUNGSI GADAI
         return true;
     }
     else if (first == "TEBUS"){
+        // JALANIN FUNGSI TEBUS
         return true;
     }
     else if (first == "BANGUN"){
+        // JALANIN FUNGSI BANGUN
         return true;
     }
     else if (first == "GUNAKAN_KEMAMPUAN"){
+        // JALANIN FUNGSI GUNAKAN_KEMAMPUAN
         return true;
     }
     else if (first == "SIMPAN"){
@@ -87,13 +103,18 @@ bool Command::execute(const std::string& input, Game& game) {
     else if (first == "CETAK_LOG"){
         std::string extra;
         if (iss.eof()) {
+            // CETAK_LOG tanpa jumlah, cetak semua log
             return true;
         }
         int jumlah;
         if ((iss >> jumlah) && !(iss >> extra)) {
+            // CETAK_LOG dengan jumlah, cetak log sesuai jumlah
             return true;
         }
         std::cout << "Format CETAK_LOG salah. Gunakan: CETAK_LOG atau CETAK_LOG <jumlah>\n";
+        return false;
+    }
+    else if (first == "SELESAI"){
         return false;
     }
     else {

@@ -1,4 +1,6 @@
 #include "../../include/utils/builder.hpp"
+#include <algorithm>
+#include <random>
 
 std::vector<std::unique_ptr<Properti>> gameBuilder::buildProperti(configBase* config){
     std::vector<std::unique_ptr<Properti>> daftarProperti;
@@ -214,6 +216,9 @@ std::vector<User> gameBuilder::buildPemain(configBase* config){
         User user(name,config->getSaldoAwal());
         pemain.push_back(user);
     }
+    std::random_device rd;
+    std::mt19937 generator(rd());
+    std::shuffle(pemain.begin(), pemain.end(), generator);
     return pemain;
 }
 
