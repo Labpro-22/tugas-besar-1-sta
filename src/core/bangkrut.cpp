@@ -10,6 +10,10 @@ bool Bangkrut::isPayable(const User& user, int amount) const{
 
 std::vector<Properti*> Bangkrut::executeBangkrut(User& debtor, User* creditor, Game* game){
     std::vector<Properti*> propertiUntukDilelang;
+
+    if (game != nullptr) {
+        game->leave(debtor);
+    }
     
     if (creditor != nullptr){
         transferToPlayer(debtor, *creditor);
@@ -17,6 +21,13 @@ std::vector<Properti*> Bangkrut::executeBangkrut(User& debtor, User* creditor, G
 
     else{
         propertiUntukDilelang = transferToBank(debtor);
+
+        if (game != nullptr) {
+            for (Properti* p : propertiUntukDilelang) {
+                std::cout << "\n[SITA BANK] Properti " << p->getNama() << " milik " << debtor.getUsername() << " disita dan akan dilelang!\n";
+                game->mulaiLelang(p, nullptr);
+            }
+        }
     }
 
     if (game != nullptr){

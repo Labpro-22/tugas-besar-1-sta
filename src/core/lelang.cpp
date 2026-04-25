@@ -62,10 +62,6 @@ void Lelang::pass(User* user) {
 bool Lelang::isEnd() {
     if (peserta.size() <= 1) return true; // Cuma 1/0 pemain sejak awal
     
-    // Jika belum ada yang bid (masih M0 awal), lelang batal jika SEMUA orang pass
-    if (isFirstBid && consecutivePasses >= (int)peserta.size()) {
-        return true;
-    }
     // Jika sudah ada yang bid, lelang dimenangkan jika SEMUA PEMAIN LAIN pass beruntun (N - 1)
     if (!isFirstBid && consecutivePasses >= (int)peserta.size() - 1) {
         return true;
@@ -114,26 +110,47 @@ void Lelang::mulaiLelang() {
 
     while (!this->isEnd()) {
         User* currentUser = this->getCurrentPlayer();
+
+        bool isMandatoryBid = (this->isFirstBid && this->consecutivePasses == (int)this->peserta.size() - 1);
+
+        if (isMandatoryBid) {
+            std::cout << "\n[WAJIB BID] Semua pemain lain telah PASS. Kamu WAJIB melakukan bid!\n";
+        }
         
         std::cout << "\nGiliran bid: " << currentUser->getUsername() << " (Uang: M" << currentUser->getUang() << ")\n";
+
+        if (!isFirstBid && highestBidder != nullptr) {
+            std::cout << "Pemimpin lelang saat ini: " << highestBidder->getUsername() << " (M" << currentHighestBid << ")\n";
+        }
+
         std::cout << "Ketik nominal untuk bid (atau ketik -1 untuk PASS): ";
         
         int nominal;
         std::cin >> nominal;
 
-        if (nominal == -1) {
-            this->pass(currentUser);
-            std::cout << currentUser->getUsername() << " memilih PASS.\n";
-            this->nextTurn(); // Lanjut ke pemain berikutnya
-        } else {
-            try {
+        try {
+            if (std::cin.fail()) {
+                std::cin.clear();
+                std::cin.ignore(10000, '\n');
+                throw InputTidakValidException();
+            }
+
+            if (nominal == -1) {
+                if (isMandatoryBid) {
+                    std::cout << "Kamu pemain terakhir! Tidak boleh PASS, wajib melakukan bid!\n";
+                    continue;
+                }
+                this->pass(currentUser);
+                std::cout << currentUser->getUsername() << " memilih PASS.\n";
+                this->nextTurn(); // Lanjut ke pemain berikutnya
+            } else { 
                 this->bid(currentUser, nominal);
                 std::cout << "[SUCCESS] " << currentUser->getUsername() << " memimpin lelang dengan bid M" << nominal << "!\n";
-                this->nextTurn(); // Lanjut ke pemain berikutnya jika sukses bid
-            } catch (const std::exception& e) {
-                std::cout << "[ERROR] " << e.what() << "\n";
-                std::cout << "Silakan masukkan bid yang valid atau PASS.\n";
-            }
+                this->nextTurn();
+            } 
+        } catch (const gameException& e) {
+            std::cout << "[ERROR] " << e.what() << "\n";
+            std::cout << "Silahkan coba lagi.\n";
         }
     }
 
