@@ -60,3 +60,14 @@ class LelangBelumSelesaiException : public gameException {
 public:
   LelangBelumSelesaiException(const std::string& msg = "Lelang masih berlangsung!") : gameException(msg) {}
 };
+
+// Exception saat angka dadu tidak valid
+class AngkaDaduTidakValidException : public gameException {
+public:
+  AngkaDaduTidakValidException(const std::string& msg = "Angka yang dimasukkan tidak valid! Angka yang valid (1-6).") : gameException(msg) {}
+};
+
+class InputTidakValidException : public gameException {
+public:
+  InputTidakValidException() : gameException("Input tidak valid, masukkan input dalam bentuk angka.") {}
+};

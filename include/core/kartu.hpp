@@ -4,12 +4,11 @@
 #include <iostream>
 #include "user.hpp"
 #include <iostream>
-#include <cstdlib>
-#include <ctime>
 #include <limits>
 #include <string>
 #include <vector>
 #include <random>
+#include <algorithm>
 
 class Game;
 
@@ -30,39 +29,50 @@ public:
     KartuAksi(std::string nama, std::string deskripsi);
     virtual ~KartuAksi() = default;
 };
+
+class KartuKesempatan : public KartuAksi {
+public:
+    KartuKesempatan(std::string nama, std::string deskripsi);
+};
+
+class KartuDanaUmum : public KartuAksi {
+public:
+    KartuDanaUmum(std::string nama, std::string deskripsi);
+};
+
 // Kesempatan
-class KartuStasiunTerdekat : public KartuAksi {
+class KartuStasiunTerdekat : public KartuKesempatan {
 public:
     KartuStasiunTerdekat();
     void apply(Game* game, User& user) override;
 };
 
-class KartuMundurTigaPetak : public KartuAksi {
+class KartuMundurTigaPetak : public KartuKesempatan {
 public:
     KartuMundurTigaPetak();
     void apply(Game* game, User& user) override;
 };
 
-class KartuMasukPenjara : public KartuAksi {
+class KartuMasukPenjara : public KartuKesempatan {
 public:
     KartuMasukPenjara();
     void apply(Game* game, User& user) override;
 };
 
 // Dana Umum
-class KartuHadiahUlangTahun : public KartuAksi {
+class KartuHadiahUlangTahun : public KartuDanaUmum {
 public:
     KartuHadiahUlangTahun();
     void apply(Game* game, User& user) override;
 };
 
-class KartuBiayaDokter : public KartuAksi {
+class KartuBiayaDokter : public KartuDanaUmum {
 public:
     KartuBiayaDokter();
     void apply(Game* game, User& user) override;
 };
 
-class KartuNyaleg : public KartuAksi {
+class KartuNyaleg : public KartuDanaUmum {
 public:
     KartuNyaleg();
     void apply(Game* game, User& user) override;
@@ -81,6 +91,7 @@ private:
 public:
     MoveCard();
     void apply(Game* game, User& user) override;
+    void randomize();
 };
 
 class DiscountCard : public KartuSpesial {
@@ -89,6 +100,7 @@ private:
 public:
     DiscountCard();
     void apply(Game* game, User& user) override;
+    void randomize();
 };
 
 class ShieldCard : public KartuSpesial {
@@ -122,7 +134,12 @@ private:
     std::vector<T*> drawPile;
     std::vector<T*> discardPile;
 public:
-    CardDeck() {}
+    CardDeck();
+    CardDeck(const CardDeck&) = delete;
+    CardDeck& operator=(const CardDeck&) = delete;
+    CardDeck(CardDeck&&) noexcept = default;
+    CardDeck& operator=(CardDeck&&) noexcept = default;
+
     ~CardDeck() {
         for(T* card : drawPile) delete card;
         for(T* card : discardPile) delete card;
@@ -157,9 +174,5 @@ public:
         }
     }
 };
-
-CardDeck<KartuAksi>& getKesempatanDeck();
-CardDeck<KartuAksi>& getDanaUmumDeck();
-CardDeck<KartuSpesial>& getSpesialDeck();
 
 #endif

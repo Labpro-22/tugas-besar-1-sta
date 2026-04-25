@@ -1,4 +1,6 @@
 #include "../../include/utils/builder.hpp"
+#include <algorithm>
+#include <random>
 
 std::vector<std::unique_ptr<Properti>> gameBuilder::buildProperti(configBase* config){
     std::vector<std::unique_ptr<Properti>> daftarProperti;
@@ -108,10 +110,26 @@ Board gameBuilder::buildBoard(configBase* config, const std::vector<std::unique_
             board.setPetak(petakIndex,petak);
         }
         else if (pro.getNama() == "Dana_Umum"){
-            
+            int petakIndex = pro.getId() - 1;
+            auto petak = std::make_shared<PetakKartu<KartuDanaUmum>>(
+                petakIndex,
+                pro.getKode(),
+                pro.getNama(),
+                pro.getJenis(),
+                pro.getWarna()
+            );
+            board.setPetak(petakIndex, petak);
         }
         else if (pro.getNama() == "Kesempatan"){
-
+            int petakIndex = pro.getId() - 1;
+            auto petak = std::make_shared<PetakKartu<KartuKesempatan>>(
+                petakIndex,
+                pro.getKode(),
+                pro.getNama(),
+                pro.getJenis(),
+                pro.getWarna()
+            );
+            board.setPetak(petakIndex, petak);
         }
         else if (pro.getNama() == "Pajak_Barang_Mewah"){
             int petakIndex = pro.getId() - 1;
@@ -214,6 +232,9 @@ std::vector<User> gameBuilder::buildPemain(configBase* config){
         User user(name,config->getSaldoAwal());
         pemain.push_back(user);
     }
+    std::random_device rd;
+    std::mt19937 generator(rd());
+    std::shuffle(pemain.begin(), pemain.end(), generator);
     return pemain;
 }
 

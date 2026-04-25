@@ -1,6 +1,6 @@
-#include "../include/core/game.hpp"
-#include "../include/utils/io.hpp"
-#include "../include/utils/builder.hpp"
+#include "core/game.hpp"
+#include "utils/builder.hpp"
+#include "utils/command.hpp"
 // === PERMAINAN MONOPOLI === 
 
 int main(){
@@ -19,21 +19,44 @@ int main(){
     std::cin >> option;
     Game Nimonspoli;
     if (option=="y") {
-        Nimonspoli;
+        Nimonspoli; // build.buildLoadGame(&config);
     }
     else {
         Nimonspoli = build.buildNewGame(&config);
     }
     
+    std::string command;
+    Command cmd;
+    bool loop;
+    int consecutiveDadu;
     // === Game Nimonspoli ===
     while (match){
+        loop = true;
+        consecutiveDadu = 0;
+        Nimonspoli.bagikanKartuSpesial(Nimonspoli.getPemain()[Nimonspoli.getCurrentPemainIndex()]);
         // Command Match
+        while (loop) {
+            std::cout << ">> " << std::flush;
+            std::getline(std::cin >> std::ws, command);
+            loop = cmd.execute(Nimonspoli.getPemain()[Nimonspoli.getCurrentPemainIndex()], command, Nimonspoli, consecutiveDadu);
+        }
+        Nimonspoli.getPemain()[Nimonspoli.getCurrentPemainIndex()].resetEfekKartuSpesial();
+
+        if (Nimonspoli.getCurrentPemainIndex() == static_cast<int>(Nimonspoli.getPemain().size()) - 1) {
+            Nimonspoli.nextturn();
+            match = !(Nimonspoli.isEnd());
+            if (match) {
+                Nimonspoli.nextPlayer();
+            }
+        } else {
+            Nimonspoli.nextPlayer();
+        }
         
-
-
         // Validasi Kalau jadi end
-        match = !(Nimonspoli.isEnd());
+        match = match && !(Nimonspoli.isEnd());
     }
+
+    // Hitung Pemenang
 
     std::cout << "==== GAME OVER ====";
 }

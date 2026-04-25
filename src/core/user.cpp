@@ -1,6 +1,8 @@
 #include "../../include/core/user.hpp"
 #include "../../include/core/board.hpp"
 #include "../../include/core/petak.hpp"
+#include "../../include/core/kartu.hpp"
+#include <limits>
 
 User::User() : username(""), uang(1500), koordinat(0), status(3), jailTurns(0) {}
 User::User(const std::string& username, int uangAwal)
@@ -155,6 +157,59 @@ bool User::hasMonopoli(const std::string& warna, int totalDiPapan) const {
   return counter == totalDiPapan;
 }
 
+void User::addKartuSpesial(KartuSpesial* kartu, CardDeck<KartuSpesial>* deck) {
+  if (kartu != nullptr) {
+    this->kartuSpesial.push_back(kartu);
+  }
+
+  if (this->kartuSpesial.size() > 3) {
+    KartuSpesial* kartuDibuang = dropKartuSpesial();
+    if (deck != nullptr) {
+      deck->discard(kartuDibuang);
+    } else {
+      delete kartuDibuang;
+    }
+  }
+}
+
+KartuSpesial* User::dropKartuSpesial() {
+  if (this->kartuSpesial.empty()) {
+    return nullptr;
+  }
+
+  std::cout << "\nPERINGATAN: Kamu sudah memiliki "
+            << this->kartuSpesial.size()
+            << " kartu kemampuan di tangan (maksimal 3).\n";
+  std::cout << "Kamu diwajibkan membuang 1 kartu.\n";
+  std::cout << "Daftar Kartu Kemampuan Anda:\n";
+  for (size_t i = 0; i < this->kartuSpesial.size(); ++i) {
+    std::cout << i + 1 << ". " << this->kartuSpesial[i]->getNama()
+              << " - " << this->kartuSpesial[i]->getDeskripsi() << "\n";
+  }
+
+  size_t pilihan = 0;
+  while (pilihan < 1 || pilihan > this->kartuSpesial.size()) {
+    std::cout << "Pilih nomor kartu yang ingin dibuang (1-"
+              << this->kartuSpesial.size() << "): ";
+    if (!(std::cin >> pilihan)) {
+      std::cin.clear();
+      std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+      pilihan = 0;
+    }
+  }
+
+  KartuSpesial* kartuDibuang = this->kartuSpesial[pilihan - 1];
+  this->kartuSpesial.erase(this->kartuSpesial.begin() + (pilihan - 1));
+  std::cout << kartuDibuang->getNama()
+            << " telah dibuang. Sekarang kamu memiliki "
+            << this->kartuSpesial.size() << " kartu di tangan.\n";
+  return kartuDibuang;
+}
+
+const std::vector<KartuSpesial*>& User::getKartuSpesial() const {
+  return kartuSpesial;
+}
+
 User& User::operator+=(int jumlahUang) {
   this->uang += jumlahUang;
   return *this;
@@ -225,6 +280,11 @@ void User::setShieldActive(bool active) {
 
 bool User::isShieldActive() const {
     return shieldActive;
+}
+
+void User::resetEfekKartuSpesial() {
+    this->activeDiscount = 0;
+    this->shieldActive = false;
 }
 
 LogEntry::LogEntry(int turn, std::string username, std::string jenisAksi, std::string detail)
