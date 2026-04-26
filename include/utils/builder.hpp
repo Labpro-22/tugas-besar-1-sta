@@ -1,6 +1,7 @@
 #ifndef BUILDER_HPP
 #define BUILDER_HPP
 #include "io.hpp"
+#include "mapDynamic.hpp"
 #include <memory>
 
 class gameBuilder{
@@ -13,6 +14,7 @@ private:
 
     std::vector<std::unique_ptr<Properti>> buildProperti(configBase* config);
     Board buildBoard(configBase* config, const std::vector<std::unique_ptr<Properti>>& sertifikat);
+    Board buildBoard(mapDynamic& mapDynamic, configBase* config, const std::vector<std::unique_ptr<Properti>>& sertifikat);
     std::vector<User> buildPemain(configBase* config);
     KartuSpesial* buildKartuSpesial(const std::string& jenis, int nilai);
 

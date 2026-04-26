@@ -4,9 +4,9 @@
 // === PERMAINAN MONOPOLI === 
 
 int main(){
-    std::cout << "Selamat Datang di Permainan Monopoli!" << std::endl;
+    std::cout << "===========Selamat Datang di Permainan Monopoli!==========" << std::endl;
     bool match = true;
-    std::cout << "Path untuk folder konfigurasi" << std::endl;
+    std::cout << "[Path untuk folder konfigurasi]" << std::endl;
     std::cout << "Masukkan Path: ";
 
     std::string path;
@@ -41,6 +41,7 @@ int main(){
     int consecutiveDadu;
     // === Game Nimonspoli ===
     while (match){
+        std::cout << "\n=== Giliran " << Nimonspoli.getPemain()[Nimonspoli.getCurrentPemainIndex()].getUsername() << " ===\n";  
         loop = true;
         consecutiveDadu = 0;
         User& pemainAktif = Nimonspoli.getPemain()[Nimonspoli.getCurrentPemainIndex()];
@@ -69,8 +70,7 @@ int main(){
         // Validasi Kalau jadi end
         match = match && !(Nimonspoli.isEnd());
     }
-
-    // Hitung Pemenang
-
-    std::cout << "==== GAME OVER ====";
+    std::cout << "==== GAME OVER ====\n";
+    // Tentukan pemenang
+    Nimonspoli.tentukanPemenang();
 }

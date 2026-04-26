@@ -1,0 +1,54 @@
+1
+15
+3
+Br 948 7 3 0 0 0 2
+DemolitionCard 0 0
+MoveCard 5 0
+Le 992 3 3 0 0 0 2
+DiscountCard 30 0
+LassoCard 0 0
+Ab 1000 0 3 0 0 0 2
+MoveCard 11 0
+TeleportCard 0 0
+PROPERTY_STATE 28
+GRT STREET - 0 1 0 0 0
+TSK STREET Br 1 2 3 0 0
+GBR RAILROAD - 0 1 0 0 0
+BGR STREET - 0 1 0 0 0
+DPK STREET - 0 1 0 0 0
+BKS STREET - 0 1 0 0 0
+MGL STREET - 0 1 0 0 0
+PLN UTILITY - 0 1 0 0 0
+SOL STREET - 0 1 0 0 0
+YOG STREET - 0 1 0 0 0
+STB RAILROAD - 0 1 0 0 0
+MAL STREET - 0 1 0 0 0
+SMG STREET - 0 1 0 0 0
+SBY STREET - 0 1 0 0 0
+MKS STREET - 0 1 0 0 0
+BLP STREET - 0 1 0 0 0
+MND STREET - 0 1 0 0 0
+TUG RAILROAD - 0 1 0 0 0
+PLB STREET - 0 1 0 0 0
+PKB STREET - 0 1 0 0 0
+PAM UTILITY - 0 1 0 0 0
+MED STREET - 0 1 0 0 0
+BDG STREET - 0 1 0 0 0
+DEN STREET - 0 1 0 0 0
+MTR STREET - 0 1 0 0 0
+GUB RAILROAD - 0 1 0 0 0
+JKT STREET - 0 1 0 0 0
+IKN STREET - 0 1 0 0 0
+DRAW MoveCard MoveCard DiscountCard LassoCard TeleportCard ShieldCard DemolitionCard DiscountCard ShieldCard
+DISCARD
+6
+0 Br Pergerakan Dadu: 2 & 1 | Mendarat di: TASIKMALAYA
+0 Br Beli Properti Membeli TASIKMALAYA seharga M60
+1 Br Pergerakan Dadu: 3 & 1 | Mendarat di: Festival
+1 Br Aktivasi Festival TASIKMALAYA | Multiplier: 2x
+1 Le Pergerakan Dadu: 2 & 1 | Mendarat di: TASIKMALAYA
+1 Le Bayar Sewa Sewa TASIKMALAYA milik Br sebesar M8
+2
+1
+0
+map.txt

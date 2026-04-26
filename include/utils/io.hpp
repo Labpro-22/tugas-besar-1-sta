@@ -129,6 +129,9 @@ private:
     std::vector<confProperti> propertiLengkap;
     StateDeck deckKartuSpesial;
     StateLog log;
+
+    // Tambahan
+    std::string dynamicMapFile;
 public:
     int getCurrentTurn() const { return currentTurn; }
     void setCurrentTurn(int value) { currentTurn = value; }
@@ -162,6 +165,9 @@ public:
 
     const StateLog& getLog() const { return log; }
     void setLog(const StateLog& value) { log = value; }
+
+    const std::string& getDynamicMapFile() const { return dynamicMapFile; }
+    void setDynamicMapFile(const std::string& value) { dynamicMapFile = value; }
 };
 
 class configBase {

@@ -1,6 +1,7 @@
 #include "../../include/utils/builder.hpp"
 #include <algorithm>
 #include <random>
+#include <limits>
 
 std::vector<std::unique_ptr<Properti>> gameBuilder::buildProperti(configBase* config){
     std::vector<std::unique_ptr<Properti>> daftarProperti;
@@ -307,7 +308,27 @@ std::map<std::string, std::vector<PetakProperti*>> gameBuilder::buildMapWarnaGro
 Game gameBuilder::buildNewGame (configBase* config){
     // Inisialisasi Config
     std::vector<std::unique_ptr<Properti>> daftarProperti = buildProperti(config);
-    Board board = buildBoard(config,daftarProperti);
+    std::cout << "Apakah ingin menggunakan dynamic map untuk menentukan posisi petak aksi? (y/n): ";
+    std::string useDynamicMap;
+    std::cin >> useDynamicMap;
+    std::string filename;
+    Board board;
+    if (useDynamicMap == "y" || useDynamicMap == "Y") {
+        mapDynamic map;
+        std::cout << "[TARUH DI FOLDER DATA/] Masukkan nama file dynamic map (misal: map1.txt): ";
+        std::cin >> filename;
+        std::string filepath = "data/" + filename;
+        try {
+            map.parseFile(filepath, *config);
+            board = buildBoard(map, config, daftarProperti);
+        } catch (const std::exception& e) {
+            std::cerr << "Gagal membangun board dengan dynamic map: " << e.what() << std::endl;
+            std::cerr << "Melanjutkan dengan build board tanpa dynamic map..." << std::endl;
+            board = buildBoard(config, daftarProperti);
+        }
+    }else{
+        board = buildBoard(config,daftarProperti);
+    }
     this->lokasiKode = buildMapKodeToPetak(board);
     this->lokasiColorGroup = buildMapWarnaGroup(board);
     std::vector<User> pemain = buildPemain(config);
@@ -315,23 +336,36 @@ Game gameBuilder::buildNewGame (configBase* config){
     // Atribut game
     Dadu dadu;
     int MAX_TURN = config->getMaxTurn();
-
+    if (MAX_TURN == -1){
+        MAX_TURN = std::numeric_limits<int>::max();
+    }
+    
     // Mapping
-    std::map<std::string, PetakProperti*> lokasiKode = buildMapKodeToPetak(board);
-    std::map<std::string, std::vector<PetakProperti*>> lokasiColorGroup = buildMapWarnaGroup(board);
+    this->lokasiKode = buildMapKodeToPetak(board);
+    this->lokasiColorGroup = buildMapWarnaGroup(board);
 
     Game game(MAX_TURN,0,false,pemain,std::move(daftarProperti),board,dadu,lokasiKode,lokasiColorGroup);
-    return game;
+    game.setDynamicMapFile((useDynamicMap == "y" || useDynamicMap == "Y") ? filename : "");
+    return game; 
 }
 
 Game gameBuilder::buildLoadGame(configBase* configB, const configLoadSave* configS){
+
     if (configB == nullptr || configS == nullptr) {
         throw gameException("Gagal load game: config base atau config load/save kosong.");
     }
 
     // 1. Konversi Config Base
     std::vector<std::unique_ptr<Properti>> daftarProperti = buildProperti(configB);
-    Board board = buildBoard(configB, daftarProperti);
+
+    const std::string& dynamicMapFile = configS->getDynamicMapFile();
+    if (!dynamicMapFile.empty()){
+        mapDynamic map;
+        map.parseFile("data/" + dynamicMapFile, *configB);
+        board = buildBoard(map, configB, daftarProperti);
+    } else{
+        Board board = buildBoard(configB, daftarProperti);
+    }
     std::map<std::string, PetakProperti*> lokasiKode = buildMapKodeToPetak(board);
     std::map<std::string, std::vector<PetakProperti*>> lokasiColorGroup = buildMapWarnaGroup(board);
 
@@ -479,4 +513,104 @@ Game gameBuilder::buildLoadGame(configBase* configB, const configLoadSave* confi
     game.setLog(loggers);
 
     return game;
+}
+
+Board gameBuilder::buildBoard(mapDynamic& mapDynamic, configBase* config, const std::vector<std::unique_ptr<Properti>>& sertifikat){
+    const std::vector<dynamicValue>& dynamicMap = mapDynamic.getMap();
+    Board board(dynamicMap.size());
+    
+    if (board.getSize() < 20 || board.getSize() > 60) {
+        throw gameException("Ukuran papan tidak valid: " + std::to_string(board.getSize()));
+    }
+
+    std::map<std::string, Properti*> sertifikatByKode;
+    for (const auto& prop : sertifikat) {
+        sertifikatByKode[prop->getKode()] = prop.get();
+    }
+
+    std::map<std::string, const AksiConfig*> aksiByKode;
+    for (const auto& aksi : config->getAksiConfig()) {
+        aksiByKode[aksi.getKode()] = &aksi;
+    }
+
+    for (const dynamicValue& val : dynamicMap) {
+        int petakIndex = val.index - 1;
+
+        if (val.jenis == "STREET" || val.jenis == "RAILROAD" || val.jenis == "UTILITY") {
+            auto it = sertifikatByKode.find(val.kode);
+            if (it == sertifikatByKode.end()) {
+                throw gameException("Sertifikat tidak ditemukan untuk kode: " + val.kode);
+            }
+
+            Properti* prop = it->second;
+
+            if (Street* street = dynamic_cast<Street*>(prop)) {
+                board.setPetak(petakIndex, std::make_shared<PetakLahan>(
+                    petakIndex, val.kode, street->getNama(), "Lahan", street, street->getWarna()
+                ));
+            } else if (RailRoad* rail = dynamic_cast<RailRoad*>(prop)) {
+                board.setPetak(petakIndex, std::make_shared<PetakStasiun>(
+                    petakIndex, val.kode, rail->getNama(), "Stasiun", rail, rail->getWarna()
+                ));
+            } else if (Utility* utility = dynamic_cast<Utility*>(prop)) {
+                board.setPetak(petakIndex, std::make_shared<PetakUtilitas>(
+                    petakIndex, val.kode, utility->getNama(), "Utilitas", utility, utility->getWarna()
+                ));
+            }
+
+        } else {
+            // Petak Aksi — posisi dari dynamic map, konfigurasi dari aksi.txt
+            auto it = aksiByKode.find(val.kode);
+            if (it == aksiByKode.end()) {
+                throw gameException("Kode aksi tidak ditemukan di config: " + val.kode);
+            }
+
+            const AksiConfig& pro = *(it->second);
+
+            if (pro.getNama() == "Festival") {
+                board.setPetak(petakIndex, std::make_shared<PetakFestival>(
+                    petakIndex, pro.getKode(), pro.getNama(), pro.getJenis(), pro.getWarna()
+                ));
+            } else if (pro.getNama() == "Dana_Umum") {
+                board.setPetak(petakIndex, std::make_shared<PetakKartu<KartuDanaUmum>>(
+                    petakIndex, pro.getKode(), pro.getNama(), pro.getJenis(), pro.getWarna()
+                ));
+            } else if (pro.getNama() == "Kesempatan") {
+                board.setPetak(petakIndex, std::make_shared<PetakKartu<KartuKesempatan>>(
+                    petakIndex, pro.getKode(), pro.getNama(), pro.getJenis(), pro.getWarna()
+                ));
+            } else if (pro.getNama() == "Pajak_Barang_Mewah") {
+                board.setPetak(petakIndex, std::make_shared<PetakPBM>(
+                    petakIndex, pro.getKode(), pro.getNama(), pro.getJenis(), pro.getWarna(),
+                    config->getPbmFlat()
+                ));
+            } else if (pro.getNama() == "Pajak_Penghasilan") {
+                board.setPetak(petakIndex, std::make_shared<PetakPPH>(
+                    petakIndex, pro.getKode(), pro.getNama(), pro.getJenis(), pro.getWarna(),
+                    config->getPphFlat(), config->getPphPersentase()
+                ));
+            } else if (pro.getNama() == "Petak_Mulai") {
+                board.setPetak(petakIndex, std::make_shared<PetakGo>(
+                    petakIndex, pro.getKode(), pro.getNama(), pro.getJenis(), pro.getWarna(),
+                    config->getGoSalary()
+                ));
+            } else if (pro.getNama() == "Penjara") {
+                board.setPetak(petakIndex, std::make_shared<PetakPenjara>(
+                    petakIndex, pro.getKode(), pro.getNama(), pro.getJenis(), pro.getWarna(),
+                    config->getJailFine()
+                ));
+            } else if (pro.getNama() == "Bebas_Parkir") {
+                board.setPetak(petakIndex, std::make_shared<PetakBebasParkir>(
+                    petakIndex, pro.getKode(), pro.getNama(), pro.getJenis(), pro.getWarna()
+                ));
+            } else if (pro.getNama() == "Petak_Pergi_ke_Penjara") {
+                board.setPetak(petakIndex, std::make_shared<PetakPergiPenjara>(
+                    petakIndex, pro.getKode(), pro.getNama(), pro.getJenis(), pro.getWarna()
+                ));
+            } else {
+                throw gameException("Jenis petak aksi tidak dikenali: " + pro.getNama());
+            }
+        }
+    }
+    return board;
 }

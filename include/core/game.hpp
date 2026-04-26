@@ -35,6 +35,9 @@ private:
     // Mapping
     std::map<std::string, PetakProperti*> lokasiKode; // Kode -> Petak
     std::map<std::string, std::vector<PetakProperti*>> lokasiColorGroup; // Color X -> Semua Petak dengan color X
+
+    // Tambahan 
+    std::string dynamicMapFile;
 public:
     Game();
     Game(int Maxturn);
@@ -63,6 +66,7 @@ public:
     const CardDeck<KartuSpesial>& getDeckKartuSpesial() const;
     std::vector<std::unique_ptr<Properti>>& getDaftarProperti();
     const std::vector<std::unique_ptr<Properti>>& getDaftarProperti() const;
+    std::string getDynamicFile() const;
 
     int getCurrentPemainIndex() const;
     bool isKartuSpesialSudahDibagikanGiliranIni() const;
@@ -83,6 +87,7 @@ public:
     bool handleJailTurn(User& user);
     void sendPlayerToJail(User& user);
     void leave(User& user);
+    void setDynamicMapFile(const std::string& file);
 
     // Method 
     void move(int langkah, User& user);
@@ -91,8 +96,7 @@ public:
     void prosesTebus(User& user, Properti* properti);
     void prosesBangun(Properti* properti);
     void prosesPakaiKartu(User& user, KartuSpesial* kartu);
-    void prosesLoad();
-    void prosesSave();
+    void tentukanPemenang();
 };
 
 #endif

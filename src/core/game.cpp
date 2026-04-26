@@ -382,10 +382,69 @@ void Game::prosesPakaiKartu(User& user, KartuSpesial* kartu) {
     sudahPakaiKartuKemampuan = true;
 }
 
-void Game::prosesLoad() {
-    // Implementasi proses load
+void Game::tentukanPemenang() {
+    std::vector<User*> candidates;
+
+    int maxMoney = -1;
+    for (const auto& user : pemain) {
+        if (!user.isBankrupt()) {
+            if (user.getUang() > maxMoney) {
+                maxMoney = user.getUang();
+                candidates.clear();
+                candidates.push_back(const_cast<User*>(&user));
+            } else if (user.getUang() == maxMoney) {
+                candidates.push_back(const_cast<User*>(&user));
+            }
+        }
+    }
+
+    if (candidates.size() == 1) {
+        std::cout << "=== SELAMAT! ===\n";
+        std::cout << "Pemenang: " << candidates[0]->getUsername() << std::endl;
+        return;
+    }
+
+    int maxProps = -1;
+    std::vector<User*> newCandidates;
+    for (auto* user : candidates) {
+        int props = user->getListProperti().size();
+        if (props > maxProps) {
+            maxProps = props;
+            newCandidates.clear();
+            newCandidates.push_back(user);
+        } else if (props == maxProps) {
+            newCandidates.push_back(user);
+        }
+    }
+    candidates = newCandidates;
+
+    if (candidates.size() == 1) {
+        std::cout << "=== SELAMAT! ===\n";
+        std::cout << "Pemenang: " << candidates[0]->getUsername() << std::endl;
+        return;
+    }
+
+    int maxCards = -1;
+    newCandidates.clear();
+    for (auto* user : candidates) {
+        int cards = user->getKartuSpesial().size();
+        if (cards > maxCards) {
+            maxCards = cards;
+            newCandidates.clear();
+            newCandidates.push_back(user);
+        } else if (cards == maxCards) {
+            newCandidates.push_back(user);
+        }
+    }
+    candidates = newCandidates;
+
+    std::cout << "=== SELAMAT! ===\n";
+    std::cout << "Pemenang: ";
+    for (size_t i = 0; i < candidates.size(); ++i) {
+        std::cout << i <<". " << candidates[i]->getUsername() << std::endl;
+    }
+    std::cout << std::endl;
 }
 
-void Game::prosesSave() {
-    // Implementasi proses save
-}
+std::string Game::getDynamicFile() const {return dynamicMapFile;}
+void Game::setDynamicMapFile(const std::string& file) { dynamicMapFile = file; }

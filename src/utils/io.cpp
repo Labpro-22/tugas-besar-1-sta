@@ -661,6 +661,14 @@ void configBase::load(const std::string& pathLoad) {
         }
     }
 
+    if (std::getline(loadFile, extraLine)) {
+        extraLine.erase(0, extraLine.find_first_not_of(" \t\r\n"));
+        extraLine.erase(extraLine.find_last_not_of(" \t\r\n") + 1);
+        if (!extraLine.empty() && extraLine != "-") {
+            loadedConfig.setDynamicMapFile(extraLine);
+        }
+    }
+
     setLoadSaveConfig(loadedConfig);
 
     // MAX_TURN ada di configLoadSave, jadi harus overwrite config base.
@@ -818,4 +826,5 @@ void configBase::save(const std::string &pathSave , const Game& game){
     saveFile << output.getCurrentPemainIndex() << '\n';
     saveFile << (output.getKartuSpesialSudahDibagikan() ? 1 : 0) << '\n';
     saveFile << (output.getSudahPakaiKartuKemampuan() ? 1 : 0) << '\n';
+    saveFile << (game.getDynamicFile().empty() ? "-" : game.getDynamicFile()) << '\n';
 }
