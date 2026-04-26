@@ -203,17 +203,24 @@ void Game::move(int langkah, User& user) {
 
 void Game::prosesGadai(User& user, Properti* properti) {
     // Implementasi proses gadai
-    // 1. Beri list properti yang bisa digadaikan (status Owned) Jika masih ada bangunan di color group, tidak bisa digadaikan. -> Jadinya langsung di command
-    
+    if (properti == nullptr) {
+        throw SyaratPropertiInvalidException("Gagal Gadai: Properti tidak valid!");
+    }
+    if (properti->getOwner() != &user) {
+        throw BukanPemilikException("Gagal Gadai: Properti ini bukan milik pemain aktif!");
+    }
     properti->gadaikan();
 }
 
 void Game::prosesTebus(User& user, Properti* properti) {
     // Implementasi proses tebus
-    /*
-        1. Traversal semua properti yang bisa ditebus (status Mortgaged) dan tampilkan ke user. Jadinya langsung di command
-        2. User pilih properti yang mau ditebus, jika uang cukup, proses tebus berhasil, jika tidak cukup, tampilkan pesan error
-    */
+    if (properti == nullptr) {
+        throw SyaratPropertiInvalidException("Gagal Tebus: Properti tidak valid!");
+    }
+    if (properti->getOwner() != &user) {
+        throw BukanPemilikException("Gagal Tebus: Properti ini bukan milik pemain aktif!");
+    }
+    properti->tebus();
 }
 
 void Game::prosesBangun(Properti* properti) {

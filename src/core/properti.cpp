@@ -226,7 +226,8 @@ void Street::gadaikan() {
   int duitGusur = 0;
   for (Street* otherPetak : this->owner->getStreetByColor(this->warna)) {
     if (otherPetak->hasHotel) {
-      duitGusur += (otherPetak->getHargaBangunan() * 5) * 0.5;
+      duitGusur += (otherPetak->getHargaBangunan() * 4) * 0.5;
+      duitGusur += (otherPetak->getHargaHotel()) * 0.5;
       otherPetak->hasHotel = false;
       otherPetak->jumlahRumah = 0;
     } else if (otherPetak->getJumlahBangunan() > 0) {

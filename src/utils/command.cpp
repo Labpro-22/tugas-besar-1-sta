@@ -80,15 +80,24 @@ bool Command::execute(User& user, const std::string& input, Game& game, int& con
     else if (first == "GADAI"){
         // Tampilin Daftar Properti 
         std::cout << "=== Properti yang Dapat Digadaikan ===\n";
-        int num = 1;
+        int num = 1, index = 0;
+        std::vector<int> indexes;
         for (Properti* prop : user.getListProperti()) {
-            std::cout << num << ". " << prop->getNama() << " (" << prop->getKode() << ")" << "[" << prop->getWarna() << "]" << "Nilai Gadai: " << prop->getNilaiGadai() << "\n";
-            num++;
+            if (prop != nullptr && prop->getStatus() == PropStatus::OWNED) {
+                std::cout << num << ". " << prop->getNama() << " (" << prop->getKode() << ")" << "[" << prop->getWarna() << "]" << "Nilai Gadai: " << prop->getNilaiGadai() << "\n";
+                indexes.push_back(index);
+                num++;
+            }
+            index++;
+        }
+        if (indexes.empty()) {
+            std::cout << "Tidak ada properti yang dapat digadaikan.\n";
+            return true;
         }
         std::cout << "Uang kamu saat ini: M" << user.getUang() << "\n" << "Pilih nomor properti (0 untuk batal): ";
         int pilihan;
         std::cin >> pilihan;
-        while (pilihan < 0 || pilihan > static_cast<int>(user.getListProperti().size())) {
+        while (pilihan < 0 || pilihan > static_cast<int>(indexes.size())) {
             std::cout << "Pilihan tidak valid.\n";
             std::cout << "Pilih nomor properti: ";
             std::cin >> pilihan;
@@ -97,7 +106,12 @@ bool Command::execute(User& user, const std::string& input, Game& game, int& con
             std::cout << "Gadai dibatalkan.\n";
             return true;
         }
-        game.prosesGadai(user, user.getListProperti()[pilihan - 1]);
+        try {
+            game.prosesGadai(user, user.getListProperti()[indexes[pilihan - 1]]);
+            std::cout << "Properti berhasil digadaikan.\n";
+        } catch (const std::exception& e) {
+            std::cout << "[ERROR] " << e.what() << "\n";
+        }
         return true;
     }
     else if (first == "TEBUS"){
@@ -107,7 +121,7 @@ bool Command::execute(User& user, const std::string& input, Game& game, int& con
         std::vector<int> indexes;
         for (Properti* prop : user.getListProperti()) {
             if (prop->getStatus() == PropStatus::MORTGAGED) {
-                std::cout << num << ". " << prop->getNama() << " (" << prop->getKode() << ")" << "[" << prop->getWarna() << "]" << "Nilai Tebus: " << prop->getNilaiGadai() << "\n";
+                std::cout << num << ". " << prop->getNama() << " (" << prop->getKode() << ")" << "[" << prop->getWarna() << "]" << "Nilai Tebus: " << prop->getHargaBeli() << "\n";
                 indexes.push_back(index);
                 num++;
             }
@@ -130,7 +144,12 @@ bool Command::execute(User& user, const std::string& input, Game& game, int& con
             std::cout << "Tebus dibatalkan.\n";
             return true;
         }
-        game.prosesTebus(user, user.getListProperti()[indexes[pilihan - 1]]);
+        try {
+            game.prosesTebus(user, user.getListProperti()[indexes[pilihan - 1]]);
+            std::cout << "Properti berhasil ditebus.\n";
+        } catch (const std::exception& e) {
+            std::cout << "[ERROR] " << e.what() << "\n";
+        }
         return true;
     }
     else if (first == "BANGUN"){
