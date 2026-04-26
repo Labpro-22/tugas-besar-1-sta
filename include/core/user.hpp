@@ -81,7 +81,8 @@ public:
     KartuSpesial* dropKartuSpesial();
     KartuSpesial* removeKartuSpesial(KartuSpesial* kartu);
     void setKartuSpesial(const std::vector<KartuSpesial*>& kartu);
-    
+    int hitungTagihanSetelahEfekKartu(int tagihan, bool pembayaranSewa);
+
     // Aksi - Penjara
     void sendToJail(int jailIndex);
     void releaseFromJail();

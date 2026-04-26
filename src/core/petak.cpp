@@ -1,6 +1,7 @@
 #include "../../include/core/petak.hpp"
 #include "../../include/core/user.hpp"
 #include "../../include/core/game.hpp"
+#include "views/propertyView.hpp"
 
 namespace {
     int hitungTagihanSetelahEfekKartu(User* user, int tagihan, bool pembayaranSewa) {
@@ -85,10 +86,14 @@ void PetakLahan::bayarSewa(User* user, Game* game) {
         throw BukanPemilikException();
     }
     int biayaSewa = sertifikat->hitungSewa(0); // * sertifikat->getFestivalMultiplier();
-    biayaSewa = hitungTagihanSetelahEfekKartu(user, biayaSewa, true);
+    biayaSewa = user->hitungTagihanSetelahEfekKartu(biayaSewa, true);
     if (biayaSewa == 0) {
         return;
     }
+
+    std::cout << "Sewa: " << sertifikat->getNama()
+              << " (" << sertifikat->getKode() << ")\n";
+    std::cout << "Harga sewa: M" << biayaSewa << "\n";
 
     if (game != nullptr) {
         game->prosesPembayaran(*user, sertifikat->getOwner(), biayaSewa);
@@ -102,7 +107,10 @@ void PetakLahan::bayarSewa(User* user, Game* game) {
 }
 void PetakLahan::onLanded(User* user, Game* game) {
     if (sertifikat->getStatus()==PropStatus::BANK){
-        // Print Akta Kepemilikan
+        PropertyView::cetakAkta(sertifikat);
+        std::cout << "Properti: " << sertifikat->getNama()
+                  << " (" << sertifikat->getKode() << ")\n";
+        std::cout << "Harga beli: M" << sertifikat->getHargaBeli() << "\n";
         std::cout << "Apakah anda mau membelinya (y/n)";
         std::string input = "belum";
         while (input != "y" && input != "n") {
@@ -132,6 +140,7 @@ void PetakLahan::onLanded(User* user, Game* game) {
 
     else if ((sertifikat->getStatus()==PropStatus::OWNED) && sertifikat->getOwner()!=user){
         std::cout << "[INFO] Properti dimiliki oleh " << sertifikat->getOwner()->getUsername() << ".\n";
+        PropertyView::cetakAkta(sertifikat);
         std::cout << "Waktunya bayar sewa!\n";
         try {
             bayarSewa(user, game);
@@ -160,10 +169,14 @@ PetakStasiun::~PetakStasiun() {}
 void PetakStasiun::bayarSewa(User* user, Game* game) {
     RailRoad* stasiun = dynamic_cast<RailRoad*>(sertifikat);
     int biayaSewa = stasiun->hitungSewa(0);
-    biayaSewa = hitungTagihanSetelahEfekKartu(user, biayaSewa, true);
+    biayaSewa = user->hitungTagihanSetelahEfekKartu(biayaSewa, true);
     if (biayaSewa == 0) {
         return;
     }
+
+    std::cout << "Sewa: " << sertifikat->getNama()
+              << " (" << sertifikat->getKode() << ")\n";
+    std::cout << "Harga sewa: M" << biayaSewa << "\n";
 
     if (game != nullptr) {
         game->prosesPembayaran(*user, sertifikat->getOwner(), biayaSewa);
@@ -177,11 +190,16 @@ void PetakStasiun::bayarSewa(User* user, Game* game) {
 }
 void PetakStasiun::onLanded(User* user, Game* game) {
     if (sertifikat->getStatus()==PropStatus::BANK){
+        PropertyView::cetakAkta(sertifikat);
+        std::cout << "Properti: " << sertifikat->getNama()
+                  << " (" << sertifikat->getKode() << ")\n";
+        std::cout << "Harga beli: M" << sertifikat->getHargaBeli() << "\n";
         std::cout << "Kamu mendapatkan stasiun kereta api "<< getName() << "!\n";
         sertifikat->setOwner(user);
         sertifikat->setStatus(PropStatus::OWNED);
     }else if ((sertifikat->getStatus()==PropStatus::OWNED) && sertifikat->getOwner()!=user){
         std::cout << "[INFO] Properti dimiliki oleh " << sertifikat->getOwner()->getUsername() << ".\n";
+        PropertyView::cetakAkta(sertifikat);
         std::cout << "Waktunya bayar sewa!\n";
         try {
             bayarSewa(user, game);
@@ -203,10 +221,14 @@ PetakUtilitas::~PetakUtilitas() {}
 void PetakUtilitas::bayarSewa(User* user, Game* game) {
     Utility* utilitas = dynamic_cast<Utility*>(sertifikat);
     int biayaSewa = utilitas->hitungSewa(game->getDadu()->getTotal());
-    biayaSewa = hitungTagihanSetelahEfekKartu(user, biayaSewa, true);
+    biayaSewa = user->hitungTagihanSetelahEfekKartu(biayaSewa, true);
     if (biayaSewa == 0) {
         return;
     }
+
+    std::cout << "Sewa: " << sertifikat->getNama()
+              << " (" << sertifikat->getKode() << ")\n";
+    std::cout << "Harga sewa: M" << biayaSewa << "\n";
 
     if (game != nullptr) {
         game->prosesPembayaran(*user, sertifikat->getOwner(), biayaSewa);
@@ -220,11 +242,16 @@ void PetakUtilitas::bayarSewa(User* user, Game* game) {
 }
 void PetakUtilitas::onLanded(User* user, Game* game) {
     if (sertifikat->getStatus()==PropStatus::BANK){
+        PropertyView::cetakAkta(sertifikat);
+        std::cout << "Properti: " << sertifikat->getNama()
+                  << " (" << sertifikat->getKode() << ")\n";
+        std::cout << "Harga beli: M" << sertifikat->getHargaBeli() << "\n";
         std::cout << "Kamu mendapatkan utilitas "<< getName() << "!\n";
         sertifikat->setOwner(user);
         sertifikat->setStatus(PropStatus::OWNED);
     }else if ((sertifikat->getStatus()==PropStatus::OWNED) && sertifikat->getOwner()!=user){
         std::cout << "[INFO] Properti dimiliki oleh " << sertifikat->getOwner()->getUsername() << ".\n";
+        PropertyView::cetakAkta(sertifikat);
         std::cout << "Waktunya bayar sewa!\n";
         try {
             bayarSewa(user, game);
@@ -350,14 +377,14 @@ void PetakPPH::bayarPajak(User& user, Game* game) {
     }
     int tagihanPajak;
     if (pilihan == 1) {
-        tagihanPajak = hitungTagihanSetelahEfekKartu(&user, static_cast<int>(pajakFlat), false);   
+        tagihanPajak = user.hitungTagihanSetelahEfekKartu(static_cast<int>(pajakFlat), false);   
     } else {
         float totalKekayaan = user.getTotalKekayaan(); 
         float pajakPersentase = totalKekayaan * (pajakPercent / 100.0f);
         
         std::cout << "[INFO] Total aset: M" << totalKekayaan << " | Potongan: M" << pajakPersentase << "\n";
 
-        tagihanPajak = hitungTagihanSetelahEfekKartu(&user, static_cast<int>(pajakPersentase), false);
+        tagihanPajak = user.hitungTagihanSetelahEfekKartu(static_cast<int>(pajakPersentase), false);
     }
 
     if (tagihanPajak == 0) {
@@ -386,7 +413,7 @@ void PetakPBM::onLanded(User* user, Game* game) {
     bayarPajak(*user, game);
 }
 void PetakPBM::bayarPajak(User& user, Game* game) {
-    const int tagihanPajak = hitungTagihanSetelahEfekKartu(&user, static_cast<int>(pajakFlat), false);
+    const int tagihanPajak = user.hitungTagihanSetelahEfekKartu(static_cast<int>(pajakFlat), false);
     if (tagihanPajak == 0) {
         std::cout << "[SUCCESS] Pajak dibatalkan oleh ShieldCard.\n";
         return;

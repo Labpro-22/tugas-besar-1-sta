@@ -275,7 +275,29 @@ void User::incrementJailTurns() {
     }
 }
 
+int User::hitungTagihanSetelahEfekKartu(int tagihan, bool pembayaranSewa) {
+    if (this == nullptr || tagihan <= 0) {
+        return tagihan;
+    }
 
+    if (this->isShieldActive()) {
+        std::cout << "[KARTU] ShieldCard aktif. Tagihan M" << tagihan
+                  << " dibatalkan.\n";
+        return 0;
+    }
+
+    if (pembayaranSewa && this->getActiveDiscount() > 0) {
+        const int diskon = this->getActiveDiscount();
+        const int potongan = tagihan * diskon / 100;
+        const int tagihanAkhir = tagihan - potongan;
+        std::cout << "[KARTU] DiscountCard aktif. Sewa M" << tagihan
+                  << " mendapat diskon " << diskon
+                  << "% menjadi M" << tagihanAkhir << ".\n";
+        return tagihanAkhir;
+    }
+
+    return tagihan;
+}
 
 
 Properti* User::getPropertiByKode(const std::string& kode) {

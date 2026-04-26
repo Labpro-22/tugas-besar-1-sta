@@ -71,12 +71,24 @@ std::vector<Properti*> Bangkrut::executeBangkrut(User& debtor, User* creditor, G
 }
 
 void Bangkrut::transferToPlayer(User& debtor, User& creditor){ // Bangkrut ke pemain lain
+    std::cout << "\n=== TRANSFER ASET BANGKRUT ===\n";
+    std::cout << debtor.getUsername() << " bangkrut kepada " << creditor.getUsername() << ".\n";
+    std::cout << creditor.getUsername() << " menerima uang M" << debtor.getUang() << ".\n";
+
     creditor += (debtor.getUang());
     debtor -= (debtor.getUang());
 
     std::vector<Properti*> copyList = debtor.getListProperti();
     for (Properti* p : copyList) {
         if (p != nullptr) {
+            std::cout << "Properti berpindah: " << p->getNama()
+                      << " (" << p->getKode() << ")";
+            if (p->getStatus() == PropStatus::MORTGAGED) {
+                std::cout << " [MORTGAGED - status gadai ikut ditanggung penerima]";
+            } else if (p->getStatus() == PropStatus::OWNED) {
+                std::cout << " [OWNED]";
+            }
+            std::cout << "\n";
             p->setOwner(&creditor); 
         }
     }

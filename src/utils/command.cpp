@@ -41,17 +41,40 @@ bool Command::execute(User& user, const std::string& input, Game& game, int& con
         if (game.getDadu()->isDouble()) consecutiveDadu += 1;
         else consecutiveDadu -= 1;
 
+        const int langkah = game.getDadu()->getTotal();
+        const int posisiAwal = user.getKoordinat();
+        const int ukuranPapan = game.getBoard()->getSize();
+        const int tujuanNormal = ukuranPapan > 0 ? (posisiAwal + langkah) % ukuranPapan : posisiAwal;
+        Petak* petakTujuanNormal = game.getBoard()->getPetakAt(tujuanNormal);
+
+        std::cout << "Hasil dadu: " << game.getDadu()->getAngka1()
+                  << " + " << game.getDadu()->getAngka2()
+                  << " = " << langkah << "\n";
+        std::cout << "Berjalan: " << langkah << " langkah\n";
+
         if (consecutiveDadu >= 3) {
             const bool shieldAktif = user.isShieldActive();
             game.sendPlayerToJail(user);
             if (shieldAktif) {
                 std::cout << "Anda melempar dadu 3 kali berturut-turut, tetapi ShieldCard menahan efek masuk penjara.\n";
+                Petak* petakAkhir = game.getBoard()->getPetakAt(user.getKoordinat());
+                std::cout << "Tujuan akhir: "
+                          << (petakAkhir != nullptr ? petakAkhir->getName() : "Tidak diketahui")
+                          << " (index " << user.getKoordinat() << ")\n";
             } else {
                 std::cout << "Anda melempar dadu 3 kali berturut-turut! Anda dikirim ke penjara.\n";
+                Petak* petakAkhir = game.getBoard()->getPetakAt(user.getKoordinat());
+                std::cout << "Tujuan akhir: "
+                          << (petakAkhir != nullptr ? petakAkhir->getName() : "Penjara")
+                          << " (index " << user.getKoordinat() << ")\n";
             }
             return false;
         }
-        user.move(game.getDadu()->getTotal(),game.getBoard());
+
+        std::cout << "Tujuan akhir: "
+                  << (petakTujuanNormal != nullptr ? petakTujuanNormal->getName() : "Tidak diketahui")
+                  << " (index " << tujuanNormal << ")\n";
+        user.move(langkah,game.getBoard());
         game.getBoard()->getPetakAt(user.getKoordinat())->onLanded(&user, &game);
         game.getDadu()->reset();
         return true;

@@ -6,7 +6,7 @@
 int main(){
     std::cout << "Selamat Datang di Permainan Monopoli!" << std::endl;
     bool match = true;
-    std::cout << "Path untuk folder konfigurasi (Ketik default jika ditaruh di dalam folder data sesuai dengan ketentuan pada readme)" << std::endl;
+    std::cout << "Path untuk folder konfigurasi" << std::endl;
     std::cout << "Masukkan Path: ";
 
     std::string path;
