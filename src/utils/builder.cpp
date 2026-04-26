@@ -36,10 +36,7 @@ std::vector<std::unique_ptr<Properti>> gameBuilder::buildProperti(configBase* co
                 pro.getNilaiGadai(), pro.getWarna(), utilityFactor);
             daftarProperti.push_back(std::move(prop));
         }else {
-            // Case Else - dibuat jadi Utility aja
-            auto prop = std::make_unique<Utility>(pro.getId(), pro.getKode(), pro.getNama(), pro.getHargaLahan(),
-                pro.getNilaiGadai(), pro.getWarna(), utilityFactor);
-            daftarProperti.push_back(std::move(prop));
+            throw gameException("Jenis properti tidak dikenali: " + pro.getJenis() + " untuk kode " + pro.getKode());
         }
     }
 
@@ -51,7 +48,7 @@ Board gameBuilder::buildBoard(configBase* config, const std::vector<std::unique_
     Board board(config->getPropertyConfig().size() + config->getAksiConfig().size());
 
     if (board.getSize()<20 || board.getSize()>60) {
-        // GAGAL NGEBUAT!!! "Throw"
+        throw gameException("Ukuran papan tidak valid: " + std::to_string(board.getSize()) + ". Ukuran harus berada pada rentang 20-60 petak.");
     }
 
     // Petak Properti
@@ -203,8 +200,7 @@ Board gameBuilder::buildBoard(configBase* config, const std::vector<std::unique_
             board.setPetak(petakIndex,petak);
         }
         else{
-            // [CHANGE] into throw
-            std::cout<< "[Config Error] Jenis " << pro.getNama() << " itu salah\n";
+            throw gameException("Jenis petak aksi tidak dikenali: " + pro.getNama() + " untuk kode " + pro.getKode());
         }
 
     }
