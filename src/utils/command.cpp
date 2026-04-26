@@ -384,6 +384,10 @@ bool Command::execute(User& user, const std::string& input, Game& game, int& con
     else if (first == "SELESAI"){
         return false;
     }
+    else if (first == "CEK"){
+        game.cekUang();
+        return true;
+    }
     else if (first == "HELP"){
         std::cout << "Daftar Perintah:\n";
         std::cout << "1. CETAK_PAPAN - Menampilkan papan permainan\n";
@@ -396,10 +400,11 @@ bool Command::execute(User& user, const std::string& input, Game& game, int& con
         std::cout << "8. SELESAI - Mengakhiri permainan\n";
         std::cout << "9. HELP - Menampilkan daftar perintah\n";
         std::cout << "10. CETAK_AKTA - Menampilkan akta kepemilikan properti\n";
-        std::cout << "11. CETAK_PROPERTI- Menampilkan properti yang dimiliki pemain\n";
+        std::cout << "11. CETAK_PROPERTI <nama_user>- Menampilkan properti yang dimiliki pemain\n";
         std::cout << "12. GADAI - Menggadaikan properti yang dimiliki\n";
         std::cout << "13. TEBUS - Menebus properti yang sedang digadaikan\n";
         std::cout << "14. BANGUN - Membangun rumah atau hotel di properti yang dimiliki\n";
+        std::cout << "15. CEK - Mengecek keuangan diri sendiri dan pemain lain.\n";
         return true;
     }
     else if (first == "KELUAR"){

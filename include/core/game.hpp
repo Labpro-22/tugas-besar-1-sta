@@ -97,6 +97,7 @@ public:
     void prosesBangun(Properti* properti);
     void prosesPakaiKartu(User& user, KartuSpesial* kartu);
     void tentukanPemenang();
+    void cekUang();
 };
 
 #endif

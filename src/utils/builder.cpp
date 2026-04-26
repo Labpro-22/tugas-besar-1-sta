@@ -364,7 +364,7 @@ Game gameBuilder::buildLoadGame(configBase* configB, const configLoadSave* confi
         map.parseFile("data/" + dynamicMapFile, *configB);
         board = buildBoard(map, configB, daftarProperti);
     } else{
-        Board board = buildBoard(configB, daftarProperti);
+        board = buildBoard(configB, daftarProperti);
     }
     std::map<std::string, PetakProperti*> lokasiKode = buildMapKodeToPetak(board);
     std::map<std::string, std::vector<PetakProperti*>> lokasiColorGroup = buildMapWarnaGroup(board);

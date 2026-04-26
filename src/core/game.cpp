@@ -1,6 +1,7 @@
 #include "core/game.hpp"
 #include "core/bangun.hpp"
 #include "core/bangkrut.hpp"
+#include <limits>
 #include <utility>
 
 Game::Game() : MAX_TURN(100), turn(1), end(false), currentPemain(0), sudahBagikanKartuSpesial(false), sudahPakaiKartuKemampuan(false) {} // Asumsi default batas giliran
@@ -448,3 +449,60 @@ void Game::tentukanPemenang() {
 
 std::string Game::getDynamicFile() const {return dynamicMapFile;}
 void Game::setDynamicMapFile(const std::string& file) { dynamicMapFile = file; }
+
+void Game::cekUang(){
+    const int biaya = 5;
+
+    if (pemain.empty()) {
+        std::cout << "Belum ada pemain dalam game.\n";
+        return;
+    }
+
+    if (currentPemain < 0 || currentPemain >= static_cast<int>(pemain.size())) {
+        std::cout << "Pemain aktif tidak valid.\n";
+        return;
+    }
+
+    User& pemainAktif = pemain[currentPemain];
+    if (pemainAktif.getUang() < biaya) {
+        std::cout << "Uang " << pemainAktif.getUsername()
+                  << " tidak cukup untuk mengecek uang. Biaya: M" << biaya << "\n";
+        return;
+    }
+
+    std::vector<int> pilihanPemain;
+
+    std::cout << "Biaya cek uang: M" << biaya << "\n";
+    std::cout << "Pilih User yang anda mau lihat keuangannya!\n";
+    std::cout << "0. " << pemainAktif.getUsername() << " (diri sendiri)\n";
+
+    int nomor = 1;
+    for (int i = 0; i < static_cast<int>(pemain.size()); ++i) {
+        if (i == currentPemain || pemain[i].isBankrupt()) {
+            continue;
+        }
+        std::cout << nomor << ". " << pemain[i].getUsername() << "\n";
+        pilihanPemain.push_back(i);
+        ++nomor;
+    }
+
+    std::cout << "Pilihan: ";
+    int pilihan;
+    std::cin >> pilihan;
+    while (std::cin.fail() || pilihan < 0 || pilihan > static_cast<int>(pilihanPemain.size())) {
+        std::cin.clear();
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::cout << "Pilihan tidak valid.\n";
+        std::cout << "Pilihan: ";
+        std::cin >> pilihan;
+    }
+
+    pemainAktif -= biaya;
+    User& target = (pilihan == 0) ? pemainAktif : pemain[pilihanPemain[pilihan - 1]];
+
+    std::cout << "Uang " << target.getUsername() << ": M" << target.getUang() << "\n";
+    std::cout << "Sisa uang " << pemainAktif.getUsername() << ": M" << pemainAktif.getUang() << "\n";
+
+    gameLogger.addLog(turn, pemainAktif.getUsername(), "Cek Uang",
+                      "Mengecek uang " + target.getUsername() + " dengan biaya M" + std::to_string(biaya));
+}
