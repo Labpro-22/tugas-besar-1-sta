@@ -1,5 +1,7 @@
-#include "../../include/core/bangkrut.hpp"
-#include "../../include/core/properti.hpp"
+#include "core/bangkrut.hpp"
+#include "core/properti.hpp"
+#include "core/user.hpp"
+#include "core/game.hpp"
 
 Bangkrut::Bangkrut(){}
 Bangkrut::~Bangkrut(){}

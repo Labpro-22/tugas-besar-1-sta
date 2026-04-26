@@ -11,7 +11,7 @@ dadu(std::move(dadu)),lokasiKode(std::move(lokasiKode)),lokasiColorGroup(std::mo
 
 bool Game::isEnd() {
     // Jika Pemain tinggal satu atau end true
-    return (this->end || getActivePlayerCount() <= 1);
+    return (this->end || getActivePlayerCount() <= 1 || turn > MAX_TURN);
 }
 
 void Game::setMAXTURN(int max) {
@@ -199,7 +199,7 @@ void Game::move(int langkah, User& user) {
 
 void Game::prosesGadai(User& user, Properti& properti) {
     // Implementasi proses gadai
-    // 1. Beri list properti yang bisa digadaikan (status Owned) Jika masih ada bangunan di color group, tidak bisa digadaikan.
+    // 1. Beri list properti yang bisa digadaikan (status Owned) Jika masih ada bangunan di color group, tidak bisa digadaikan. -> Jadinya langsung di command
     std::string opsi;
     std::cout << "Pilih nomor properti (0 untuk batal): ";
     std::cin >> opsi;
@@ -210,7 +210,7 @@ void Game::prosesGadai(User& user, Properti& properti) {
 void Game::prosesTebus(User& user, Properti& properti) {
     // Implementasi proses tebus
     /*
-        1. Traversal semua properti yang bisa ditebus (status Mortgaged) dan tampilkan ke user
+        1. Traversal semua properti yang bisa ditebus (status Mortgaged) dan tampilkan ke user. Jadinya langsung di command
         2. User pilih properti yang mau ditebus, jika uang cukup, proses tebus berhasil, jika tidak cukup, tampilkan pesan error
     */
 }
@@ -218,7 +218,7 @@ void Game::prosesTebus(User& user, Properti& properti) {
 void Game::prosesBangun(Properti& properti) {
     // Implementasi proses bangun
     /*
-        1. Berikan list properti yang bisa dibangun (Hanya Street dengan status Owned, dan ketentuan Bangun (colorgroup))
+        1. Berikan list properti yang bisa dibangun (Hanya Street dengan status Owned, dan ketentuan Bangun (colorgroup)) -> Jadinya langsung di command 
         2. Pilih color group
         3. Pilih properti
         4. Kalo gak ada, lewatkan!

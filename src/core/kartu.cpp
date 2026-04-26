@@ -132,6 +132,7 @@ void KartuBiayaDokter::apply(Game* game, User& user) {
     } else {
         // BANGKRUT
         std::cout << "> Anda tidak memiliki cukup uang untuk membayar biaya dokter.\n";
+        
     }
 }
 

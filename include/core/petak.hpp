@@ -6,6 +6,7 @@
 #include <string>
 #include "properti.hpp"
 #include "kartu.hpp"
+#include "bangkrut.hpp"
 
 class User;
 class Game;
@@ -131,7 +132,7 @@ public:
 // [3.3]
 class PetakPajak : public PetakAksi{
 private:
-    virtual void bayarPajak(User& user) = 0;
+    virtual void bayarPajak(User& user, Game* game) = 0;
 public:
     PetakPajak();
     PetakPajak(int index, std::string kodePetak, std::string name, std::string kategori, std::string warna);
@@ -145,7 +146,7 @@ private:
     float pajakFlat;
     float pajakPercent;
     
-    void bayarPajak(User& user) override;
+    void bayarPajak(User& user, Game* game) override;
 public:
     PetakPPH();
     PetakPPH(float flat, float percent);
@@ -159,7 +160,7 @@ class PetakPBM : public PetakPajak{
 private:   
     float pajakFlat;
 
-    void bayarPajak(User& user) override;
+    void bayarPajak(User& user, Game* game) override;
 public:
     PetakPBM();
     PetakPBM(float flat);

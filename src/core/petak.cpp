@@ -84,7 +84,7 @@ void PetakLahan::bayarSewa(User* user) {
     if (sertifikat->getOwner() == nullptr) {
         throw BukanPemilikException();
     }
-    int biayaSewa = sertifikat->hitungSewa(0);
+    int biayaSewa = sertifikat->hitungSewa(0); // * sertifikat->getFestivalMultiplier();
     biayaSewa = hitungTagihanSetelahEfekKartu(user, biayaSewa, true);
     if (biayaSewa == 0) {
         return;
@@ -129,7 +129,12 @@ void PetakLahan::onLanded(User* user, Game* game) {
     else if ((sertifikat->getStatus()==PropStatus::OWNED) && sertifikat->getOwner()!=user){
         std::cout << "[INFO] Properti dimiliki oleh " << sertifikat->getOwner()->getUsername() << ".\n";
         std::cout << "Waktunya bayar sewa!\n";
-        bayarSewa(user);
+        try {
+            bayarSewa(user);
+        } catch (const UangTidakCukupException& e) {
+            std::cout << "[ERROR] Uang tidak cukup untuk membayar sewa.\n";
+            // BANGKRUT
+        }
     }
     else{return;}
 }
@@ -172,7 +177,13 @@ void PetakStasiun::onLanded(User* user, Game* game) {
     }else if ((sertifikat->getStatus()==PropStatus::OWNED) && sertifikat->getOwner()!=user){
         std::cout << "[INFO] Properti dimiliki oleh " << sertifikat->getOwner()->getUsername() << ".\n";
         std::cout << "Waktunya bayar sewa!\n";
-        bayarSewa(user);
+        try {
+            bayarSewa(user);
+        } catch (const UangTidakCukupException& e) {
+            std::cout << "[ERROR] Uang tidak cukup untuk membayar sewa.\n";
+            // BANGKRUT
+
+        }
     }
     else{return;}
 }
@@ -183,7 +194,7 @@ PetakUtilitas::PetakUtilitas(int index, std::string kodePetak, std::string name,
 : PetakProperti(index, kodePetak, name, kategori, sertifikat, warna){}
 PetakUtilitas::~PetakUtilitas() {}
 
-// [!] TODO : [TASK 3]
+
 void PetakUtilitas::bayarSewa(User* user, Game* game) {
     Utility* utilitas = dynamic_cast<Utility*>(sertifikat);
     int biayaSewa = utilitas->hitungSewa(game->getDadu()->getTotal());
@@ -206,7 +217,12 @@ void PetakUtilitas::onLanded(User* user, Game* game) {
     }else if ((sertifikat->getStatus()==PropStatus::OWNED) && sertifikat->getOwner()!=user){
         std::cout << "[INFO] Properti dimiliki oleh " << sertifikat->getOwner()->getUsername() << ".\n";
         std::cout << "Waktunya bayar sewa!\n";
-        bayarSewa(user, game);
+        try {
+            bayarSewa(user, game);
+        } catch (const UangTidakCukupException& e) {
+            std::cout << "[ERROR] Uang tidak cukup untuk membayar sewa.\n";
+            // BANGKRUT
+        }
     }
     else{return;}
 }
@@ -311,43 +327,48 @@ PetakPPH::~PetakPPH() {}
 void PetakPPH::onLanded(User* user, Game* game) {
     (void) game;
     std::cout << "[INFO] Mendarat di Pajak Penghasilan (PPH)\n";
-    bayarPajak(*user);
+    bayarPajak(*user, game);
 }
-void PetakPPH::bayarPajak(User& user) {
+void PetakPPH::bayarPajak(User& user, Game* game) {
     int pilihan;
     std::cout << "Opsi Pembayaran PPH:\n"
               << "1. Bayar flat (M" << pajakFlat << ")\n"
               << "2. Bayar " << pajakPercent << "% dari total aset/kekayaan\n"
               << "> Pilihan (1/2): ";
     std::cin >> pilihan;
-
+    while (pilihan != 1 && pilihan != 2) {
+        std::cout << "Pilihan tidak valid. Masukkan 1 atau 2: ";
+        std::cin >> pilihan;
+    }
+    int tagihanPajak;
     if (pilihan == 1) {
-        const int tagihanPajak = hitungTagihanSetelahEfekKartu(&user, static_cast<int>(pajakFlat), false);
-        if (tagihanPajak == 0) {
-            std::cout << "[SUCCESS] Pajak flat dibatalkan oleh ShieldCard.\n";
-        } else if (user.getUang() >= tagihanPajak) {
-            user -= tagihanPajak;
-            std::cout << "[SUCCESS] Pajak flat terbayar. Sisa uang: M" << user.getUang() << "\n";
-        } else {
-            std::cout << "[WARNING] Saldo tidak mencukupi!\n";
-            // TODO: Implementasi trigger kebangkrutan
-        }
-    } 
-    else if (pilihan == 2) {
+        tagihanPajak = hitungTagihanSetelahEfekKartu(&user, static_cast<int>(pajakFlat), false);   
+    } else {
         float totalKekayaan = user.getTotalKekayaan(); 
         float pajakPersentase = totalKekayaan * (pajakPercent / 100.0f);
         
         std::cout << "[INFO] Total aset: M" << totalKekayaan << " | Potongan: M" << pajakPersentase << "\n";
 
-        const int tagihanPajak = hitungTagihanSetelahEfekKartu(&user, static_cast<int>(pajakPersentase), false);
-        if (tagihanPajak == 0) {
-            std::cout << "[SUCCESS] Pajak persentase dibatalkan oleh ShieldCard.\n";
-        } else if (user.getUang() >= tagihanPajak) {
-            user -= tagihanPajak;
-            std::cout << "[SUCCESS] Pajak persentase terbayar. Sisa uang: M" << user.getUang() << "\n";
+        tagihanPajak = hitungTagihanSetelahEfekKartu(&user, static_cast<int>(pajakPersentase), false);
+    }
+
+    if (tagihanPajak == 0) {
+        std::cout << "[SUCCESS] Pajak flat dibatalkan oleh ShieldCard.\n";
+    } else if (user.getUang() >= tagihanPajak) {
+        user -= tagihanPajak;
+        std::cout << "[SUCCESS] Pajak terbayar. Sisa uang: M" << user.getUang() << "\n";
+    } else {
+        std::cout << "[WARNING] Saldo tidak mencukupi!\n";
+        //Bangkrut - Likuidasi
+        Bangkrut sistemBangkrut;
+        // Cek apakah dengan menjual aset/gadai pemain masih bisa bayar
+        if (!sistemBangkrut.isPayable(user, tagihanPajak)) {
+            std::cout << "[INFO] Aset tidak mencukupi. Mengeksekusi kebangkrutan ke Bank...\n";
+            sistemBangkrut.executeBangkrut(user, nullptr, game);
         } else {
-            std::cout << "[WARNING] Saldo tidak mencukupi!\n";
-            // TODO: Implementasi trigger kebangkrutan
+            std::cout << "[INFO] Anda masih memiliki aset yang bisa dilikuidasi.\n";
+            std::cout << "[!] Silakan gunakan perintah GADAI atau JUAL BANGUNAN untuk melunasi hutang!\n";
+            // Likuidasi 
         }
     }
 }
@@ -363,9 +384,9 @@ void PetakPBM::onLanded(User* user, Game* game) {
     (void) game;
     std::cout << "[INFO] Mendarat di Pajak Barang Mewah (PBM)\n";
     std::cout << "[INFO] Potongan pajak flat: M" << pajakFlat << "\n";
-    bayarPajak(*user);
+    bayarPajak(*user, game);
 }
-void PetakPBM::bayarPajak(User& user) {
+void PetakPBM::bayarPajak(User& user, Game* game) {
     const int tagihanPajak = hitungTagihanSetelahEfekKartu(&user, static_cast<int>(pajakFlat), false);
     if (tagihanPajak == 0) {
         std::cout << "[SUCCESS] Pajak dibatalkan oleh ShieldCard.\n";
@@ -374,7 +395,17 @@ void PetakPBM::bayarPajak(User& user) {
         std::cout << "[SUCCESS] Pajak terbayar. Sisa uang: M" << user.getUang() << "\n";
     } else {
         std::cout << "[WARNING] Saldo tidak mencukupi untuk membayar pajak!\n";
-        // TODO: Implementasi trigger kebangkrutan
+        //Bangkrut - Likuidasi
+        Bangkrut sistemBangkrut;
+        // Cek apakah dengan menjual aset/gadai pemain masih bisa bayar
+        if (!sistemBangkrut.isPayable(user, tagihanPajak)) {
+            std::cout << "[INFO] Aset tidak mencukupi. Mengeksekusi kebangkrutan ke Bank...\n";
+            sistemBangkrut.executeBangkrut(user, nullptr, game);
+        } else {
+            std::cout << "[INFO] Anda masih memiliki aset yang bisa dilikuidasi.\n";
+            std::cout << "[!] Silakan gunakan perintah GADAI atau JUAL BANGUNAN untuk melunasi hutang!\n";
+            // Likuidasi 
+        }
     }
 }
 
@@ -415,6 +446,7 @@ void PetakPenjara::onLanded(User* user, Game* game) {
     if (user->getStatus() == 1) {
         std::cout << "[INFO] Kamu berada di dalam Penjara. Percobaan keluar: "
                   << user->getJailTurns() << "/3.\n";
+        // Implementasi Penjara
     } else {
         std::cout << "[INFO] Kamu hanya mampir di Penjara. Tidak ada denda atau status tahanan.\n";
     }

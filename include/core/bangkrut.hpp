@@ -1,7 +1,7 @@
 #pragma once
 
-#include "user.hpp"
-#include "game.hpp"
+class User;
+class Game;
 
 class Bangkrut{
 public:

@@ -19,6 +19,10 @@ bool Command::execute(User& user, const std::string& input, Game& game, int& con
         return true;
     }
     else if ((first == "LEMPAR_DADU" || first == "ATUR_DADU") && consecutiveDadu >= 0){
+        if (consecutiveDadu < 0) {
+            std::cout << "CURANG!!! Anda sudah melempar dadu, tidak boleh melempar lagi kecuali jika mendapatkan double.\n";
+            return true;
+        }
         if (first == "ATUR_DADU") {
             int x, y;
             std::string extra;
