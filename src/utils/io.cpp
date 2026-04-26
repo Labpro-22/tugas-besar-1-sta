@@ -149,6 +149,19 @@ std::string getKartuSaveJenis(const KartuSpesial* kartu) {
     return "UnknownCard";
 }
 
+std::string getPropertiSaveJenis(const Properti* properti) {
+    if (dynamic_cast<const Street*>(properti) != nullptr) {
+        return "STREET";
+    }
+    if (dynamic_cast<const RailRoad*>(properti) != nullptr) {
+        return "RAILROAD";
+    }
+    if (dynamic_cast<const Utility*>(properti) != nullptr) {
+        return "UTILITY";
+    }
+    return "UNKNOWN";
+}
+
 int getKartuSaveNilai(const KartuSpesial* kartu) {
     if (const MoveCard* moveCard = dynamic_cast<const MoveCard*>(kartu)) {
         return moveCard->getLangkah();
@@ -405,9 +418,9 @@ void configBase::load(const std::string& pathLoad) {
             "state pemain ke-" + std::to_string(i + 1)
         );
         const std::vector<std::string> pemainTokens = splitTokens(pemainLine);
-        if (pemainTokens.size() != 5) {
+        if (pemainTokens.size() != 5 && pemainTokens.size() != 8) {
             throw ConfigLoadFormatException(
-                "State pemain harus berformat '<username> <uang> <koordinat> <status> <jumlahKartu>' di " +
+                "State pemain harus berformat '<username> <uang> <koordinat> <status> <jumlahKartu>' atau '<username> <uang> <koordinat> <status> <jailTurns> <activeDiscount> <shieldActive> <jumlahKartu>' di " +
                 pathLoad + " baris " + std::to_string(lineNo) + "."
             );
         }
@@ -417,7 +430,15 @@ void configBase::load(const std::string& pathLoad) {
         state.uang = parseIntStrict(pemainTokens[1], "pemain.uang", pathLoad, lineNo);
         state.koordinat = parseIntStrict(pemainTokens[2], "pemain.koordinat", pathLoad, lineNo);
         state.status = parseIntStrict(pemainTokens[3], "pemain.status", pathLoad, lineNo);
-        const int jumlahKartu = parseIntStrict(pemainTokens[4], "pemain.jumlahKartu", pathLoad, lineNo);
+        int jumlahKartu = 0;
+        if (pemainTokens.size() == 5) {
+            jumlahKartu = parseIntStrict(pemainTokens[4], "pemain.jumlahKartu", pathLoad, lineNo);
+        } else {
+            state.jailTurns = parseIntStrict(pemainTokens[4], "pemain.jailTurns", pathLoad, lineNo);
+            state.activeDiscount = parseIntStrict(pemainTokens[5], "pemain.activeDiscount", pathLoad, lineNo);
+            state.shieldActive = parseIntStrict(pemainTokens[6], "pemain.shieldActive", pathLoad, lineNo);
+            jumlahKartu = parseIntStrict(pemainTokens[7], "pemain.jumlahKartu", pathLoad, lineNo);
+        }
         if (jumlahKartu < 0) {
             throw ConfigLoadFormatException("Jumlah kartu pemain tidak boleh negatif.");
         }
@@ -449,40 +470,97 @@ void configBase::load(const std::string& pathLoad) {
     }
     loadedConfig.setPemain(pemain);
 
-    std::vector<StateProperti> properti;
-    properti.reserve(static_cast<size_t>(countPemain));
-    for (int i = 0; i < countPemain; ++i) {
-        const std::string propertiLine = readNextNonEmptyLine(
-            loadFile,
-            lineNo,
-            pathLoad,
-            "state properti pemain ke-" + std::to_string(i + 1)
-        );
-        const std::vector<std::string> propertiTokens = splitTokens(propertiLine);
-        if (propertiTokens.empty()) {
+    std::string propertiHeaderLine = readNextNonEmptyLine(
+        loadFile,
+        lineNo,
+        pathLoad,
+        "state properti"
+    );
+    std::vector<std::string> propertiHeaderTokens = splitTokens(propertiHeaderLine);
+    if (!propertiHeaderTokens.empty() && propertiHeaderTokens[0] == "PROPERTY_STATE") {
+        if (propertiHeaderTokens.size() != 2) {
             throw ConfigLoadFormatException(
-                "State properti pemain kosong di " + pathLoad + " baris " + std::to_string(lineNo) + "."
-            );
-        }
-
-        StateProperti state;
-        state.jumlahProperti = parseIntStrict(propertiTokens[0], "properti.jumlahProperti", pathLoad, lineNo);
-        if (state.jumlahProperti < 0) {
-            throw ConfigLoadFormatException("Jumlah properti tidak boleh negatif.");
-        }
-        if (propertiTokens.size() != static_cast<size_t>(state.jumlahProperti + 1)) {
-            throw ConfigLoadFormatException(
-                "State properti harus berformat '<jumlahProperti> <kode1> ... <kodeN>' di " +
+                "PROPERTY_STATE harus berformat 'PROPERTY_STATE <jumlahProperti>' di " +
                 pathLoad + " baris " + std::to_string(lineNo) + "."
             );
         }
 
-        for (size_t j = 1; j < propertiTokens.size(); ++j) {
-            state.kodeProperti.push_back(propertiTokens[j]);
+        const int jumlahPropertiLengkap = parseIntStrict(propertiHeaderTokens[1], "PROPERTY_STATE.jumlahProperti", pathLoad, lineNo);
+        if (jumlahPropertiLengkap < 0) {
+            throw ConfigLoadFormatException("Jumlah properti lengkap tidak boleh negatif.");
         }
-        properti.push_back(state);
+
+        std::vector<confProperti> propertiLengkap;
+        propertiLengkap.reserve(static_cast<size_t>(jumlahPropertiLengkap));
+        for (int i = 0; i < jumlahPropertiLengkap; ++i) {
+            const std::string propertiLine = readNextNonEmptyLine(
+                loadFile,
+                lineNo,
+                pathLoad,
+                "state properti lengkap ke-" + std::to_string(i + 1)
+            );
+            const std::vector<std::string> tokens = splitTokens(propertiLine);
+            if (tokens.size() != 8) {
+                throw ConfigLoadFormatException(
+                    "State properti lengkap harus berformat '<kode> <jenis> <owner> <status> <fmult> <fdur> <jumlahRumah> <hasHotel>' di " +
+                    pathLoad + " baris " + std::to_string(lineNo) + "."
+                );
+            }
+
+            confProperti state;
+            state.kode = tokens[0];
+            state.jenis = tokens[1];
+            state.owner = tokens[2];
+            state.status = parseIntStrict(tokens[3], "properti.status", pathLoad, lineNo);
+            state.fmult = parseIntStrict(tokens[4], "properti.fmult", pathLoad, lineNo);
+            state.fdur = parseIntStrict(tokens[5], "properti.fdur", pathLoad, lineNo);
+            state.jumlahBangunan = parseIntStrict(tokens[6], "properti.jumlahBangunan", pathLoad, lineNo);
+            state.hasHotel = parseIntStrict(tokens[7], "properti.hasHotel", pathLoad, lineNo);
+            propertiLengkap.push_back(state);
+        }
+        loadedConfig.setPropertiLengkap(propertiLengkap);
+    } else {
+        std::vector<StateProperti> properti;
+        properti.reserve(static_cast<size_t>(countPemain));
+        for (int i = 0; i < countPemain; ++i) {
+            std::vector<std::string> propertiTokens;
+            if (i == 0) {
+                propertiTokens = propertiHeaderTokens;
+            } else {
+                const std::string propertiLine = readNextNonEmptyLine(
+                    loadFile,
+                    lineNo,
+                    pathLoad,
+                    "state properti pemain ke-" + std::to_string(i + 1)
+                );
+                propertiTokens = splitTokens(propertiLine);
+            }
+
+            if (propertiTokens.empty()) {
+                throw ConfigLoadFormatException(
+                    "State properti pemain kosong di " + pathLoad + " baris " + std::to_string(lineNo) + "."
+                );
+            }
+
+            StateProperti state;
+            state.jumlahProperti = parseIntStrict(propertiTokens[0], "properti.jumlahProperti", pathLoad, lineNo);
+            if (state.jumlahProperti < 0) {
+                throw ConfigLoadFormatException("Jumlah properti tidak boleh negatif.");
+            }
+            if (propertiTokens.size() != static_cast<size_t>(state.jumlahProperti + 1)) {
+                throw ConfigLoadFormatException(
+                    "State properti harus berformat '<jumlahProperti> <kode1> ... <kodeN>' di " +
+                    pathLoad + " baris " + std::to_string(lineNo) + "."
+                );
+            }
+
+            for (size_t j = 1; j < propertiTokens.size(); ++j) {
+                state.kodeProperti.push_back(propertiTokens[j]);
+            }
+            properti.push_back(state);
+        }
+        loadedConfig.setProperti(properti);
     }
-    loadedConfig.setProperti(properti);
 
     const std::string deckLine = readNextNonEmptyLine(loadFile, lineNo, pathLoad, "deckKartuSpesial");
     const std::vector<std::string> deckTokens = splitTokens(deckLine);
@@ -566,6 +644,23 @@ void configBase::load(const std::string& pathLoad) {
         }
     }
 
+    if (std::getline(loadFile, extraLine)) {
+        ++lineNo;
+        extraLine = trim(extraLine);
+        if (!extraLine.empty()) {
+            const std::vector<std::string> tokens = splitTokens(extraLine);
+            if (tokens.size() != 1) {
+                throw ConfigLoadFormatException(
+                    "sudahPakaiKartuKemampuan harus berisi tepat 1 integer di " +
+                    pathLoad + " baris " + std::to_string(lineNo) + "."
+                );
+            }
+            loadedConfig.setSudahPakaiKartuKemampuan(
+                parseIntStrict(tokens[0], "sudahPakaiKartuKemampuan", pathLoad, lineNo) != 0
+            );
+        }
+    }
+
     setLoadSaveConfig(loadedConfig);
 
     // MAX_TURN ada di configLoadSave, jadi harus overwrite config base.
@@ -579,6 +674,7 @@ void configBase::save(const std::string &pathSave , const Game& game){
     savedConfig.setMaxTurn(game.getMaxTurn());
     savedConfig.setCurrentPemainIndex(game.getCurrentPemainIndex());
     savedConfig.setKartuSpesialSudahDibagikan(game.isKartuSpesialSudahDibagikanGiliranIni());
+    savedConfig.setSudahPakaiKartuKemampuan(game.isKartuKemampuanSudahDipakaiGiliranIni());
 
     const std::vector<User>& pemainGame = game.getPemain();
     savedConfig.setCountPemain(static_cast<int>(pemainGame.size()));
@@ -591,6 +687,9 @@ void configBase::save(const std::string &pathSave , const Game& game){
         state.uang = user.getUang();
         state.koordinat = user.getKoordinat();
         state.status = user.getStatus();
+        state.jailTurns = user.getJailTurns();
+        state.activeDiscount = user.getActiveDiscount();
+        state.shieldActive = user.isShieldActive() ? 1 : 0;
 
         for (const KartuSpesial* kartu : user.getKartuSpesial()) {
             if (kartu == nullptr) {
@@ -608,19 +707,30 @@ void configBase::save(const std::string &pathSave , const Game& game){
     }
     savedConfig.setPemain(pemain);
 
-    std::vector<StateProperti> properti;
-    properti.reserve(pemainGame.size());
-    for (const User& user : pemainGame) {
-        StateProperti state;
-        for (const Properti* prop : user.getListProperti()) {
-            if (prop != nullptr) {
-                state.kodeProperti.push_back(prop->getKode());
-            }
+    std::vector<confProperti> propertiLengkap;
+    for (const std::unique_ptr<Properti>& propPtr : game.getDaftarProperti()) {
+        const Properti* prop = propPtr.get();
+        if (prop == nullptr) {
+            continue;
         }
-        state.jumlahProperti = static_cast<int>(state.kodeProperti.size());
-        properti.push_back(state);
+
+        confProperti state;
+        state.kode = prop->getKode();
+        state.jenis = getPropertiSaveJenis(prop);
+        state.owner = prop->getOwner() == nullptr ? "-" : prop->getOwner()->getUsername();
+        state.status = static_cast<int>(prop->getStatus());
+        state.fmult = prop->getFestivalMultiplier();
+        state.fdur = prop->getFestivalDuration();
+
+        const Street* street = dynamic_cast<const Street*>(prop);
+        if (street != nullptr) {
+            state.jumlahBangunan = street->getJumlahBangunan();
+            state.hasHotel = street->isHotel() ? 1 : 0;
+        }
+
+        propertiLengkap.push_back(state);
     }
-    savedConfig.setProperti(properti);
+    savedConfig.setPropertiLengkap(propertiLengkap);
 
     StateDeck deck;
     const CardDeck<KartuSpesial>& deckGame = game.getDeckKartuSpesial();
@@ -663,6 +773,9 @@ void configBase::save(const std::string &pathSave , const Game& game){
                  << state.uang << ' '
                  << state.koordinat << ' '
                  << state.status << ' '
+                 << state.jailTurns << ' '
+                 << state.activeDiscount << ' '
+                 << state.shieldActive << ' '
                  << state.kartu.size() << '\n';
 
         for (const confKartu& kartu : state.kartu) {
@@ -672,12 +785,16 @@ void configBase::save(const std::string &pathSave , const Game& game){
         }
     }
 
-    for (const StateProperti& state : output.getProperti()) {
-        saveFile << state.jumlahProperti;
-        for (const std::string& kode : state.kodeProperti) {
-            saveFile << ' ' << kode;
-        }
-        saveFile << '\n';
+    saveFile << "PROPERTY_STATE " << output.getPropertiLengkap().size() << '\n';
+    for (const confProperti& state : output.getPropertiLengkap()) {
+        saveFile << state.kode << ' '
+                 << state.jenis << ' '
+                 << state.owner << ' '
+                 << state.status << ' '
+                 << state.fmult << ' '
+                 << state.fdur << ' '
+                 << state.jumlahBangunan << ' '
+                 << state.hasHotel << '\n';
     }
 
     const StateDeck& deckOutput = output.getDeckKartuSpesial();
@@ -702,4 +819,5 @@ void configBase::save(const std::string &pathSave , const Game& game){
     }
     saveFile << output.getCurrentPemainIndex() << '\n';
     saveFile << (output.getKartuSpesialSudahDibagikan() ? 1 : 0) << '\n';
+    saveFile << (output.getSudahPakaiKartuKemampuan() ? 1 : 0) << '\n';
 }

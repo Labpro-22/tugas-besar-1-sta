@@ -61,9 +61,11 @@ public:
     CardDeck<KartuSpesial>& getDeckKartuSpesial();
     const CardDeck<KartuSpesial>& getDeckKartuSpesial() const;
     std::vector<std::unique_ptr<Properti>>& getDaftarProperti();
+    const std::vector<std::unique_ptr<Properti>>& getDaftarProperti() const;
 
     int getCurrentPemainIndex() const;
     bool isKartuSpesialSudahDibagikanGiliranIni() const;
+    bool isKartuKemampuanSudahDipakaiGiliranIni() const;
     int getActivePlayerCount() const;
     int getJailFine() const;
 
@@ -71,6 +73,7 @@ public:
     void setTurn(int value);
     void setCurrentPemainIndex(int value);
     void setKartuSpesialSudahDibagikanGiliranIni(bool value);
+    void setKartuKemampuanSudahDipakaiGiliranIni(bool value);
     void setLog(const std::vector<Logger>& value);
     void nextturn(); // Ganti cycle
     void nextPlayer();

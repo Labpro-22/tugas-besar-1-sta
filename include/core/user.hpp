@@ -71,6 +71,7 @@ public:
     void setUang(int value);
     void setStatus(const int newStatus);
     void setKoordinat(int index);
+    void setJailTurns(int value);
     void setActiveDiscount(int discountPercentage);
     void setShieldActive(bool active);
 

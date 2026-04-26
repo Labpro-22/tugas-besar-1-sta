@@ -41,6 +41,10 @@ void Game::setKartuSpesialSudahDibagikanGiliranIni(bool value) {
     sudahBagikanKartuSpesial = value;
 }
 
+void Game::setKartuKemampuanSudahDipakaiGiliranIni(bool value) {
+    sudahPakaiKartuKemampuan = value;
+}
+
 void Game::setLog(const std::vector<Logger>& value) {
     this->Log = value;
 }
@@ -132,6 +136,10 @@ bool Game::isKartuSpesialSudahDibagikanGiliranIni() const {
     return sudahBagikanKartuSpesial;
 }
 
+bool Game::isKartuKemampuanSudahDipakaiGiliranIni() const {
+    return sudahPakaiKartuKemampuan;
+}
+
 int Game::getActivePlayerCount() const {
     int activeCount = 0;
     for (const auto& user : pemain) {
@@ -143,6 +151,10 @@ int Game::getActivePlayerCount() const {
 }
 
 std::vector<std::unique_ptr<Properti>>& Game::getDaftarProperti(){
+    return daftarProperti;
+}
+
+const std::vector<std::unique_ptr<Properti>>& Game::getDaftarProperti() const{
     return daftarProperti;
 }
 

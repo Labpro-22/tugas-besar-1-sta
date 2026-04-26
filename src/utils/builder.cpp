@@ -351,6 +351,9 @@ Game gameBuilder::buildLoadGame(configBase* configB, const configLoadSave* confi
         User user(state.username, state.uang);
         user.setKoordinat(state.koordinat);
         user.setStatus(state.status);
+        user.setJailTurns(state.jailTurns);
+        user.setActiveDiscount(state.activeDiscount);
+        user.setShieldActive(state.shieldActive != 0);
 
         std::vector<KartuSpesial*> kartuTangan;
         kartuTangan.reserve(state.kartu.size());
@@ -375,32 +378,74 @@ Game gameBuilder::buildLoadGame(configBase* configB, const configLoadSave* confi
     );
     game.setCurrentPemainIndex(configS->getCurrentPemainIndex());
     game.setKartuSpesialSudahDibagikanGiliranIni(configS->getKartuSpesialSudahDibagikan());
+    game.setKartuKemampuanSudahDipakaiGiliranIni(configS->getSudahPakaiKartuKemampuan());
 
     // 2C. Set Properti dari kode properti di save file
-    const std::vector<StateProperti>& stateProperti = configS->getProperti();
-    if (stateProperti.size() != statePemain.size()) {
-        throw gameException("Gagal load game: jumlah state properti tidak sesuai jumlah pemain.");
-    }
-
     std::vector<User>& pemainGame = game.getPemain();
-    for (size_t i = 0; i < stateProperti.size(); ++i) {
-        if (stateProperti[i].jumlahProperti != static_cast<int>(stateProperti[i].kodeProperti.size())) {
-            throw gameException("Gagal load game: jumlah properti tidak sesuai daftar kode properti.");
-        }
-
-        for (const std::string& kode : stateProperti[i].kodeProperti) {
-            auto it = game.getLokasiKode().find(kode);
+    const std::vector<confProperti>& propertiLengkap = configS->getPropertiLengkap();
+    if (!propertiLengkap.empty()) {
+        for (const confProperti& state : propertiLengkap) {
+            auto it = game.getLokasiKode().find(state.kode);
             if (it == game.getLokasiKode().end() || it->second == nullptr) {
-                throw gameException("Gagal load game: kode properti tidak ditemukan: " + kode);
+                throw gameException("Gagal load game: kode properti tidak ditemukan: " + state.kode);
             }
 
             Properti* properti = it->second->getSertifikat();
             if (properti == nullptr) {
-                throw gameException("Gagal load game: sertifikat properti kosong untuk kode: " + kode);
+                throw gameException("Gagal load game: sertifikat properti kosong untuk kode: " + state.kode);
             }
 
-            properti->setOwner(&pemainGame[i]);
-            properti->setStatus(PropStatus::OWNED);
+            User* owner = nullptr;
+            if (state.owner != "-") {
+                auto userIt = std::find_if(pemainGame.begin(), pemainGame.end(), [&state](const User& user) {
+                    return user.getUsername() == state.owner;
+                });
+                if (userIt == pemainGame.end()) {
+                    throw gameException("Gagal load game: owner properti tidak ditemukan: " + state.owner);
+                }
+                owner = &(*userIt);
+            }
+
+            if (state.status < 0 || state.status > 2) {
+                throw gameException("Gagal load game: status properti tidak valid untuk kode: " + state.kode);
+            }
+
+            properti->setOwner(owner);
+            properti->setStatus(static_cast<PropStatus>(state.status));
+            properti->setFestivalMultiplier(state.fmult);
+            properti->setFestivalDuration(state.fdur);
+
+            Street* street = dynamic_cast<Street*>(properti);
+            if (street != nullptr) {
+                street->setJumlahRumah(state.jumlahBangunan);
+                street->setHotel(state.hasHotel != 0);
+            }
+        }
+    } else {
+        const std::vector<StateProperti>& stateProperti = configS->getProperti();
+        if (stateProperti.size() != statePemain.size()) {
+            throw gameException("Gagal load game: jumlah state properti tidak sesuai jumlah pemain.");
+        }
+
+        for (size_t i = 0; i < stateProperti.size(); ++i) {
+            if (stateProperti[i].jumlahProperti != static_cast<int>(stateProperti[i].kodeProperti.size())) {
+                throw gameException("Gagal load game: jumlah properti tidak sesuai daftar kode properti.");
+            }
+
+            for (const std::string& kode : stateProperti[i].kodeProperti) {
+                auto it = game.getLokasiKode().find(kode);
+                if (it == game.getLokasiKode().end() || it->second == nullptr) {
+                    throw gameException("Gagal load game: kode properti tidak ditemukan: " + kode);
+                }
+
+                Properti* properti = it->second->getSertifikat();
+                if (properti == nullptr) {
+                    throw gameException("Gagal load game: sertifikat properti kosong untuk kode: " + kode);
+                }
+
+                properti->setOwner(&pemainGame[i]);
+                properti->setStatus(PropStatus::OWNED);
+            }
         }
     }
 

@@ -66,9 +66,12 @@ public:
 class StatePemain{
 public:
     std::string username;
-    int uang;
-    int koordinat;
-    int status;
+    int uang = 0;
+    int koordinat = 0;
+    int status = 3;
+    int jailTurns = 0;
+    int activeDiscount = 0;
+    int shieldActive = 0;
     std::vector<confKartu> kartu;
 };
 
@@ -83,10 +86,11 @@ public:
     std::string kode;
     std::string jenis;
     std::string owner;
-    int status;
-    int fmult;
-    int fdur;
-    int jumlahBangunan;
+    int status = 0;
+    int fmult = 1;
+    int fdur = 0;
+    int jumlahBangunan = 0;
+    int hasHotel = 0;
 };
 
 class StateDeck{
@@ -118,9 +122,11 @@ private:
     int countPemain = 0;
     int currentPemainIndex = 0;
     bool kartuSpesialSudahDibagikan = true;
+    bool sudahPakaiKartuKemampuan = false;
 
     std::vector<StatePemain> pemain;
     std::vector<StateProperti> properti;
+    std::vector<confProperti> propertiLengkap;
     StateDeck deckKartuSpesial;
     StateLog log;
 public:
@@ -139,11 +145,17 @@ public:
     bool getKartuSpesialSudahDibagikan() const { return kartuSpesialSudahDibagikan; }
     void setKartuSpesialSudahDibagikan(bool value) { kartuSpesialSudahDibagikan = value; }
 
+    bool getSudahPakaiKartuKemampuan() const { return sudahPakaiKartuKemampuan; }
+    void setSudahPakaiKartuKemampuan(bool value) { sudahPakaiKartuKemampuan = value; }
+
     const std::vector<StatePemain>& getPemain() const { return pemain; }
     void setPemain(const std::vector<StatePemain>& value) { pemain = value; }
 
     const std::vector<StateProperti>& getProperti() const { return properti; }
     void setProperti(const std::vector<StateProperti>& value) { properti = value; }
+
+    const std::vector<confProperti>& getPropertiLengkap() const { return propertiLengkap; }
+    void setPropertiLengkap(const std::vector<confProperti>& value) { propertiLengkap = value; }
 
     const StateDeck& getDeckKartuSpesial() const { return deckKartuSpesial; }
     void setDeckKartuSpesial(const StateDeck& value) { deckKartuSpesial = value; }

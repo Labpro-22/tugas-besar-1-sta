@@ -254,6 +254,10 @@ void User::setKoordinat(int index) {
     this->koordinat = index;
 }
 
+void User::setJailTurns(int value) {
+    this->jailTurns = std::max(0, value);
+}
+
 void User::sendToJail(int jailIndex) {
     this->koordinat = jailIndex;
     this->status = 1;
