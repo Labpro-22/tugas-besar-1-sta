@@ -1,31 +1,28 @@
-3
+2
 15
 4
-Yanto 1200 10 3 0 0 0 3
+Andi 1140 35 3 0 0 0 2
+DemolitionCard 0 0
+TeleportCard 0 0
+Cherry 400 2 3 0 0 0 3
+DiscountCard 30 0
+DiscountCard 30 0
+DemolitionCard 0 0
+Dino 1200 10 3 0 0 0 2
+LassoCard 0 0
 DiscountCard 20 0
-MoveCard 7 0
-DiscountCard 10 0
-Budi 660 24 3 0 0 0 3
-LassoCard 0 0
-LassoCard 0 0
-DemolitionCard 0 0
-Andi 770 11 3 0 0 0 3
-MoveCard 4 0
+Budi 1100 6 3 0 0 0 2
 ShieldCard 0 0
-DemolitionCard 0 0
-Santi 790 11 3 0 0 0 3
-MoveCard 9 0
-ShieldCard 0 0
-MoveCard 3 0
+MoveCard 6 0
 PROPERTY_STATE 28
 GRT STREET - 0 1 0 0 0
-TSK STREET - 0 1 0 0 0
+TSK STREET Andi 1 1 0 0 0
 GBR RAILROAD - 0 1 0 0 0
-BGR STREET Yanto 1 1 0 0 0
-DPK STREET Santi 1 1 0 0 0
+BGR STREET Budi 1 1 0 0 0
+DPK STREET - 0 1 0 0 0
 BKS STREET - 0 1 0 0 0
-MGL STREET Andi 1 1 0 0 0
-PLN UTILITY Budi 1 1 0 0 0
+MGL STREET - 0 1 0 0 0
+PLN UTILITY - 0 1 0 0 0
 SOL STREET - 0 1 0 0 0
 YOG STREET - 0 1 0 0 0
 STB RAILROAD - 0 1 0 0 0
@@ -34,7 +31,7 @@ SMG STREET - 0 1 0 0 0
 SBY STREET - 0 1 0 0 0
 MKS STREET - 0 1 0 0 0
 BLP STREET - 0 1 0 0 0
-MND STREET Budi 1 1 0 0 0
+MND STREET - 0 1 0 0 0
 TUG RAILROAD - 0 1 0 0 0
 PLB STREET - 0 1 0 0 0
 PKB STREET - 0 1 0 0 0
@@ -43,12 +40,21 @@ MED STREET - 0 1 0 0 0
 BDG STREET - 0 1 0 0 0
 DEN STREET - 0 1 0 0 0
 MTR STREET - 0 1 0 0 0
-GUB RAILROAD - 0 1 0 0 0
+GUB RAILROAD Andi 1 1 0 0 0
 JKT STREET - 0 1 0 0 0
 IKN STREET - 0 1 0 0 0
-DRAW DiscountCard TeleportCard
+DRAW MoveCard ShieldCard LassoCard MoveCard MoveCard
 DISCARD TeleportCard
-0
-3
+9
+0 Andi Pergerakan Dadu: 2 & 1 | Mendarat di: TASIKMALAYA
+0 Andi Beli Properti Membeli TASIKMALAYA seharga M60
+0 Cherry Pergerakan Dadu: 1 & 1 | Mendarat di: Dana_Umum
+0 Cherry Tarik Kartu Mendapat: Kartu Dana Umum | Efek: Anda mau nyaleg. Bayar M200 kepada setiap pemain.
+0 Dino Pergerakan Dadu: 5 & 5 | Mendarat di: Penjara
+0 Budi Pergerakan Dadu: 3 & 3 | Mendarat di: BOGOR
+0 Budi Beli Properti Membeli BOGOR seharga M100
+2 Andi Beli Properti Mendapat otomatis stasiun STASIUN_GUBENG
+2 Andi Kartu Spesial Menggunakan kemampuan: Teleport Card
+1
 1
 0

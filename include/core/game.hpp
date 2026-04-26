@@ -75,7 +75,7 @@ public:
     void setCurrentPemainIndex(int value);
     void setKartuSpesialSudahDibagikanGiliranIni(bool value);
     void setKartuKemampuanSudahDipakaiGiliranIni(bool value);
-    void setLog(const std::vector<Logger>& value);
+    void setLog(Logger value);
     void nextturn(); // Ganti cycle
     void nextPlayer();
     void bagikanKartuSpesial(User& user);

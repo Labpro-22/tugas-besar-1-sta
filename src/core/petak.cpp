@@ -4,32 +4,6 @@
 #include "views/propertyView.hpp"
 #include "../../include/core/logger.hpp"
 
-namespace {
-    int hitungTagihanSetelahEfekKartu(User* user, int tagihan, bool pembayaranSewa) {
-        if (user == nullptr || tagihan <= 0) {
-            return tagihan;
-        }
-
-        if (user->isShieldActive()) {
-            std::cout << "[KARTU] ShieldCard aktif. Tagihan M" << tagihan
-                      << " dibatalkan.\n";
-            return 0;
-        }
-
-        if (pembayaranSewa && user->getActiveDiscount() > 0) {
-            const int diskon = user->getActiveDiscount();
-            const int potongan = tagihan * diskon / 100;
-            const int tagihanAkhir = tagihan - potongan;
-            std::cout << "[KARTU] DiscountCard aktif. Sewa M" << tagihan
-                      << " mendapat diskon " << diskon
-                      << "% menjadi M" << tagihanAkhir << ".\n";
-            return tagihanAkhir;
-        }
-
-        return tagihan;
-    }
-}
-
 // [1] Abstract Class : Petak
 Petak::Petak() : index(0), kodePetak(""), name(""), kategori(""), warna("") {}
 Petak::Petak(int index, std::string kodePetak, std::string name, std::string kategori, std::string warna)

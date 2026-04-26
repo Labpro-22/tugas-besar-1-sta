@@ -222,7 +222,7 @@ std::vector<User> gameBuilder::buildPemain(configBase* config){
     }
     std::vector<User> pemain;
     for (int i=0;i<std::stoi(n);i++){
-        std::cout << "Masukkan Nama Pemain " << i << ": ";
+        std::cout << "Masukkan Nama Pemain " << i+1 << ": ";
         std::cin >> name;
         std::cout << "\n";
         User user(name,config->getSaldoAwal());
@@ -470,13 +470,11 @@ Game gameBuilder::buildLoadGame(configBase* configB, const configLoadSave* confi
         throw gameException("Gagal load game: jumlah log tidak sesuai.");
     }
 
-    std::vector<Logger> loggers;
+    Logger loggers;
     if (!stateLog.log.empty()) {
-        Logger logger;
         for (const confLog& entry : stateLog.log) {
-            logger.addLog(entry.turn, entry.username, entry.jenisAksi, entry.detail);
+            loggers.addLog(entry.turn, entry.username, entry.jenisAksi, entry.detail);
         }
-        loggers.push_back(logger);
     }
     game.setLog(loggers);
 

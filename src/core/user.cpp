@@ -276,7 +276,7 @@ void User::incrementJailTurns() {
 }
 
 int User::hitungTagihanSetelahEfekKartu(int tagihan, bool pembayaranSewa) {
-    if (this == nullptr || tagihan <= 0) {
+    if (tagihan <= 0) {
         return tagihan;
     }
 

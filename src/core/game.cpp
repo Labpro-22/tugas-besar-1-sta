@@ -45,8 +45,8 @@ void Game::setKartuKemampuanSudahDipakaiGiliranIni(bool value) {
     sudahPakaiKartuKemampuan = value;
 }
 
-void Game::setLog(const std::vector<Logger>& value) {
-    this->Log = value;
+void Game::setLog(Logger value) {
+    this->gameLogger = value;
 }
 
 void Game::nextturn() {
