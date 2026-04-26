@@ -1,0 +1,47 @@
+1
+15
+2
+br 900 8 3 0 0 0 2
+MoveCard 11 0
+DiscountCard 10 0
+le 1000 0 3 0 0 0 2
+MoveCard 7 0
+TeleportCard 0 0
+PROPERTY_STATE 28
+GRT STREET - 0 1 0 0 0
+TSK STREET - 0 1 0 0 0
+GBR RAILROAD - 0 1 0 0 0
+BGR STREET - 0 1 0 0 0
+DPK STREET br 1 1 0 0 0
+BKS STREET - 0 1 0 0 0
+MGL STREET - 0 1 0 0 0
+PLN UTILITY - 0 1 0 0 0
+SOL STREET - 0 1 0 0 0
+YOG STREET - 0 1 0 0 0
+STB RAILROAD - 0 1 0 0 0
+MAL STREET - 0 1 0 0 0
+SMG STREET - 0 1 0 0 0
+SBY STREET - 0 1 0 0 0
+MKS STREET - 0 1 0 0 0
+BLP STREET - 0 1 0 0 0
+MND STREET - 0 1 0 0 0
+TUG RAILROAD - 0 1 0 0 0
+PLB STREET - 0 1 0 0 0
+PKB STREET - 0 1 0 0 0
+PAM UTILITY - 0 1 0 0 0
+MED STREET - 0 1 0 0 0
+BDG STREET - 0 1 0 0 0
+DEN STREET - 0 1 0 0 0
+MTR STREET - 0 1 0 0 0
+GUB RAILROAD - 0 1 0 0 0
+JKT STREET - 0 1 0 0 0
+IKN STREET - 0 1 0 0 0
+DRAW LassoCard ShieldCard MoveCard DemolitionCard DiscountCard LassoCard TeleportCard DiscountCard ShieldCard DemolitionCard MoveCard
+DISCARD
+2
+1 br Pergerakan Dadu: 3 & 5 | Mendarat di: DEPOK
+1 br Beli Properti Membeli DEPOK seharga M100
+1
+1
+0
+-
