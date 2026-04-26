@@ -68,6 +68,7 @@ public:
 
     // Setters
     void setUsername(const std::string& name);
+    void setUang(int value);
     void setStatus(const int newStatus);
     void setKoordinat(int index);
     void setActiveDiscount(int discountPercentage);
@@ -78,6 +79,7 @@ public:
     void addKartuSpesial(KartuSpesial* kartu, CardDeck<KartuSpesial>* deck);
     KartuSpesial* dropKartuSpesial();
     KartuSpesial* removeKartuSpesial(KartuSpesial* kartu);
+    void setKartuSpesial(const std::vector<KartuSpesial*>& kartu);
     
     // Aksi - Penjara
     void sendToJail(int jailIndex);

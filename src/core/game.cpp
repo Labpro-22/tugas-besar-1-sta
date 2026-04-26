@@ -2,13 +2,13 @@
 #include "core/bangun.hpp"
 #include <utility>
 
-Game::Game() : MAX_TURN(100), turn(1), end(false), currentPemain(0), sudahPakaiKartuKemampuan(false) {} // Asumsi default batas giliran
-Game::Game(int Maxturn) : MAX_TURN(Maxturn), turn(1), end(false), currentPemain(0), sudahPakaiKartuKemampuan(false) {}
+Game::Game() : MAX_TURN(100), turn(1), end(false), currentPemain(0), sudahBagikanKartuSpesial(false), sudahPakaiKartuKemampuan(false) {} // Asumsi default batas giliran
+Game::Game(int Maxturn) : MAX_TURN(Maxturn), turn(1), end(false), currentPemain(0), sudahBagikanKartuSpesial(false), sudahPakaiKartuKemampuan(false) {}
 Game::Game(int maxTurn,int turn,bool end,std::vector<User> pemain,std::vector<std::unique_ptr<Properti>>&& daftarProperti,
 Board board,Dadu dadu,std::map<std::string, PetakProperti*> lokasiKode,std::map<std::string, std::vector<PetakProperti*>> lokasiColorGroup) 
 : MAX_TURN(maxTurn),turn(turn),end(end),pemain(std::move(pemain)),
 daftarProperti(std::move(daftarProperti)),currentPemain(0),board(std::move(board)),
-dadu(std::move(dadu)),deckKartuSpesial(),sudahPakaiKartuKemampuan(false),
+dadu(std::move(dadu)),deckKartuSpesial(),sudahBagikanKartuSpesial(false),sudahPakaiKartuKemampuan(false),
 lokasiKode(std::move(lokasiKode)),lokasiColorGroup(std::move(lokasiColorGroup)) {}
 
 bool Game::isEnd() {
@@ -18,6 +18,30 @@ bool Game::isEnd() {
 
 void Game::setMAXTURN(int max) {
     this->MAX_TURN = max;
+}
+
+void Game::setTurn(int value) {
+    this->turn = value;
+    this->end = turn > MAX_TURN;
+}
+
+void Game::setCurrentPemainIndex(int value) {
+    if (pemain.empty()) {
+        currentPemain = 0;
+        return;
+    }
+    if (value < 0 || value >= static_cast<int>(pemain.size())) {
+        throw SyaratPropertiInvalidException("Index pemain aktif dari save file tidak valid!");
+    }
+    currentPemain = value;
+}
+
+void Game::setKartuSpesialSudahDibagikanGiliranIni(bool value) {
+    sudahBagikanKartuSpesial = value;
+}
+
+void Game::setLog(const std::vector<Logger>& value) {
+    this->Log = value;
 }
 
 void Game::nextturn() {
@@ -44,6 +68,7 @@ void Game::nextPlayer() {
         int kandidat = (currentPemain + langkah) % totalPemain;
         if (!pemain[kandidat].isBankrupt()) {
             currentPemain = kandidat;
+            sudahBagikanKartuSpesial = false;
             sudahPakaiKartuKemampuan = false;
             return;
         }
@@ -51,6 +76,11 @@ void Game::nextPlayer() {
 }
 
 void Game::bagikanKartuSpesial(User& user) {
+    if (sudahBagikanKartuSpesial) {
+        return;
+    }
+    sudahBagikanKartuSpesial = true;
+
     if (user.isBankrupt()) {
         return;
     }
@@ -95,6 +125,10 @@ int Game::getMaxTurn() const {
 
 int Game::getCurrentPemainIndex() const {
     return currentPemain;
+}
+
+bool Game::isKartuSpesialSudahDibagikanGiliranIni() const {
+    return sudahBagikanKartuSpesial;
 }
 
 int Game::getActivePlayerCount() const {

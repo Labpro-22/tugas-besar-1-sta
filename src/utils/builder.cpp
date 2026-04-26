@@ -238,6 +238,32 @@ std::vector<User> gameBuilder::buildPemain(configBase* config){
     return pemain;
 }
 
+KartuSpesial* gameBuilder::buildKartuSpesial(const std::string& jenis, int nilai) {
+    if (jenis == "MoveCard") {
+        MoveCard* kartu = new MoveCard();
+        kartu->setLangkah(nilai);
+        return kartu;
+    }
+    if (jenis == "DiscountCard") {
+        DiscountCard* kartu = new DiscountCard();
+        kartu->setPersentaseDiskon(nilai);
+        return kartu;
+    }
+    if (jenis == "ShieldCard") {
+        return new ShieldCard();
+    }
+    if (jenis == "TeleportCard") {
+        return new TeleportCard();
+    }
+    if (jenis == "LassoCard") {
+        return new LassoCard();
+    }
+    if (jenis == "DemolitionCard") {
+        return new DemolitionCard();
+    }
+    throw gameException("Jenis kartu spesial tidak dikenali: " + jenis);
+}
+
 std::map<std::string, PetakProperti*> gameBuilder::buildMapKodeToPetak(const Board& board){
     std::map<std::string, PetakProperti*> result;
     for (int i = 0; i < board.getSize(); ++i) {
@@ -293,7 +319,6 @@ Game gameBuilder::buildNewGame (configBase* config){
     // Atribut game
     Dadu dadu;
     int MAX_TURN = config->getMaxTurn();
-    int SALDO_AWAL = config->getSaldoAwal();
 
     // Mapping
     std::map<std::string, PetakProperti*> lokasiKode = buildMapKodeToPetak(board);
@@ -303,21 +328,109 @@ Game gameBuilder::buildNewGame (configBase* config){
     return game;
 }
 
-Game gameBuilder::buildLoadGame(configBase* configB, configLoadSave* configS){
+Game gameBuilder::buildLoadGame(configBase* configB, const configLoadSave* configS){
+    if (configB == nullptr || configS == nullptr) {
+        throw gameException("Gagal load game: config base atau config load/save kosong.");
+    }
+
     // 1. Konversi Config Base
-    Game game = buildNewGame(configB);
+    std::vector<std::unique_ptr<Properti>> daftarProperti = buildProperti(configB);
+    Board board = buildBoard(configB, daftarProperti);
+    std::map<std::string, PetakProperti*> lokasiKode = buildMapKodeToPetak(board);
+    std::map<std::string, std::vector<PetakProperti*>> lokasiColorGroup = buildMapWarnaGroup(board);
 
-    // 2. Konversi Config Load 
-    // A. Current Turn & Count Pemain
-    // B. Set Pemain
-    // C. Set Properti
-    // D. Set deckKartuSpesial
-    // E. Set Log
+    // 2A-B. Current Turn, Count Pemain, dan state pemain
+    const std::vector<StatePemain>& statePemain = configS->getPemain();
+    if (configS->getCountPemain() != static_cast<int>(statePemain.size())) {
+        throw gameException("Gagal load game: countPemain tidak sesuai dengan data pemain.");
+    }
 
+    std::vector<User> pemain;
+    pemain.reserve(statePemain.size());
+    for (const StatePemain& state : statePemain) {
+        User user(state.username, state.uang);
+        user.setKoordinat(state.koordinat);
+        user.setStatus(state.status);
 
+        std::vector<KartuSpesial*> kartuTangan;
+        kartuTangan.reserve(state.kartu.size());
+        for (const confKartu& kartu : state.kartu) {
+            kartuTangan.push_back(buildKartuSpesial(kartu.jenis, kartu.nilai));
+        }
+        user.setKartuSpesial(kartuTangan);
+        pemain.push_back(user);
+    }
 
+    Dadu dadu;
+    Game game(
+        configS->getMaxTurn(),
+        configS->getCurrentTurn(),
+        false,
+        pemain,
+        std::move(daftarProperti),
+        board,
+        dadu,
+        lokasiKode,
+        lokasiColorGroup
+    );
+    game.setCurrentPemainIndex(configS->getCurrentPemainIndex());
+    game.setKartuSpesialSudahDibagikanGiliranIni(configS->getKartuSpesialSudahDibagikan());
 
+    // 2C. Set Properti dari kode properti di save file
+    const std::vector<StateProperti>& stateProperti = configS->getProperti();
+    if (stateProperti.size() != statePemain.size()) {
+        throw gameException("Gagal load game: jumlah state properti tidak sesuai jumlah pemain.");
+    }
 
+    std::vector<User>& pemainGame = game.getPemain();
+    for (size_t i = 0; i < stateProperti.size(); ++i) {
+        if (stateProperti[i].jumlahProperti != static_cast<int>(stateProperti[i].kodeProperti.size())) {
+            throw gameException("Gagal load game: jumlah properti tidak sesuai daftar kode properti.");
+        }
 
-    return Game();
+        for (const std::string& kode : stateProperti[i].kodeProperti) {
+            auto it = game.getLokasiKode().find(kode);
+            if (it == game.getLokasiKode().end() || it->second == nullptr) {
+                throw gameException("Gagal load game: kode properti tidak ditemukan: " + kode);
+            }
+
+            Properti* properti = it->second->getSertifikat();
+            if (properti == nullptr) {
+                throw gameException("Gagal load game: sertifikat properti kosong untuk kode: " + kode);
+            }
+
+            properti->setOwner(&pemainGame[i]);
+            properti->setStatus(PropStatus::OWNED);
+        }
+    }
+
+    // 2D. Set deckKartuSpesial
+    std::vector<KartuSpesial*> deckKartu;
+    const StateDeck& stateDeck = configS->getDeckKartuSpesial();
+    if (stateDeck.jumlahKartuDeck != static_cast<int>(stateDeck.jenis.size())) {
+        throw gameException("Gagal load game: jumlah deck kartu spesial tidak sesuai.");
+    }
+    deckKartu.reserve(stateDeck.jenis.size());
+    for (const std::string& jenis : stateDeck.jenis) {
+        deckKartu.push_back(buildKartuSpesial(jenis, 0));
+    }
+    game.getDeckKartuSpesial().setDrawPile(deckKartu);
+
+    // 2E. Set Log
+    const StateLog& stateLog = configS->getLog();
+    if (stateLog.jumlahLog != static_cast<int>(stateLog.log.size())) {
+        throw gameException("Gagal load game: jumlah log tidak sesuai.");
+    }
+
+    std::vector<Logger> loggers;
+    if (!stateLog.log.empty()) {
+        Logger logger;
+        for (const confLog& entry : stateLog.log) {
+            logger.addLog(entry.turn, entry.username, entry.jenisAksi, entry.detail);
+        }
+        loggers.push_back(logger);
+    }
+    game.setLog(loggers);
+
+    return game;
 }

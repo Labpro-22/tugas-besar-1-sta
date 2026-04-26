@@ -464,6 +464,39 @@ void configBase::load(const std::string& pathLoad) {
     }
     loadedConfig.setLog(logState);
 
+    std::string extraLine;
+    if (std::getline(loadFile, extraLine)) {
+        ++lineNo;
+        extraLine = trim(extraLine);
+        if (!extraLine.empty()) {
+            const std::vector<std::string> tokens = splitTokens(extraLine);
+            if (tokens.size() != 1) {
+                throw ConfigLoadFormatException(
+                    "currentPemainIndex harus berisi tepat 1 integer di " +
+                    pathLoad + " baris " + std::to_string(lineNo) + "."
+                );
+            }
+            loadedConfig.setCurrentPemainIndex(parseIntStrict(tokens[0], "currentPemainIndex", pathLoad, lineNo));
+        }
+    }
+
+    if (std::getline(loadFile, extraLine)) {
+        ++lineNo;
+        extraLine = trim(extraLine);
+        if (!extraLine.empty()) {
+            const std::vector<std::string> tokens = splitTokens(extraLine);
+            if (tokens.size() != 1) {
+                throw ConfigLoadFormatException(
+                    "kartuSpesialSudahDibagikan harus berisi tepat 1 integer di " +
+                    pathLoad + " baris " + std::to_string(lineNo) + "."
+                );
+            }
+            loadedConfig.setKartuSpesialSudahDibagikan(
+                parseIntStrict(tokens[0], "kartuSpesialSudahDibagikan", pathLoad, lineNo) != 0
+            );
+        }
+    }
+
     setLoadSaveConfig(loadedConfig);
 
     // MAX_TURN ada di configLoadSave, jadi harus overwrite config base.
@@ -475,6 +508,8 @@ void configBase::save(const std::string &pathSave , const Game& game){
 
     savedConfig.setCurrentTurn(game.getTurn());
     savedConfig.setMaxTurn(game.getMaxTurn());
+    savedConfig.setCurrentPemainIndex(game.getCurrentPemainIndex());
+    savedConfig.setKartuSpesialSudahDibagikan(game.isKartuSpesialSudahDibagikanGiliranIni());
 
     const std::vector<User>& pemainGame = game.getPemain();
     savedConfig.setCountPemain(static_cast<int>(pemainGame.size()));
@@ -589,4 +624,6 @@ void configBase::save(const std::string &pathSave , const Game& game){
                  << log.jenisAksi << ' '
                  << log.detail << '\n';
     }
+    saveFile << output.getCurrentPemainIndex() << '\n';
+    saveFile << (output.getKartuSpesialSudahDibagikan() ? 1 : 0) << '\n';
 }

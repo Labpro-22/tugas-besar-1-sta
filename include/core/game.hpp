@@ -29,6 +29,7 @@ private:
     Board board;
     Dadu dadu;
     CardDeck<KartuSpesial> deckKartuSpesial;
+    bool sudahBagikanKartuSpesial;
     bool sudahPakaiKartuKemampuan;
     // Mapping
     std::map<std::string, PetakProperti*> lokasiKode; // Kode -> Petak
@@ -62,10 +63,15 @@ public:
     std::vector<std::unique_ptr<Properti>>& getDaftarProperti();
 
     int getCurrentPemainIndex() const;
+    bool isKartuSpesialSudahDibagikanGiliranIni() const;
     int getActivePlayerCount() const;
     int getJailFine() const;
 
     void setMAXTURN(int max);
+    void setTurn(int value);
+    void setCurrentPemainIndex(int value);
+    void setKartuSpesialSudahDibagikanGiliranIni(bool value);
+    void setLog(const std::vector<Logger>& value);
     void nextturn(); // Ganti cycle
     void nextPlayer();
     void bagikanKartuSpesial(User& user);

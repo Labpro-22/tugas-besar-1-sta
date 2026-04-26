@@ -114,6 +114,8 @@ private:
     int currentTurn = 0;
     int MAX_TURN = 0;
     int countPemain = 0;
+    int currentPemainIndex = 0;
+    bool kartuSpesialSudahDibagikan = true;
 
     std::vector<StatePemain> pemain;
     std::vector<StateProperti> properti;
@@ -128,6 +130,12 @@ public:
 
     int getCountPemain() const { return countPemain; }
     void setCountPemain(int value) { countPemain = value; }
+
+    int getCurrentPemainIndex() const { return currentPemainIndex; }
+    void setCurrentPemainIndex(int value) { currentPemainIndex = value; }
+
+    bool getKartuSpesialSudahDibagikan() const { return kartuSpesialSudahDibagikan; }
+    void setKartuSpesialSudahDibagikan(bool value) { kartuSpesialSudahDibagikan = value; }
 
     const std::vector<StatePemain>& getPemain() const { return pemain; }
     void setPemain(const std::vector<StatePemain>& value) { pemain = value; }

@@ -322,16 +322,6 @@ bool Command::execute(User& user, const std::string& input, Game& game, int& con
         std::cout << "Format SIMPAN salah. Gunakan: SIMPAN <nama_file>\n";
         return true;
     }
-    else if (first == "MUAT"){
-        std::string namaFile;
-        std::string extra;
-        if ((iss >> namaFile) && !(iss >> extra)) {
-            
-            return true;
-        }
-        std::cout << "Format MUAT salah. Gunakan: MUAT <nama_file>\n";
-        return true;
-    }
     else if (first == "CETAK_LOG"){
         std::string extra;
         if (iss.eof()) {
@@ -348,6 +338,28 @@ bool Command::execute(User& user, const std::string& input, Game& game, int& con
     }
     else if (first == "SELESAI"){
         return false;
+    }
+    else if (first == "HELP"){
+        std::cout << "Daftar Perintah:\n";
+        std::cout << "1. CETAK_PAPAN - Menampilkan papan permainan\n";
+        std::cout << "2. LEMPAR_DADU - Melempar dadu secara acak\n";
+        std::cout << "3. ATUR_DADU <X> <Y> - Mengatur nilai dadu secara manual (untuk testing)\n";
+        std::cout << "4. GUNAKAN_KEMAMPUAN - Menggunakan kartu kemampuan spesial\n";
+        std::cout << "5. SIMPAN <nama_file> - Menyimpan permainan ke file\n";
+        std::cout << "6. KELUAR - Keluar dari permainan\n";
+        std::cout << "7. CETAK_LOG [jumlah] - Menampilkan log permainan\n";
+        std::cout << "8. SELESAI - Mengakhiri permainan\n";
+        std::cout << "9. HELP - Menampilkan daftar perintah\n";
+        std::cout << "10. CETAK_AKTA - Menampilkan akta kepemilikan properti\n";
+        std::cout << "11. CETAK_PROPERTI- Menampilkan properti yang dimiliki pemain\n";
+        std::cout << "12. GADAI - Menggadaikan properti yang dimiliki\n";
+        std::cout << "13. TEBUS - Menebus properti yang sedang digadaikan\n";
+        std::cout << "14. BANGUN - Membangun rumah atau hotel di properti yang dimiliki\n";
+        return true;
+    }
+    else if (first == "KELUAR"){
+        std::cout << "Terima kasih telah bermain! Sampai jumpa lagi.\n";
+        exit(0);
     }
     else {
         std::cout << "Perintah tidak dikenali. Ketik HELP untuk daftar perintah yang tersedia.\n";

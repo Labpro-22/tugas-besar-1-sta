@@ -15,11 +15,21 @@ int main(){
     gameBuilder build;
     
     std::string option;
-    std::cout << "Apakah anda mau load/save (y/n): ";
+    std::cout << "Apakah anda mau load/save (ketik \"MUAT\" jika mau): ";
     std::cin >> option;
     Game Nimonspoli;
-    if (option=="y") {
-        // Nimonspoli = build.buildLoadGame(&config, config.getLoadSaveConfig()); 
+    if (option=="MUAT") {
+        std::string pathLoad;
+        std::cout << "Masukkan path file save: ";
+        std::cin >> pathLoad;
+
+        try {
+            config.load(pathLoad);
+            Nimonspoli = build.buildLoadGame(&config, config.getLoadSaveConfig());
+        } catch (const std::exception& e) {
+            std::cout << "[ERROR] Gagal memuat game: " << e.what() << "\n";
+            return 1;
+        }
     }
     else {
         Nimonspoli = build.buildNewGame(&config);

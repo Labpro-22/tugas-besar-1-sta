@@ -9,6 +9,7 @@
 #include <vector>
 #include <random>
 #include <algorithm>
+#include <utility>
 
 class Game;
 
@@ -93,6 +94,7 @@ public:
     void apply(Game* game, User& user) override;
     void randomize();
     int getLangkah() const;
+    void setLangkah(int value);
 };
 
 class DiscountCard : public KartuSpesial {
@@ -103,6 +105,7 @@ public:
     void apply(Game* game, User& user) override;
     void randomize();
     int getPersentaseDiskon() const;
+    void setPersentaseDiskon(int value);
 };
 
 class ShieldCard : public KartuSpesial {
@@ -174,6 +177,13 @@ public:
         if(card != nullptr) {
             discardPile.push_back(card);
         }
+    }
+
+    void setDrawPile(std::vector<T*> cards) {
+        for (T* card : drawPile) delete card;
+        for (T* card : discardPile) delete card;
+        drawPile = std::move(cards);
+        discardPile.clear();
     }
 
     const std::vector<T*>& getDrawPile() const {

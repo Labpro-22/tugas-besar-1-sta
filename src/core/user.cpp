@@ -217,6 +217,10 @@ KartuSpesial* User::removeKartuSpesial(KartuSpesial* kartu) {
   return kartuDihapus;
 }
 
+void User::setKartuSpesial(const std::vector<KartuSpesial*>& kartu) {
+  this->kartuSpesial = kartu;
+}
+
 const std::vector<KartuSpesial*>& User::getKartuSpesial() const {
   return kartuSpesial;
 }
@@ -233,6 +237,10 @@ User& User::operator-=(int jumlahUang) {
 
 void User::setUsername(const std::string& name) {
     this->username = name;
+}
+
+void User::setUang(int value) {
+    this->uang = value;
 }
 
 void User::setStatus(const int newStatus) {
