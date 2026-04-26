@@ -6,6 +6,7 @@
 #include "board.hpp"
 #include "../utils/dadu.hpp"
 #include "lelang.hpp"
+#include "logger.hpp"
 #include <vector>
 #include <map>
 #include <memory>
@@ -19,7 +20,7 @@ private:
     int turn;
     bool end;
     std::vector<User> pemain;
-    std::vector<Logger> Log;
+    Logger gameLogger;
     std::vector<std::unique_ptr<Properti>> daftarProperti;
     
     // Urutan Pemain (Angka melambangkan indeks di vector pemain)
@@ -53,8 +54,8 @@ public:
     Board* getBoard();
     std::vector<User>& getPemain();
     const std::vector<User>& getPemain() const;
-    std::vector<Logger> getLog();
-    const std::vector<Logger>& getLog() const;
+    Logger& getLogger();
+    const Logger& getLogger() const;
     Dadu* getDadu();
     std::map<std::string, PetakProperti*>& getLokasiKode();
     std::map<std::string, std::vector<PetakProperti*>>& getLokasiColorGroup();

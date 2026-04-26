@@ -15,6 +15,7 @@ private:
     int consecutivePasses;
     bool isFirstBid;
     int currentPlayerIndex;
+    Game* gameInstance;
 public:
     Lelang(Properti* target, Game* game, User* pemicu);
     ~Lelang() = default;

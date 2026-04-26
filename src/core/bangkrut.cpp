@@ -1,5 +1,6 @@
 #include "core/bangkrut.hpp"
 #include "core/properti.hpp"
+#include "core/logger.hpp"
 #include "core/user.hpp"
 #include "core/game.hpp"
 
@@ -50,10 +51,28 @@ std::vector<Properti*> Bangkrut::executeBangkrut(User& debtor, User* creditor, G
     
     if (creditor != nullptr){
         transferToPlayer(debtor, *creditor);
+
+        game->getLogger().addLog(game->getTurn(), debtor.getUsername(), "Kebangkrutan", "Seluruh uang dan aset diserahkan kepada " + creditor->getUsername());
+
     }
 
     else{
         propertiUntukDilelang = transferToBank(debtor);
+
+        game->getLogger().addLog(game->getTurn(), debtor.getUsername(), "Kebangkrutan", "Aset disita oleh Bank dan bangunan dihancurkan.");
+
+        if (game != nullptr) {
+            for (Properti* p : propertiUntukDilelang) {
+                std::cout << "\n[SITA BANK] Properti " << p->getNama() << " milik " << debtor.getUsername() << " disita dan akan dilelang!\n";
+                game->mulaiLelang(p, nullptr);
+            }
+        }
+
+        game->getLogger().addLog(game->getTurn(), debtor.getUsername(), "Kebangkrutan", "Aset disita oleh Bank dan bangunan dihancurkan.");
+    }
+
+    if (game != nullptr){
+        game->leave(debtor);
     }
 
     if (game != nullptr && !propertiUntukDilelang.empty()){

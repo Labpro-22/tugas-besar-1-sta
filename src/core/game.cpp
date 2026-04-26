@@ -241,8 +241,12 @@ void Game::leave(User& user) {
 Board* Game::getBoard() {return &board;}
 std::vector<User>& Game::getPemain() {return pemain;}
 const std::vector<User>& Game::getPemain() const {return pemain;}
-std::vector<Logger> Game::getLog(){return Log;}
-const std::vector<Logger>& Game::getLog() const {return Log;}
+Logger& Game::getLogger() {
+    return this->gameLogger;
+}
+const Logger& Game::getLogger() const {
+    return this->gameLogger;
+}
 Dadu* Game::getDadu() {return &dadu;}
 std::map<std::string, PetakProperti*>& Game::getLokasiKode() {return lokasiKode;}
 std::map<std::string, std::vector<PetakProperti*>>& Game::getLokasiColorGroup() {return lokasiColorGroup;}
@@ -286,6 +290,8 @@ void Game::prosesGadai(User& user, Properti* properti) {
         throw BukanPemilikException("Gagal Gadai: Properti ini bukan milik pemain aktif!");
     }
     properti->gadaikan();
+
+    gameLogger.addLog(turn, user.getUsername(), "Gadai Properti", "Menggadaikan " + properti->getNama() + " dan mendapat M" + std::to_string(properti->getNilaiGadai()));
 }
 
 void Game::prosesTebus(User& user, Properti* properti) {
@@ -297,6 +303,8 @@ void Game::prosesTebus(User& user, Properti* properti) {
         throw BukanPemilikException("Gagal Tebus: Properti ini bukan milik pemain aktif!");
     }
     properti->tebus();
+
+    gameLogger.addLog(turn, user.getUsername(), "Tebus Properti", "Menebus " + properti->getNama() + " dengan biaya M" + std::to_string(properti->getHargaBeli()));
 }
 
 void Game::prosesBangun(Properti* properti) {
@@ -345,6 +353,8 @@ void Game::prosesBangun(Properti* properti) {
     }
 
     Bangun::eksekusiBangun(street->getOwner(), street, grupWarna);
+
+    gameLogger.addLog(turn, street->getOwner()->getUsername(), "Bangun Properti", "Membangun/Upgrade di " + street->getNama());
 }
 
 void Game::prosesPakaiKartu(User& user, KartuSpesial* kartu) {

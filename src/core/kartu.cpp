@@ -3,6 +3,7 @@
 #include "../../include/core/user.hpp"
 #include "../../include/core/board.hpp"
 #include "../../include/core/petak.hpp"
+#include "../../include/core/logger.hpp"
 
 namespace {
     std::mt19937& cardRandomGenerator() {
@@ -60,6 +61,8 @@ void KartuStasiunTerdekat::apply(Game* game, User& user) {
             return;
         }
     }
+
+    game->getLogger().addLog(game->getTurn(), user.getUsername(), "Tarik Kartu", "Mendapat: " + getNama() + " | Efek: " + getDeskripsi());
 }
 
 // 2. "Mundur 3 petak."
@@ -71,6 +74,8 @@ void KartuMundurTigaPetak::apply(Game* game, User& user) {
     user.move(-3, game->getBoard());
     std::cout << "> " << user.getUsername() << " mundur ke petak indeks " << user.getKoordinat() << ".\n";
     game->getBoard()->getPetakAt(user.getKoordinat())->onLanded(&user, game);
+
+    game->getLogger().addLog(game->getTurn(), user.getUsername(), "Tarik Kartu", "Mendapat: " + getNama() + " | Efek: " + getDeskripsi());
 }
 
 // 3. "Masuk Penjara."
@@ -84,6 +89,8 @@ void KartuMasukPenjara::apply(Game* game, User& user) {
     if (!shieldAktif) {
         std::cout << "> " << user.getUsername() << " langsung dijebloskan ke Penjara!\n";
     }
+
+    game->getLogger().addLog(game->getTurn(), user.getUsername(), "Tarik Kartu", "Mendapat: " + getNama() + " | Efek: " + getDeskripsi());
 }
 
 // Kartu Dana Umum
@@ -113,6 +120,8 @@ void KartuHadiahUlangTahun::apply(Game* game, User& user) {
         }
     }
     std::cout << "> Anda mendapatkan total M" << totalHadiah << "!\n";
+
+    game->getLogger().addLog(game->getTurn(), user.getUsername(), "Tarik Kartu", "Mendapat: " + getNama() + " | Efek: " + getDeskripsi());
 }
 
 // 2. "Biaya dokter. Bayar M700."
@@ -131,6 +140,8 @@ void KartuBiayaDokter::apply(Game* game, User& user) {
     if (!user.isBankrupt()) {
         std::cout << "> Sisa uang Anda: M" << user.getUang() << "\n";
     }
+
+    game->getLogger().addLog(game->getTurn(), user.getUsername(), "Tarik Kartu", "Mendapat: " + getNama() + " | Efek: " + getDeskripsi());
 }
 
 // 3. "Anda mau nyaleg. Bayar M200 kepada setiap pemain."
@@ -161,6 +172,7 @@ void KartuNyaleg::apply(Game* game, User& user) {
     if (!user.isBankrupt()) {
         std::cout << "> Sisa uang Anda: M" << user.getUang() << "\n";
     }
+    game->getLogger().addLog(game->getTurn(), user.getUsername(), "Tarik Kartu", "Mendapat: " + getNama() + " | Efek: " + getDeskripsi());
 }
 
 KartuSpesial::KartuSpesial(std::string nama, std::string deskripsi) 
@@ -187,6 +199,8 @@ void MoveCard::setLangkah(int value) {
 void MoveCard::apply(Game* game, User& user) {
     std::cout << "\n[SPESIAL] Menggunakan Move Card! Bidak melesat " << langkah << " petak.\n";
     game->move(langkah, user);
+
+    game->getLogger().addLog(game->getTurn(), user.getUsername(), "Kartu Spesial", "Menggunakan kemampuan: " + getNama());
 }
 
 // 2. DiscountCard
@@ -199,6 +213,8 @@ void DiscountCard::apply(Game* game, User& user) {
     std::cout << "\n[SPESIAL] Menggunakan Discount Card! Anda mendapat diskon " 
               << persentasediskon << "% sewa selama 1 giliran.\n";
     user.setActiveDiscount(persentasediskon);
+
+    game->getLogger().addLog(game->getTurn(), user.getUsername(), "Kartu Spesial", "Menggunakan kemampuan: " + getNama());
 }
 
 void DiscountCard::randomize() {
@@ -220,6 +236,8 @@ void ShieldCard::apply(Game* game, User& user) {
     (void) game;
     std::cout << "\n[SPESIAL] Menggunakan Shield Card! Anda dilindungi penuh untuk giliran ini.\n";
     user.setShieldActive(true);
+
+    game->getLogger().addLog(game->getTurn(), user.getUsername(), "Kartu Spesial", "Menggunakan kemampuan: " + getNama());
 }
 
 // 4. TeleportCard
@@ -238,6 +256,8 @@ void TeleportCard::apply(Game* game, User& user) {
     } else {
         std::cout << "Pilihan tidak valid! Kartu terbuang sia-sia :))))))))\n";
     }
+
+    game->getLogger().addLog(game->getTurn(), user.getUsername(), "Kartu Spesial", "Menggunakan kemampuan: " + getNama());
 }
 
 // 5. LassoCard
@@ -271,6 +291,8 @@ void LassoCard::apply(Game* game, User& user) {
     int targetPosition = target->getKoordinat();
     target->setKoordinat(userPosition);
     std::cout << "Berhasil menarik " << target->getUsername() << " dari petak " << targetPosition << " ke petak " << userPosition << ".\n";
+
+    game->getLogger().addLog(game->getTurn(), user.getUsername(), "Kartu Spesial", "Menggunakan kemampuan: " + getNama());
 }
 
 // 6. DemolitionCard
@@ -303,6 +325,8 @@ void DemolitionCard::apply(Game* game, User& user) {
     } else {
          std::cout << "Target tidak valid (belum dimiliki atau milik sendiri).\n";
     }
+
+    game->getLogger().addLog(game->getTurn(), user.getUsername(), "Kartu Spesial", "Menggunakan kemampuan: " + getNama());
 }
 
 template <class T>

@@ -75,6 +75,11 @@ bool Command::execute(User& user, const std::string& input, Game& game, int& con
                   << (petakTujuanNormal != nullptr ? petakTujuanNormal->getName() : "Tidak diketahui")
                   << " (index " << tujuanNormal << ")\n";
         user.move(langkah,game.getBoard());
+
+        std::string petakTujuan = game.getBoard()->getPetakAt(user.getKoordinat())->getName();
+        std::string detailGerak = "Dadu: " + std::to_string(game.getDadu()->getAngka1()) + " & " + std::to_string(game.getDadu()->getAngka2()) + " | Mendarat di: " + petakTujuan;
+        game.getLogger().addLog(game.getTurn(), user.getUsername(), "Pergerakan", detailGerak);
+
         game.getBoard()->getPetakAt(user.getKoordinat())->onLanded(&user, &game);
         game.getDadu()->reset();
         return true;
@@ -340,20 +345,37 @@ bool Command::execute(User& user, const std::string& input, Game& game, int& con
         configBase config("");
         if ((iss >> namaFile) && !(iss >> extra)) {
             config.save(namaFile, game);
+
+            game.getLogger().addLog(game.getTurn(), user.getUsername(), "Save Game", "Permainan disimpan ke file: " + namaFile);
+
             return true;
         }
         std::cout << "Format SIMPAN salah. Gunakan: SIMPAN <nama_file>\n";
+        return true;
+    }
+    else if (first == "MUAT"){
+        std::string namaFile;
+        std::string extra;
+        if ((iss >> namaFile) && !(iss >> extra)) {
+            
+            game.getLogger().addLog(game.getTurn(), user.getUsername(), "Load Game", "Permainan dimuat dari file: " + namaFile);
+
+            return true;
+        }
+        std::cout << "Format MUAT salah. Gunakan: MUAT <nama_file>\n";
         return true;
     }
     else if (first == "CETAK_LOG"){
         std::string extra;
         if (iss.eof()) {
             // CETAK_LOG tanpa jumlah, cetak semua log
+            game.getLogger().cetakLogPenuh();
             return true;
         }
         int jumlah;
         if ((iss >> jumlah) && !(iss >> extra)) {
             // CETAK_LOG dengan jumlah, cetak log sesuai jumlah
+            game.getLogger().cetakLogTerbaru(jumlah);
             return true;
         }
         std::cout << "Format CETAK_LOG salah. Gunakan: CETAK_LOG atau CETAK_LOG <jumlah>\n";
