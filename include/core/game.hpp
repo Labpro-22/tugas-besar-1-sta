@@ -58,6 +58,7 @@ public:
     std::map<std::string, std::vector<PetakProperti*>>& getLokasiColorGroup();
     CardDeck<KartuSpesial>& getDeckKartuSpesial();
     const CardDeck<KartuSpesial>& getDeckKartuSpesial() const;
+    std::vector<std::unique_ptr<Properti>>& getDaftarProperti();
 
     int getCurrentPemainIndex() const;
     int getActivePlayerCount() const;
@@ -74,9 +75,9 @@ public:
 
     // Method 
     void move(int langkah, User& user);
-    void prosesGadai(User& user, Properti& properti);
-    void prosesTebus(User& user, Properti& properti);
-    void prosesBangun(Properti& properti);
+    void prosesGadai(User& user, Properti* properti);
+    void prosesTebus(User& user, Properti* properti);
+    void prosesBangun(Properti* properti);
     void prosesLoad();
     void prosesSave();
 };

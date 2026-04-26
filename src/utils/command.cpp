@@ -1,4 +1,5 @@
 #include "utils/command.hpp"
+#include "views/propertyView.hpp"
 #include <sstream>
 
 Command::Command() = default;
@@ -15,7 +16,7 @@ bool Command::execute(User& user, const std::string& input, Game& game, int& con
     }
 
     if (first == "CETAK_PAPAN"){
-        BoardView::cetakPapan(*game.getBoard(), game.getPemain());
+        BoardView::cetakPapan(game);
         return true;
     }
     else if ((first == "LEMPAR_DADU" || first == "ATUR_DADU") && consecutiveDadu >= 0){
@@ -50,8 +51,12 @@ bool Command::execute(User& user, const std::string& input, Game& game, int& con
     }
     else if (first == "CETAK_AKTA"){
         std::string input;
-        if (iss >> input && (game.getLokasiKode().find(input) != game.getLokasiKode().end())) {
-            // CETAK AKTA untuk Properti 
+        std::cout << "Masukkan kode properti: ";
+        std::cin >> input;
+        if (game.getLokasiKode().find(input) != game.getLokasiKode().end()) {
+            // CETAK AKTA untuk Properti
+            Properti* properti = game.getLokasiKode()[input]->getSertifikat();
+            PropertyView::cetakAkta(properti);
             return true;
         }
         std::cout << "Properti tidak ditemukan.\n";
@@ -66,26 +71,70 @@ bool Command::execute(User& user, const std::string& input, Game& game, int& con
         });
         if (it != pemain.end()) {
             // CETAK PROPERTI untuk pemain
+            PropertyView::cetakProperti(*it);
             return true;
         }
         std::cout << "User tidak ditemukan.\n";
         return true;
     }
     else if (first == "GADAI"){
-        // JALANIN FUNGSI GADAI
         // Tampilin Daftar Properti 
-        // game.prosesGadai(user, game.getLokasiKode()[input]);
+        std::cout << "=== Properti yang Dapat Digadaikan ===\n";
+        int num = 1;
+        for (Properti* prop : user.getListProperti()) {
+            std::cout << num << ". " << prop->getNama() << " (" << prop->getKode() << ")" << "[" << prop->getWarna() << "]" << "Nilai Gadai: " << prop->getNilaiGadai() << "\n";
+            num++;
+        }
+        std::cout << "Uang kamu saat ini: M" << user.getUang() << "\n" << "Pilih nomor properti (0 untuk batal): ";
+        int pilihan;
+        std::cin >> pilihan;
+        while (pilihan < 0 || pilihan > static_cast<int>(user.getListProperti().size())) {
+            std::cout << "Pilihan tidak valid.\n";
+            std::cout << "Pilih nomor properti: ";
+            std::cin >> pilihan;
+        }
+        if (pilihan == 0) {
+            std::cout << "Gadai dibatalkan.\n";
+            return true;
+        }
+        game.prosesGadai(user, user.getListProperti()[pilihan - 1]);
         return true;
     }
     else if (first == "TEBUS"){
-        // JALANIN FUNGSI TEBUS
         // Tampilin Daftar Properti
-        // game.prosesTebus(user, game.getLokasiKode()[input]);
+        std::cout << "=== Properti yang Sedang Digadaikan (Dapat Ditebus) ===\n";
+        int num = 1, index = 0;
+        std::vector<int> indexes;
+        for (Properti* prop : user.getListProperti()) {
+            if (prop->getStatus() == PropStatus::MORTGAGED) {
+                std::cout << num << ". " << prop->getNama() << " (" << prop->getKode() << ")" << "[" << prop->getWarna() << "]" << "Nilai Tebus: " << prop->getNilaiGadai() << "\n";
+                indexes.push_back(index);
+                num++;
+            }
+            index++;
+        }
+        if (indexes.empty()) {
+            std::cout << "Tidak ada properti yang sedang digadaikan.\n";
+            return true;
+        }
+        std::cout << "Uang kamu saat ini: M" << user.getUang() << "\n";
+        std::cout << "Pilih nomor properti (0 untuk batal): ";
+        int pilihan;
+        std::cin >> pilihan;
+        while (pilihan < 0 || pilihan > static_cast<int>(indexes.size())) {
+            std::cout << "Pilihan tidak valid.\n";
+            std::cout << "Pilih nomor properti: ";
+            std::cin >> pilihan;
+        }
+        if (pilihan == 0) {
+            std::cout << "Tebus dibatalkan.\n";
+            return true;
+        }
+        game.prosesTebus(user, user.getListProperti()[indexes[pilihan - 1]]);
         return true;
     }
     else if (first == "BANGUN"){
-        // JALANIN FUNGSI BANGUN
-        // Tampilin Daftar Properti
+        // Tampilin Daftar Properti yang layak!
         // game.prosesBangun(game.getLokasiKode()[input]);
         return true;
     }

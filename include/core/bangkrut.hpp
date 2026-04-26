@@ -1,7 +1,12 @@
 #pragma once
 
+#include <string>
+#include <vector>
+#include <algorithm>
+#include <iostream>
 class User;
 class Game;
+class Properti;
 
 class Bangkrut{
 public:

@@ -104,6 +104,10 @@ int Game::getActivePlayerCount() const {
     return activeCount;
 }
 
+std::vector<std::unique_ptr<Properti>>& Game::getDaftarProperti(){
+    return daftarProperti;
+}
+
 int Game::getJailFine() const {
     Petak* jailPetak = board.getPetakAt(board.getPenjaraIndex());
     auto* penjara = dynamic_cast<PetakPenjara*>(jailPetak);
@@ -197,17 +201,14 @@ void Game::move(int langkah, User& user) {
     board.getPetakAt(user.getKoordinat())->onLanded(&user, this);
 }
 
-void Game::prosesGadai(User& user, Properti& properti) {
+void Game::prosesGadai(User& user, Properti* properti) {
     // Implementasi proses gadai
     // 1. Beri list properti yang bisa digadaikan (status Owned) Jika masih ada bangunan di color group, tidak bisa digadaikan. -> Jadinya langsung di command
-    std::string opsi;
-    std::cout << "Pilih nomor properti (0 untuk batal): ";
-    std::cin >> opsi;
-    std::cout << "Jakarta berhasil digadaikan." << std::endl << "Kamu menerima M200 dari Bank."
-    << std::endl << "Uang kamu sekarang: " << user.getUang() << std::endl << "Catatan: Properti yang digadaikan tidak akan menghasilkan sewa." << std::endl;
+    
+    properti->gadaikan();
 }
 
-void Game::prosesTebus(User& user, Properti& properti) {
+void Game::prosesTebus(User& user, Properti* properti) {
     // Implementasi proses tebus
     /*
         1. Traversal semua properti yang bisa ditebus (status Mortgaged) dan tampilkan ke user. Jadinya langsung di command
@@ -215,7 +216,7 @@ void Game::prosesTebus(User& user, Properti& properti) {
     */
 }
 
-void Game::prosesBangun(Properti& properti) {
+void Game::prosesBangun(Properti* properti) {
     // Implementasi proses bangun
     /*
         1. Berikan list properti yang bisa dibangun (Hanya Street dengan status Owned, dan ketentuan Bangun (colorgroup)) -> Jadinya langsung di command 

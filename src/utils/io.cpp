@@ -1,5 +1,6 @@
 #include "../../include/utils/io.hpp"
 #include <cctype>
+#include <filesystem>
 #include <fstream>
 #include <sstream>
 #include <utility>
@@ -39,6 +40,14 @@ std::ifstream openFileOrThrow(const std::string& filePath) {
         throw ConfigFileOpenException("Gagal membuka file: " + filePath);
     }
     return file;
+}
+
+void ensureParentDirectoryExists(const std::string& filePath) {
+    std::filesystem::path path(filePath);
+    std::filesystem::path parentPath = path.parent_path();
+    if (!parentPath.empty()) {
+        std::filesystem::create_directories(parentPath);
+    }
 }
 
 std::string trim(const std::string& raw) {
@@ -166,9 +175,13 @@ configBase::configBase(std::string path)
       pbmFlat(0),
       goSalary(0),
       jailFine(0),
-      MAX_TURN(0),
-      SALDO_AWAL(0),
-      confLoadSave(nullptr) {
+	      MAX_TURN(0),
+	      SALDO_AWAL(0),
+	      confLoadSave(nullptr) {
+    if (this->path.empty()) {
+        return;
+    }
+
     std::string line;
     // 1. Property.txt
     std::ifstream propFile = openFileOrThrow(this->path + "/property.txt");
@@ -527,7 +540,8 @@ void configBase::save(const std::string &pathSave , const Game& game){
     savedConfig.setLog(logState);
 
     setLoadSaveConfig(savedConfig);
-
+    
+    ensureParentDirectoryExists(pathSave);
     std::ofstream saveFile(pathSave);
     if (!saveFile.is_open()) {
         throw ConfigFileOpenException("Gagal membuka file: " + pathSave);
@@ -576,4 +590,3 @@ void configBase::save(const std::string &pathSave , const Game& game){
                  << log.detail << '\n';
     }
 }
-
