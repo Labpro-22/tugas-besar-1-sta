@@ -1,4 +1,6 @@
 #include "utils/command.hpp"
+#include "utils/bangunCommandHelper.hpp"
+#include "core/bangun.hpp"
 #include "views/propertyView.hpp"
 #include <sstream>
 
@@ -153,8 +155,117 @@ bool Command::execute(User& user, const std::string& input, Game& game, int& con
         return true;
     }
     else if (first == "BANGUN"){
-        // Tampilin Daftar Properti yang layak!
-        // game.prosesBangun(game.getLokasiKode()[input]);
+        std::vector<BuildGroup> groups;
+        for (const auto& entry : game.getLokasiColorGroup()) {
+            std::vector<Street*> streets = BangunCommandHelper::getStreetGroup(entry.second);
+            if (!Bangun::isOwnedBuildableGroup(streets, user)) {
+                continue;
+            }
+
+            std::vector<Street*> eligible;
+            for (Street* street : streets) {
+                if (Bangun::canBuildOnStreet(street, streets)) {
+                    eligible.push_back(street);
+                }
+            }
+
+            if (!eligible.empty()) {
+                groups.emplace_back(entry.first, streets, eligible);
+            }
+        }
+
+        if (groups.empty()) {
+            std::cout << "Tidak ada color group yang memenuhi syarat untuk dibangun.\n";
+            std::cout << "Kamu harus memiliki seluruh petak dalam satu color group terlebih dahulu.\n";
+            return true;
+        }
+
+        std::cout << "=== Color Group yang Memenuhi Syarat ===\n";
+        for (size_t i = 0; i < groups.size(); ++i) {
+            std::cout << i + 1 << ". [" << BangunCommandHelper::displayWarna(groups[i].getWarna()) << "]\n";
+            for (Street* street : groups[i].getStreets()) {
+                std::cout << "   ";
+                BangunCommandHelper::printStreetBuildStatus(street);
+            }
+        }
+
+        std::cout << "\nUang kamu saat ini : " << BangunCommandHelper::formatUangCommand(user.getUang()) << "\n";
+        std::cout << "Pilih nomor color group (0 untuk batal): ";
+        int pilihanGroup;
+        std::cin >> pilihanGroup;
+        while (pilihanGroup < 0 || pilihanGroup > static_cast<int>(groups.size())) {
+            std::cout << "Pilihan tidak valid.\n";
+            std::cout << "Pilih nomor color group: ";
+            std::cin >> pilihanGroup;
+        }
+        if (pilihanGroup == 0) {
+            std::cout << "Bangun dibatalkan.\n";
+            return true;
+        }
+
+        const BuildGroup& selectedGroup = groups[pilihanGroup - 1];
+        std::cout << "\nColor group [" << BangunCommandHelper::displayWarna(selectedGroup.getWarna()) << "]:\n";
+        bool semuaSiapHotel = true;
+        for (Street* street : selectedGroup.getStreets()) {
+            if (street == nullptr || street->isHotel() || street->getJumlahBangunan() != 4) {
+                semuaSiapHotel = false;
+            }
+        }
+        if (semuaSiapHotel) {
+            std::cout << "Seluruh color group [" << BangunCommandHelper::displayWarna(selectedGroup.getWarna()) << "] sudah memiliki 4 rumah. Siap di-upgrade ke hotel!\n";
+        }
+
+        for (size_t i = 0; i < selectedGroup.getEligible().size(); ++i) {
+            Street* street = selectedGroup.getEligible()[i];
+            std::cout << i + 1 << ". " << street->getNama() << " (" << street->getKode() << ") : " << BangunCommandHelper::statusBangunan(street);
+            if (street->getJumlahBangunan() == 4 && !street->isHotel()) {
+                std::cout << " <- siap upgrade ke hotel";
+            } else {
+                std::cout << " <- dapat dibangun";
+            }
+            std::cout << "\n";
+        }
+
+        std::cout << "Pilih petak (0 untuk batal): ";
+        int pilihanPetak;
+        std::cin >> pilihanPetak;
+        while (pilihanPetak < 0 || pilihanPetak > static_cast<int>(selectedGroup.getEligible().size())) {
+            std::cout << "Pilihan tidak valid.\n";
+            std::cout << "Pilih petak: ";
+            std::cin >> pilihanPetak;
+        }
+        if (pilihanPetak == 0) {
+            std::cout << "Bangun dibatalkan.\n";
+            return true;
+        }
+
+        Street* target = selectedGroup.getEligible()[pilihanPetak - 1];
+        if (target->getJumlahBangunan() == 4 && !target->isHotel()) {
+            std::cout << "Upgrade ke hotel? Biaya: " << BangunCommandHelper::formatUangCommand(target->getHargaHotel()) << " (y/n): ";
+            std::string konfirmasi;
+            std::cin >> konfirmasi;
+            if (konfirmasi != "y" && konfirmasi != "Y") {
+                std::cout << "Upgrade hotel dibatalkan.\n";
+                return true;
+            }
+        }
+
+        try {
+            const bool upgradeHotel = target->getJumlahBangunan() == 4 && !target->isHotel();
+            const int biaya = upgradeHotel ? target->getHargaHotel() : target->getHargaBangunan();
+            game.prosesBangun(target);
+            if (upgradeHotel) {
+                std::cout << target->getNama() << " di-upgrade ke Hotel!\n";
+            } else {
+                std::cout << "Kamu membangun 1 rumah di " << target->getNama() << ". Biaya: " << BangunCommandHelper::formatUangCommand(biaya) << "\n";
+            }
+            std::cout << "Uang tersisa: " << BangunCommandHelper::formatUangCommand(user.getUang()) << "\n";
+            for (Street* street : selectedGroup.getStreets()) {
+                BangunCommandHelper::printStreetBuildStatus(street);
+            }
+        } catch (const std::exception& e) {
+            std::cout << "[ERROR] " << e.what() << "\n";
+        }
         return true;
     }
     else if (first == "GUNAKAN_KEMAMPUAN"){

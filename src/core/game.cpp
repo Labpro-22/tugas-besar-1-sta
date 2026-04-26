@@ -1,4 +1,5 @@
 #include "core/game.hpp"
+#include "core/bangun.hpp"
 #include <utility>
 
 Game::Game() : MAX_TURN(100), turn(1), end(false), currentPemain(0) {} // Asumsi default batas giliran
@@ -225,12 +226,50 @@ void Game::prosesTebus(User& user, Properti* properti) {
 
 void Game::prosesBangun(Properti* properti) {
     // Implementasi proses bangun
-    /*
-        1. Berikan list properti yang bisa dibangun (Hanya Street dengan status Owned, dan ketentuan Bangun (colorgroup)) -> Jadinya langsung di command 
-        2. Pilih color group
-        3. Pilih properti
-        4. Kalo gak ada, lewatkan!
-    */
+    if (properti == nullptr) {
+        throw SyaratPropertiInvalidException("Gagal Bangun: Properti tidak valid!");
+    }
+
+    Street* street = dynamic_cast<Street*>(properti);
+    if (street == nullptr) {
+        throw SyaratPembangunanException("Gagal Bangun: Hanya properti Street yang dapat dibangun!");
+    }
+
+    if (street->getOwner() == nullptr) {
+        throw BukanPemilikException("Gagal Bangun: Properti belum dimiliki pemain!");
+    }
+
+    if (street->getStatus() != PropStatus::OWNED) {
+        throw SyaratPropertiInvalidException("Gagal Bangun: Properti harus berstatus OWNED!");
+    }
+
+    auto groupIt = lokasiColorGroup.find(street->getWarna());
+    if (groupIt == lokasiColorGroup.end()) {
+        throw SyaratPembangunanException("Gagal Bangun: Color group tidak ditemukan!");
+    }
+
+    std::vector<Street*> grupWarna;
+    for (PetakProperti* petak : groupIt->second) {
+        if (petak == nullptr) {
+            continue;
+        }
+        Street* anggota = dynamic_cast<Street*>(petak->getSertifikat());
+        if (anggota != nullptr) {
+            grupWarna.push_back(anggota);
+        }
+    }
+
+    if (grupWarna.empty()) {
+        throw SyaratPembangunanException("Gagal Bangun: Color group tidak valid!");
+    }
+
+    for (Street* anggota : grupWarna) {
+        if (anggota == nullptr || anggota->getOwner() != street->getOwner() || anggota->getStatus() != PropStatus::OWNED) {
+            throw SyaratPembangunanException("Gagal Bangun: Pemain harus memiliki seluruh Street dalam color group dan semuanya berstatus OWNED!");
+        }
+    }
+
+    Bangun::eksekusiBangun(street->getOwner(), street, grupWarna);
 }
 
 void Game::prosesLoad() {
