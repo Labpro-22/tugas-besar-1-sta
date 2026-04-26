@@ -244,6 +244,9 @@ void PetakKartu<T>::onLanded(User* user, Game* game) {
     deck.discard(kartu);
 }
 
+template class PetakKartu<KartuKesempatan>;
+template class PetakKartu<KartuDanaUmum>;
+
 // [3.2] Class PetakFestival {Inheritance dari PetakAksi}
 PetakFestival::PetakFestival() : PetakFestival(0, "FES", "Festival", "Aksi", "NONE") {}
 PetakFestival::PetakFestival(int index, std::string kodePetak, std::string name, std::string kategori, std::string warna)

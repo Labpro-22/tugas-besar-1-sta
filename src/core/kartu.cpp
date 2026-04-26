@@ -174,6 +174,10 @@ void MoveCard::randomize() {
     this->langkah = randomInt(1, 12);
 }
 
+int MoveCard::getLangkah() const {
+    return langkah;
+}
+
 void MoveCard::apply(Game* game, User& user) {
     std::cout << "\n[SPESIAL] Menggunakan Move Card! Bidak melesat " << langkah << " petak.\n";
     user.move(langkah, game->getBoard());
@@ -193,6 +197,10 @@ void DiscountCard::apply(Game* game, User& user) {
 
 void DiscountCard::randomize() {
     this->persentasediskon = randomInt(1, 5) * 10;
+}
+
+int DiscountCard::getPersentaseDiskon() const {
+    return persentasediskon;
 }
 
 // 3. ShieldCard

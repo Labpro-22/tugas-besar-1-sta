@@ -2,6 +2,7 @@
 #define COMMAND_HPP
 #include "core/game.hpp"
 #include "views/boardView.hpp"
+#include "io.hpp"
 // Kelas Command untuk menjalankan perintah yang diberikan user.
 
 class Command {

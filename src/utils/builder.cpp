@@ -304,7 +304,20 @@ Game gameBuilder::buildNewGame (configBase* config){
 }
 
 Game gameBuilder::buildLoadGame(configBase* configB, configLoadSave* configS){
-    (void) configB;
-    (void) configS;
+    // 1. Konversi Config Base
+    Game game = buildNewGame(configB);
+
+    // 2. Konversi Config Load 
+    // A. Current Turn & Count Pemain
+    // B. Set Pemain
+    // C. Set Properti
+    // D. Set deckKartuSpesial
+    // E. Set Log
+
+
+
+
+
+
     return Game();
 }
