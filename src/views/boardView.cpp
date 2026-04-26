@@ -56,17 +56,17 @@ namespace {
         return "| " + pad(bidak, CELL_WIDTH) + " ";
     }
 
-    // Fungsi canggih untuk memetakan teks legenda ke tengah papan
+    // [REFACTOR 1]: Optimasi Memori menggunakan 'static const'
     std::string getCenterLine(int lineIdx, int turn, int maxTurn) {
-        std::string turnText = centerText("TURN " + std::to_string(turn) + " / " + std::to_string(maxTurn), LEGEND_WIDTH);
-
-        std::vector<std::string> content = {
+        // Karena array ini isinya tetap (kecuali baris turn), kita jadikan static
+        // agar C++ tidak perlu membuat ulang array ini setiap kali fungsi dipanggil.
+        static const std::vector<std::string> staticContent = {
             "", // 0
             "===========================================", // 1
             "||              NIMONSPOLI               ||", // 2
             "===========================================", // 3
             "", // 4
-            turnText, // 5
+            "", // 5 -> Dikosongkan karena nilainya dinamis
             "", // 6
             "-------------------------------------------", // 7
             pad("LEGENDA KEPEMILIKAN & STATUS", LEGEND_WIDTH), // 8
@@ -77,18 +77,38 @@ namespace {
             pad("* : Hotel (Maksimal)", LEGEND_WIDTH), // 13
             pad("(1)-(4): Bidak (IN=Tahanan, V=Mampir)", LEGEND_WIDTH), // 14
             "-------------------------------------------"  // 15
-            // BAGIAN KODE WARNA SUDAH DIHAPUS DARI SINI
         };
 
-        if (lineIdx >= 0 && lineIdx < content.size() && !content[lineIdx].empty()) {
-            return centerText(content[lineIdx], MIDDLE_SPACE_WIDTH);
+        // Inject teks dinamis khusus untuk baris ke-5
+        if (lineIdx == 5) {
+            std::string turnText = "TURN " + std::to_string(turn) + " / " + std::to_string(maxTurn);
+            return centerText(centerText(turnText, LEGEND_WIDTH), MIDDLE_SPACE_WIDTH);
         }
-        // Sisa baris kosong di bawahnya akan otomatis diisi spasi
-        return std::string(MIDDLE_SPACE_WIDTH, ' ');
+
+        // Cetak teks statis jika indeksnya ada di dalam vector
+        if (lineIdx >= 0 && lineIdx < static_cast<int>(staticContent.size()) && !staticContent[lineIdx].empty()) {
+            return centerText(staticContent[lineIdx], MIDDLE_SPACE_WIDTH);
+        }
+        
+        return std::string(MIDDLE_SPACE_WIDTH, ' '); // Sisa baris diisi spasi kosong
+    }
+
+    // [REFACTOR 2]: Abstraksi fungsi untuk mencetak baris horizontal (Atas / Bawah)
+    // Ini menghilangkan duplikasi looping for yang panjang.
+    void printHorizontalRow(Board& board, const std::vector<User>& players, int startIdx, int endIdx, int step) {
+        printFullBorder();
+        for (int i = startIdx; i != endIdx + step; i += step) {
+            std::cout << formatLine1(board.getPetakAt(i));
+        }
+        std::cout << "|\n";
+        for (int i = startIdx; i != endIdx + step; i += step) {
+            std::cout << formatLine2(board.getPetakAt(i), players);
+        }
+        std::cout << "|\n";
+        printFullBorder();
     }
 }
 
-// IMPLEMENTASI YANG TERHAPUS DIKEMBALIKAN DI SINI
 std::string BoardView::getColorCode(const std::string& warna) {
     if (warna == "Coklat") return "\033[38;5;94m";
     if (warna == "BiruMuda") return "\033[38;5;117m"; 
@@ -104,42 +124,45 @@ std::string BoardView::getColorCode(const std::string& warna) {
 void BoardView::cetakPapan(Board& board, const std::vector<User>& players, int turn, int maxTurn) {
     std::cout << '\n';
     
-    printFullBorder();
-    for (int i = 20; i <= 30; ++i) std::cout << formatLine1(board.getPetakAt(i));
-    std::cout << "|\n";
-    for (int i = 20; i <= 30; ++i) std::cout << formatLine2(board.getPetakAt(i), players);
-    std::cout << "|\n";
-    printFullBorder();
+    int totalPetak = 40; 
+    int S = totalPetak / 4;
+    
+    int topStart   = 2 * S;         // 20
+    int topEnd     = 3 * S;         // 30
+    int botStart   = S;             // 10
+    int botEnd     = 0;             // 0
+    
+    int leftStart  = 2 * S - 1;     // 19
+    int leftEnd    = S + 1;         // 11
+    int rightStart = 3 * S + 1;     // 31
+    int rightEnd   = totalPetak - 1;// 39
 
-    int leftIdx = 19;
-    int rightIdx = 31;
-    int centerLineCounter = 0; // Menghitung baris ke-berapa yang sedang dicetak
+    // 1. CETAK BARIS ATAS (Memanggil helper, step maju +1)
+    printHorizontalRow(board, players, topStart, topEnd, 1);
 
-    while (leftIdx >= 11 && rightIdx <= 39) {
-        // Cetak Baris 1: Nama Petak + Legenda Tengah
+    // 2. CETAK BARIS TENGAH (Vertikal)
+    int leftIdx = leftStart;
+    int rightIdx = rightStart;
+    int centerLineCounter = 0; 
+
+    while (leftIdx >= leftEnd && rightIdx <= rightEnd) {
         std::cout << formatLine1(board.getPetakAt(leftIdx)) << "|";
         std::cout << getCenterLine(centerLineCounter++, turn, maxTurn);
         std::cout << formatLine1(board.getPetakAt(rightIdx)) << "|\n";
 
-        // Cetak Baris 2: Bidak Pemain + Legenda Tengah
         std::cout << formatLine2(board.getPetakAt(leftIdx), players) << "|";
         std::cout << getCenterLine(centerLineCounter++, turn, maxTurn);
         std::cout << formatLine2(board.getPetakAt(rightIdx), players) << "|\n";
 
-        // Cetak Baris 3: Garis Pembatas + Legenda Tengah
-        if (leftIdx > 11) {
+        if (leftIdx > leftEnd) {
             std::cout << "+----------+" << getCenterLine(centerLineCounter++, turn, maxTurn) << "+----------+\n";
         }
-
         leftIdx--;
         rightIdx++;
     }
 
-    printFullBorder();
-    for (int i = 10; i >= 0; --i) std::cout << formatLine1(board.getPetakAt(i));
-    std::cout << "|\n";
-    for (int i = 10; i >= 0; --i) std::cout << formatLine2(board.getPetakAt(i), players);
-    std::cout << "|\n";
-    printFullBorder();
+    // 3. CETAK BARIS BAWAH (Memanggil helper, step mundur -1)
+    printHorizontalRow(board, players, botStart, botEnd, -1);
+    
     std::cout << "\n";
 }

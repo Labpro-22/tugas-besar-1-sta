@@ -1,6 +1,7 @@
 #include "../../include/core/petak.hpp"
 #include "../../include/core/user.hpp"
 #include "../../include/core/game.hpp"
+#include "../../include/core/bangkrut.hpp"
 
 namespace {
     int hitungTagihanSetelahEfekKartu(User* user, int tagihan, bool pembayaranSewa) {
@@ -309,11 +310,11 @@ PetakPPH::PetakPPH(int index, std::string kodePetak, std::string name, std::stri
 PetakPPH::~PetakPPH() {}
 
 void PetakPPH::onLanded(User* user, Game* game) {
-    (void) game;
     std::cout << "[INFO] Mendarat di Pajak Penghasilan (PPH)\n";
-    bayarPajak(*user);
+    bayarPajak(*user, game); // <-- Oper pointer game ke sini
 }
-void PetakPPH::bayarPajak(User& user) {
+
+void PetakPPH::bayarPajak(User& user, Game* game) {
     int pilihan;
     std::cout << "Opsi Pembayaran PPH:\n"
               << "1. Bayar flat (M" << pajakFlat << ")\n"
@@ -321,36 +322,48 @@ void PetakPPH::bayarPajak(User& user) {
               << "> Pilihan (1/2): ";
     std::cin >> pilihan;
 
+    int tagihanPajak = 0;
     if (pilihan == 1) {
-        const int tagihanPajak = hitungTagihanSetelahEfekKartu(&user, static_cast<int>(pajakFlat), false);
-        if (tagihanPajak == 0) {
-            std::cout << "[SUCCESS] Pajak flat dibatalkan oleh ShieldCard.\n";
-        } else if (user.getUang() >= tagihanPajak) {
-            user -= tagihanPajak;
-            std::cout << "[SUCCESS] Pajak flat terbayar. Sisa uang: M" << user.getUang() << "\n";
-        } else {
-            std::cout << "[WARNING] Saldo tidak mencukupi!\n";
-            // TODO: Implementasi trigger kebangkrutan
-        }
+        tagihanPajak = hitungTagihanSetelahEfekKartu(&user, static_cast<int>(pajakFlat), false);
     } 
     else if (pilihan == 2) {
         float totalKekayaan = user.getTotalKekayaan(); 
         float pajakPersentase = totalKekayaan * (pajakPercent / 100.0f);
         
         std::cout << "[INFO] Total aset: M" << totalKekayaan << " | Potongan: M" << pajakPersentase << "\n";
+        tagihanPajak = hitungTagihanSetelahEfekKartu(&user, static_cast<int>(pajakPersentase), false);
+    } 
+    else {
+        std::cout << "[ERROR] Pilihan tidak valid!\n";
+        return;
+    }
 
-        const int tagihanPajak = hitungTagihanSetelahEfekKartu(&user, static_cast<int>(pajakPersentase), false);
-        if (tagihanPajak == 0) {
-            std::cout << "[SUCCESS] Pajak persentase dibatalkan oleh ShieldCard.\n";
-        } else if (user.getUang() >= tagihanPajak) {
-            user -= tagihanPajak;
-            std::cout << "[SUCCESS] Pajak persentase terbayar. Sisa uang: M" << user.getUang() << "\n";
+    // Eksekusi Pembayaran atau Bangkrut
+    if (tagihanPajak == 0) {
+        std::cout << "[SUCCESS] Pajak dibatalkan oleh ShieldCard.\n";
+    } 
+    else if (user.getUang() >= tagihanPajak) {
+        user -= tagihanPajak;
+        std::cout << "[SUCCESS] Pajak terbayar. Sisa uang: M" << user.getUang() << "\n";
+    } 
+    else {
+        std::cout << "[WARNING] Saldo tidak mencukupi (Uang: M" << user.getUang() 
+                  << ", Tagihan: M" << tagihanPajak << ")!\n";
+        
+        Bangkrut sistemBangkrut;
+        // Cek apakah dengan menjual aset/gadai pemain masih bisa bayar
+        if (!sistemBangkrut.isPayable(user, tagihanPajak)) {
+            std::cout << "[INFO] Aset tidak mencukupi. Mengeksekusi kebangkrutan ke Bank...\n";
+            // Kreditor diisi nullptr karena ini berurusan dengan Bank
+            sistemBangkrut.executeBangkrut(user, nullptr, game);
         } else {
-            std::cout << "[WARNING] Saldo tidak mencukupi!\n";
-            // TODO: Implementasi trigger kebangkrutan
+            // Jika isPayable true, pemain belum resmi bangkrut tapi tidak punya uang tunai
+            std::cout << "[INFO] Anda masih memiliki aset yang bisa dilikuidasi.\n";
+            std::cout << "[!] Silakan gunakan perintah GADAI atau JUAL BANGUNAN untuk melunasi hutang!\n";
         }
     }
 }
+
 // [3.3.2] Class PetakPBM {Inheritance dari PetakPajak}
 PetakPBM::PetakPBM() : PetakPBM(0.0f) {}
 PetakPBM::PetakPBM(float flat)
@@ -360,24 +373,35 @@ PetakPBM::PetakPBM(int index, std::string kodePetak, std::string name, std::stri
 PetakPBM::~PetakPBM() {}
 
 void PetakPBM::onLanded(User* user, Game* game) {
-    (void) game;
     std::cout << "[INFO] Mendarat di Pajak Barang Mewah (PBM)\n";
     std::cout << "[INFO] Potongan pajak flat: M" << pajakFlat << "\n";
-    bayarPajak(*user);
-}
-void PetakPBM::bayarPajak(User& user) {
-    const int tagihanPajak = hitungTagihanSetelahEfekKartu(&user, static_cast<int>(pajakFlat), false);
-    if (tagihanPajak == 0) {
-        std::cout << "[SUCCESS] Pajak dibatalkan oleh ShieldCard.\n";
-    } else if (user.getUang() >= tagihanPajak) {
-        user -= tagihanPajak;
-        std::cout << "[SUCCESS] Pajak terbayar. Sisa uang: M" << user.getUang() << "\n";
-    } else {
-        std::cout << "[WARNING] Saldo tidak mencukupi untuk membayar pajak!\n";
-        // TODO: Implementasi trigger kebangkrutan
-    }
+    bayarPajak(*user, game); // <-- Oper pointer game ke sini
 }
 
+void PetakPBM::bayarPajak(User& user, Game* game) {
+    const int tagihanPajak = hitungTagihanSetelahEfekKartu(&user, static_cast<int>(pajakFlat), false);
+    
+    if (tagihanPajak == 0) {
+        std::cout << "[SUCCESS] Pajak dibatalkan oleh ShieldCard.\n";
+    } 
+    else if (user.getUang() >= tagihanPajak) {
+        user -= tagihanPajak;
+        std::cout << "[SUCCESS] Pajak terbayar. Sisa uang: M" << user.getUang() << "\n";
+    } 
+    else {
+        std::cout << "[WARNING] Saldo tidak mencukupi (Uang: M" << user.getUang() 
+                  << ", Tagihan: M" << tagihanPajak << ")!\n";
+        
+        Bangkrut sistemBangkrut;
+        if (!sistemBangkrut.isPayable(user, tagihanPajak)) {
+            std::cout << "[INFO] Aset tidak mencukupi. Mengeksekusi kebangkrutan ke Bank...\n";
+            sistemBangkrut.executeBangkrut(user, nullptr, game);
+        } else {
+            std::cout << "[INFO] Anda masih memiliki aset yang bisa dilikuidasi.\n";
+            std::cout << "[!] Silakan gunakan perintah GADAI atau JUAL BANGUNAN untuk melunasi hutang!\n";
+        }
+    }
+}
 
 
 // [3.4] ===PetakSpesial===

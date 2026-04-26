@@ -130,22 +130,19 @@ public:
 
 // [3.3]
 class PetakPajak : public PetakAksi{
-private:
-    virtual void bayarPajak(User& user) = 0;
 public:
     PetakPajak();
     PetakPajak(int index, std::string kodePetak, std::string name, std::string kategori, std::string warna);
     virtual ~PetakPajak();
 
-    
+    virtual void bayarPajak(User& user, Game* game) = 0;
 };
 // [3.3.1]
 class PetakPPH : public PetakPajak{
 private:
     float pajakFlat;
     float pajakPercent;
-    
-    void bayarPajak(User& user) override;
+
 public:
     PetakPPH();
     PetakPPH(float flat, float percent);
@@ -153,13 +150,14 @@ public:
     ~PetakPPH();
 
     void onLanded(User* user, Game* game) override;
+
+    void bayarPajak(User& user, Game* game) override;
 };
 // [3.3.2]
 class PetakPBM : public PetakPajak{ 
 private:   
     float pajakFlat;
 
-    void bayarPajak(User& user) override;
 public:
     PetakPBM();
     PetakPBM(float flat);
@@ -167,6 +165,8 @@ public:
     ~PetakPBM();
 
     void onLanded(User* user, Game* game) override;
+    
+    void bayarPajak(User& user, Game* Game) override;
 };
 
 
