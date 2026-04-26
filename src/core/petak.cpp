@@ -1,6 +1,7 @@
 #include "../../include/core/petak.hpp"
 #include "../../include/core/user.hpp"
 #include "../../include/core/game.hpp"
+#include "../../include/core/logger.hpp"
 
 namespace {
     int hitungTagihanSetelahEfekKartu(User* user, int tagihan, bool pembayaranSewa) {
@@ -80,7 +81,7 @@ void PetakLahan::beliLahan(User* user) {
     sertifikat->setOwner(user);
     sertifikat->setStatus(PropStatus::OWNED);
 }
-void PetakLahan::bayarSewa(User* user) {
+void PetakLahan::bayarSewa(User* user, Game* game) {
     if (sertifikat->getOwner() == nullptr) {
         throw BukanPemilikException();
     }
@@ -95,6 +96,8 @@ void PetakLahan::bayarSewa(User* user) {
     }
     *(user) -= biayaSewa;
     *(sertifikat->getOwner()) += biayaSewa;
+
+    game->getLogger().addLog(game->getTurn(), user->getUsername(), "Bayar Sewa", "Sewa " + getName() + " milik " + sertifikat->getOwner()->getUsername() + " sebesar M" + std::to_string(biayaSewa));
 }
 void PetakLahan::onLanded(User* user, Game* game) {
     if (sertifikat->getStatus()==PropStatus::BANK){
@@ -108,6 +111,9 @@ void PetakLahan::onLanded(User* user, Game* game) {
             try {
                 beliLahan(user);
                 std::cout << "[SUCCESS] Properti berhasil dibeli!\n";
+
+                game->getLogger().addLog(game->getTurn(), user->getUsername(), "Beli Properti", "Membeli " + getName() + " seharga M" + std::to_string(sertifikat->getHargaBeli()));
+
             }catch (const UangTidakCukupException& e){
                 std::cout << "Kasian gak ada duit!\nWAKTUNYA LELANG!!!\n";
                 // WAKTUNYA LELANG
@@ -130,7 +136,7 @@ void PetakLahan::onLanded(User* user, Game* game) {
         std::cout << "[INFO] Properti dimiliki oleh " << sertifikat->getOwner()->getUsername() << ".\n";
         std::cout << "Waktunya bayar sewa!\n";
         try {
-            bayarSewa(user);
+            bayarSewa(user, game);
         } catch (const UangTidakCukupException& e) {
             std::cout << "[ERROR] Uang tidak cukup untuk membayar sewa.\n";
             // BANGKRUT
@@ -154,7 +160,7 @@ PetakStasiun::PetakStasiun(int index, std::string kodePetak, std::string name, s
 : PetakProperti(index, kodePetak, name, kategori, sertifikat, warna){}
 PetakStasiun::~PetakStasiun() {}
 
-void PetakStasiun::bayarSewa(User* user) {
+void PetakStasiun::bayarSewa(User* user, Game* game) {
     RailRoad* stasiun = dynamic_cast<RailRoad*>(sertifikat);
     int biayaSewa = stasiun->hitungSewa(0);
     biayaSewa = hitungTagihanSetelahEfekKartu(user, biayaSewa, true);
@@ -167,6 +173,8 @@ void PetakStasiun::bayarSewa(User* user) {
     }
     *(user) -= biayaSewa;
     *(sertifikat->getOwner()) += biayaSewa;
+
+    game->getLogger().addLog(game->getTurn(), user->getUsername(), "Bayar Sewa", "Sewa " + getName() + " milik " + sertifikat->getOwner()->getUsername() + " sebesar M" + std::to_string(biayaSewa));
 }
 void PetakStasiun::onLanded(User* user, Game* game) {
     (void) game;
@@ -174,11 +182,14 @@ void PetakStasiun::onLanded(User* user, Game* game) {
         std::cout << "Kamu mendapatkan stasiun kereta api "<< getName() << "!\n";
         sertifikat->setOwner(user);
         sertifikat->setStatus(PropStatus::OWNED);
+
+        game->getLogger().addLog(game->getTurn(), user->getUsername(), "Beli Properti", "Mendapat otomatis stasiun " + getName());
+
     }else if ((sertifikat->getStatus()==PropStatus::OWNED) && sertifikat->getOwner()!=user){
         std::cout << "[INFO] Properti dimiliki oleh " << sertifikat->getOwner()->getUsername() << ".\n";
         std::cout << "Waktunya bayar sewa!\n";
         try {
-            bayarSewa(user);
+            bayarSewa(user, game);
         } catch (const UangTidakCukupException& e) {
             std::cout << "[ERROR] Uang tidak cukup untuk membayar sewa.\n";
             // BANGKRUT
@@ -214,6 +225,9 @@ void PetakUtilitas::onLanded(User* user, Game* game) {
         std::cout << "Kamu mendapatkan utilitas "<< getName() << "!\n";
         sertifikat->setOwner(user);
         sertifikat->setStatus(PropStatus::OWNED);
+
+        game->getLogger().addLog(game->getTurn(), user->getUsername(), "Beli Properti", "Mendapat otomatis utilitas " + getName());
+        
     }else if ((sertifikat->getStatus()==PropStatus::OWNED) && sertifikat->getOwner()!=user){
         std::cout << "[INFO] Properti dimiliki oleh " << sertifikat->getOwner()->getUsername() << ".\n";
         std::cout << "Waktunya bayar sewa!\n";
@@ -291,6 +305,9 @@ void PetakFestival::onLanded(User* user, Game* game) {
     Properti* target = user->getPropertiByKode(inputKode);
     if (target) {
         terapkanEfek(target);
+
+        game->getLogger().addLog(game->getTurn(), user->getUsername(), "Aktivasi Festival", target->getNama() + " | Multiplier: " + std::to_string(target->getFestivalMultiplier()) + "x");
+
     } else {
         std::cout << "[ERROR] Kode properti invalid atau bukan hak milik.\n";
     }
@@ -357,6 +374,9 @@ void PetakPPH::bayarPajak(User& user, Game* game) {
     } else if (user.getUang() >= tagihanPajak) {
         user -= tagihanPajak;
         std::cout << "[SUCCESS] Pajak terbayar. Sisa uang: M" << user.getUang() << "\n";
+
+        game->getLogger().addLog(game->getTurn(), user.getUsername(), "Bayar Pajak", "Membayar Pajak sebesar M" + std::to_string(tagihanPajak));
+
     } else {
         std::cout << "[WARNING] Saldo tidak mencukupi!\n";
         //Bangkrut - Likuidasi
@@ -393,6 +413,9 @@ void PetakPBM::bayarPajak(User& user, Game* game) {
     } else if (user.getUang() >= tagihanPajak) {
         user -= tagihanPajak;
         std::cout << "[SUCCESS] Pajak terbayar. Sisa uang: M" << user.getUang() << "\n";
+
+        game->getLogger().addLog(game->getTurn(), user.getUsername(), "Bayar Pajak", "Membayar Pajak sebesar M" + std::to_string(tagihanPajak));
+
     } else {
         std::cout << "[WARNING] Saldo tidak mencukupi untuk membayar pajak!\n";
         //Bangkrut - Likuidasi

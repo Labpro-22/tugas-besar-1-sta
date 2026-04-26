@@ -56,7 +56,7 @@ public:
 class PetakLahan : public PetakProperti{
 private:
     void beliLahan(User* user);
-    void bayarSewa(User* user);
+    void bayarSewa(User* user, Game* game);
 public:
     PetakLahan();
     PetakLahan(int index, std::string kodePetak, std::string name, std::string kategori, Street* sertifikat, std::string warna);
@@ -70,7 +70,7 @@ public:
 // [2.2]
 class PetakStasiun : public PetakProperti{
 private:
-    void bayarSewa(User* user);
+    void bayarSewa(User* user, Game* game);
 public:
     PetakStasiun();
     PetakStasiun(int index, std::string kodePetak, std::string name, std::string kategori, RailRoad* sertifikat, std::string warna);

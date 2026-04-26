@@ -526,15 +526,13 @@ void configBase::save(const std::string &pathSave , const Game& game){
     savedConfig.setDeckKartuSpesial(deck);
 
     StateLog logState;
-    for (const Logger& logger : game.getLog()) {
-        for (const LogEntry& entry : logger.getLogs()) {
+    for (const LogEntry& entry : game.getLogger().getLogs()) {
             confLog logEntry;
             logEntry.turn = entry.getTurn();
             logEntry.username = entry.getUsername();
             logEntry.jenisAksi = entry.getJenisAksi();
             logEntry.detail = entry.getDetail();
             logState.log.push_back(logEntry);
-        }
     }
     logState.jumlahLog = static_cast<int>(logState.log.size());
     savedConfig.setLog(logState);

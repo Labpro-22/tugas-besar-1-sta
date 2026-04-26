@@ -146,6 +146,9 @@ void Lelang::mulaiLelang() {
             } else { 
                 this->bid(currentUser, nominal);
                 std::cout << "[SUCCESS] " << currentUser->getUsername() << " memimpin lelang dengan bid M" << nominal << "!\n";
+
+                if (gameInstance) gameInstance->getLogger().addLog(gameInstance->getTurn(), currentUser->getUsername(), "Bid Lelang", "Bid M" + std::to_string(nominal) + " untuk " + targetProperti->getNama());
+
                 this->nextTurn();
             } 
         } catch (const gameException& e) {
@@ -164,7 +167,10 @@ void Lelang::mulaiLelang() {
         // Potong uang pemenang dan berikan sertifikat
         *(pemenang) -= hargaFinal;
         targetProperti->setOwner(pemenang);
-        targetProperti->setStatus(PropStatus::OWNED); 
+        targetProperti->setStatus(PropStatus::OWNED);
+        
+        if (gameInstance) gameInstance->getLogger().addLog(gameInstance->getTurn(), pemenang->getUsername(), "Menang Lelang", "Memenangkan lelang " + targetProperti->getNama() + " seharga M" + std::to_string(hargaFinal));
+        
     } else {
         std::cout << "\n=== LELANG BATAL ===\n";
         std::cout << "Semua pemain PASS. Properti kembali ke Bank.\n";
