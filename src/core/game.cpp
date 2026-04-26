@@ -2,13 +2,14 @@
 #include "core/bangun.hpp"
 #include <utility>
 
-Game::Game() : MAX_TURN(100), turn(1), end(false), currentPemain(0) {} // Asumsi default batas giliran
-Game::Game(int Maxturn) : MAX_TURN(Maxturn), turn(1), end(false), currentPemain(0) {}
+Game::Game() : MAX_TURN(100), turn(1), end(false), currentPemain(0), sudahPakaiKartuKemampuan(false) {} // Asumsi default batas giliran
+Game::Game(int Maxturn) : MAX_TURN(Maxturn), turn(1), end(false), currentPemain(0), sudahPakaiKartuKemampuan(false) {}
 Game::Game(int maxTurn,int turn,bool end,std::vector<User> pemain,std::vector<std::unique_ptr<Properti>>&& daftarProperti,
 Board board,Dadu dadu,std::map<std::string, PetakProperti*> lokasiKode,std::map<std::string, std::vector<PetakProperti*>> lokasiColorGroup) 
 : MAX_TURN(maxTurn),turn(turn),end(end),pemain(std::move(pemain)),
 daftarProperti(std::move(daftarProperti)),currentPemain(0),board(std::move(board)),
-dadu(std::move(dadu)),lokasiKode(std::move(lokasiKode)),lokasiColorGroup(std::move(lokasiColorGroup)) {}
+dadu(std::move(dadu)),deckKartuSpesial(),sudahPakaiKartuKemampuan(false),
+lokasiKode(std::move(lokasiKode)),lokasiColorGroup(std::move(lokasiColorGroup)) {}
 
 bool Game::isEnd() {
     // Jika Pemain tinggal satu atau end true
@@ -43,6 +44,7 @@ void Game::nextPlayer() {
         int kandidat = (currentPemain + langkah) % totalPemain;
         if (!pemain[kandidat].isBankrupt()) {
             currentPemain = kandidat;
+            sudahPakaiKartuKemampuan = false;
             return;
         }
     }
@@ -172,6 +174,11 @@ bool Game::handleJailTurn(User& user) {
 }
 
 void Game::sendPlayerToJail(User& user) {
+    if (user.isShieldActive()) {
+        std::cout << "[KARTU] ShieldCard aktif. Efek masuk penjara dibatalkan.\n";
+        return;
+    }
+
     const int jailIndex = board.getPenjaraIndex();
     if (jailIndex >= 0) {
         user.sendToJail(jailIndex);
@@ -270,6 +277,31 @@ void Game::prosesBangun(Properti* properti) {
     }
 
     Bangun::eksekusiBangun(street->getOwner(), street, grupWarna);
+}
+
+void Game::prosesPakaiKartu(User& user, KartuSpesial* kartu) {
+    if (kartu == nullptr) {
+        throw SyaratPropertiInvalidException("Gagal Pakai Kartu: Kartu tidak valid!");
+    }
+    if (sudahPakaiKartuKemampuan) {
+        throw SyaratPropertiInvalidException("Gagal Pakai Kartu: Kartu kemampuan hanya boleh digunakan 1 kali dalam 1 giliran!");
+    }
+
+    KartuSpesial* kartuDipakai = user.removeKartuSpesial(kartu);
+    if (kartuDipakai == nullptr) {
+        throw SyaratPropertiInvalidException("Gagal Pakai Kartu: Kartu tidak ada di tangan pemain!");
+    }
+
+    try {
+        kartuDipakai->apply(this, user);
+    } catch (...) {
+        deckKartuSpesial.discard(kartuDipakai);
+        sudahPakaiKartuKemampuan = true;
+        throw;
+    }
+
+    deckKartuSpesial.discard(kartuDipakai);
+    sudahPakaiKartuKemampuan = true;
 }
 
 void Game::prosesLoad() {

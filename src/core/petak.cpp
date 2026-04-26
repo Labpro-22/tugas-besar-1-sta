@@ -475,8 +475,16 @@ PetakPergiPenjara::PetakPergiPenjara(int index, std::string kodePetak, std::stri
     : PetakSpesial(index, kodePetak, name, kategori, warna) {}
 PetakPergiPenjara::~PetakPergiPenjara() {}
 void PetakPergiPenjara::onLanded(User* user, Game* game) {
+    if (user == nullptr || game == nullptr) {
+        return;
+    }
+
     std::cout << "[INFO] Kamu mendarat di Petak Pergi Penjara! Kamu akan langsung dipindahkan ke penjara.\n";
-    std::cout << "[INFO] Kamu tidak mendapatkan gaji GO meskipun posisi dipindahkan melewati papan.\n";
-    std::cout << "[INFO] Giliran pemain berakhir setelah masuk penjara.\n";
+    if (user->isShieldActive()) {
+        std::cout << "[INFO] ShieldCard menahan efek Pergi Penjara.\n";
+    } else {
+        std::cout << "[INFO] Kamu tidak mendapatkan gaji GO meskipun posisi dipindahkan melewati papan.\n";
+        std::cout << "[INFO] Giliran pemain berakhir setelah masuk penjara.\n";
+    }
     game->sendPlayerToJail(*user);
 }

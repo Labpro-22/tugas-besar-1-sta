@@ -42,8 +42,13 @@ bool Command::execute(User& user, const std::string& input, Game& game, int& con
         else consecutiveDadu -= 1;
 
         if (consecutiveDadu >= 3) {
-            user.sendToJail(game.getBoard()->getPenjaraIndex());
-            std::cout << "Anda melempar dadu 3 kali berturut-turut! Anda dikirim ke penjara.\n";
+            const bool shieldAktif = user.isShieldActive();
+            game.sendPlayerToJail(user);
+            if (shieldAktif) {
+                std::cout << "Anda melempar dadu 3 kali berturut-turut, tetapi ShieldCard menahan efek masuk penjara.\n";
+            } else {
+                std::cout << "Anda melempar dadu 3 kali berturut-turut! Anda dikirim ke penjara.\n";
+            }
             return false;
         }
         user.move(game.getDadu()->getTotal(),game.getBoard());
@@ -269,9 +274,41 @@ bool Command::execute(User& user, const std::string& input, Game& game, int& con
         return true;
     }
     else if (first == "GUNAKAN_KEMAMPUAN"){
-        // JALANIN FUNGSI GUNAKAN_KEMAMPUAN
-        // Tampilin Daftar KEMAMPUAN
-        // [!] MASIH BELUM
+        if (consecutiveDadu != 0) {
+            std::cout << "Kartu kemampuan hanya bisa digunakan sebelum melempar dadu.\n";
+            return true;
+        }
+
+        const std::vector<KartuSpesial*>& kartuSpesial = user.getKartuSpesial();
+        if (kartuSpesial.empty()) {
+            std::cout << "Kamu tidak memiliki kartu kemampuan spesial.\n";
+            return true;
+        }
+
+        std::cout << "=== Kartu Kemampuan Spesial ===\n";
+        for (size_t i = 0; i < kartuSpesial.size(); ++i) {
+            std::cout << i + 1 << ". " << kartuSpesial[i]->getNama()
+                      << " - " << kartuSpesial[i]->getDeskripsi() << "\n";
+        }
+
+        std::cout << "Pilih kartu (0 untuk batal): ";
+        int pilihan;
+        std::cin >> pilihan;
+        while (pilihan < 0 || pilihan > static_cast<int>(kartuSpesial.size())) {
+            std::cout << "Pilihan tidak valid.\n";
+            std::cout << "Pilih kartu: ";
+            std::cin >> pilihan;
+        }
+        if (pilihan == 0) {
+            std::cout << "Penggunaan kartu dibatalkan.\n";
+            return true;
+        }
+
+        try {
+            game.prosesPakaiKartu(user, kartuSpesial[pilihan - 1]);
+        } catch (const std::exception& e) {
+            std::cout << "[ERROR] " << e.what() << "\n";
+        }
         return true;
     }
     else if (first == "SIMPAN"){

@@ -29,6 +29,7 @@ private:
     Board board;
     Dadu dadu;
     CardDeck<KartuSpesial> deckKartuSpesial;
+    bool sudahPakaiKartuKemampuan;
     // Mapping
     std::map<std::string, PetakProperti*> lokasiKode; // Kode -> Petak
     std::map<std::string, std::vector<PetakProperti*>> lokasiColorGroup; // Color X -> Semua Petak dengan color X
@@ -78,6 +79,7 @@ public:
     void prosesGadai(User& user, Properti* properti);
     void prosesTebus(User& user, Properti* properti);
     void prosesBangun(Properti* properti);
+    void prosesPakaiKartu(User& user, KartuSpesial* kartu);
     void prosesLoad();
     void prosesSave();
 };

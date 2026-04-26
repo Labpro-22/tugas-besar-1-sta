@@ -77,6 +77,7 @@ public:
     void resetEfekKartuSpesial();
     void addKartuSpesial(KartuSpesial* kartu, CardDeck<KartuSpesial>* deck);
     KartuSpesial* dropKartuSpesial();
+    KartuSpesial* removeKartuSpesial(KartuSpesial* kartu);
     
     // Aksi - Penjara
     void sendToJail(int jailIndex);

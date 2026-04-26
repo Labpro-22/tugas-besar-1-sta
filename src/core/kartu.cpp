@@ -78,8 +78,11 @@ KartuMasukPenjara::KartuMasukPenjara()
 
 void KartuMasukPenjara::apply(Game* game, User& user) {
     std::cout << "\n[KESEMPATAN] \"" << deskripsi << "\"\n";
+    const bool shieldAktif = user.isShieldActive();
     game->sendPlayerToJail(user);
-    std::cout << "> " << user.getUsername() << " langsung dijebloskan ke Penjara!\n";
+    if (!shieldAktif) {
+        std::cout << "> " << user.getUsername() << " langsung dijebloskan ke Penjara!\n";
+    }
 }
 
 // Kartu Dana Umum
@@ -181,7 +184,7 @@ int MoveCard::getLangkah() const {
 
 void MoveCard::apply(Game* game, User& user) {
     std::cout << "\n[SPESIAL] Menggunakan Move Card! Bidak melesat " << langkah << " petak.\n";
-    user.move(langkah, game->getBoard());
+    game->move(langkah, user);
 }
 
 // 2. DiscountCard
@@ -225,6 +228,7 @@ void TeleportCard::apply(Game* game, User& user) {
     if (targetPetak >= 0 && targetPetak < game->getBoard()->getSize()) {
         user.setKoordinat(targetPetak);
         std::cout << "Berhasil teleport ke indeks " << targetPetak << ".\n";
+        game->getBoard()->getPetakAt(user.getKoordinat())->onLanded(&user, game);
     } else {
         std::cout << "Pilihan tidak valid! Kartu terbuang sia-sia :))))))))\n";
     }

@@ -206,6 +206,17 @@ KartuSpesial* User::dropKartuSpesial() {
   return kartuDibuang;
 }
 
+KartuSpesial* User::removeKartuSpesial(KartuSpesial* kartu) {
+  auto it = std::find(this->kartuSpesial.begin(), this->kartuSpesial.end(), kartu);
+  if (it == this->kartuSpesial.end()) {
+    return nullptr;
+  }
+
+  KartuSpesial* kartuDihapus = *it;
+  this->kartuSpesial.erase(it);
+  return kartuDihapus;
+}
+
 const std::vector<KartuSpesial*>& User::getKartuSpesial() const {
   return kartuSpesial;
 }
