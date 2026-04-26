@@ -46,13 +46,18 @@ public:
     // Getter
     bool isEnd(); // Kondisi Max Turn atau Config : Bangkrut
     int getTurn();
+    int getTurn() const;
+    int getMaxTurn() const;
     Board* getBoard();
     std::vector<User>& getPemain();
+    const std::vector<User>& getPemain() const;
     std::vector<Logger> getLog();
+    const std::vector<Logger>& getLog() const;
     Dadu* getDadu();
     std::map<std::string, PetakProperti*>& getLokasiKode();
     std::map<std::string, std::vector<PetakProperti*>>& getLokasiColorGroup();
     CardDeck<KartuSpesial>& getDeckKartuSpesial();
+    const CardDeck<KartuSpesial>& getDeckKartuSpesial() const;
 
     int getCurrentPemainIndex() const;
     int getActivePlayerCount() const;

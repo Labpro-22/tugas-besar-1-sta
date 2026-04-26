@@ -92,6 +92,7 @@ public:
     MoveCard();
     void apply(Game* game, User& user) override;
     void randomize();
+    int getLangkah() const;
 };
 
 class DiscountCard : public KartuSpesial {
@@ -101,6 +102,7 @@ public:
     DiscountCard();
     void apply(Game* game, User& user) override;
     void randomize();
+    int getPersentaseDiskon() const;
 };
 
 class ShieldCard : public KartuSpesial {
@@ -172,6 +174,14 @@ public:
         if(card != nullptr) {
             discardPile.push_back(card);
         }
+    }
+
+    const std::vector<T*>& getDrawPile() const {
+        return drawPile;
+    }
+
+    const std::vector<T*>& getDiscardPile() const {
+        return discardPile;
     }
 };
 
