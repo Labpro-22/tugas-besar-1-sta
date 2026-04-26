@@ -82,6 +82,14 @@ int Game::getTurn() {
     return turn;
 }
 
+int Game::getTurn() const {
+    return turn;
+}
+
+int Game::getMaxTurn() const {
+    return MAX_TURN;
+}
+
 int Game::getCurrentPemainIndex() const {
     return currentPemain;
 }
@@ -175,11 +183,14 @@ void Game::leave(User& user) {
 
 Board* Game::getBoard() {return &board;}
 std::vector<User>& Game::getPemain() {return pemain;}
+const std::vector<User>& Game::getPemain() const {return pemain;}
 std::vector<Logger> Game::getLog(){return Log;}
+const std::vector<Logger>& Game::getLog() const {return Log;}
 Dadu* Game::getDadu() {return &dadu;}
 std::map<std::string, PetakProperti*>& Game::getLokasiKode() {return lokasiKode;}
 std::map<std::string, std::vector<PetakProperti*>>& Game::getLokasiColorGroup() {return lokasiColorGroup;}
 CardDeck<KartuSpesial>& Game::getDeckKartuSpesial() {return deckKartuSpesial;}
+const CardDeck<KartuSpesial>& Game::getDeckKartuSpesial() const {return deckKartuSpesial;}
 
 void Game::move(int langkah, User& user) {
     user.move(langkah, &board);

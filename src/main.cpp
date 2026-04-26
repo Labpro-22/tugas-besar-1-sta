@@ -19,7 +19,7 @@ int main(){
     std::cin >> option;
     Game Nimonspoli;
     if (option=="y") {
-        Nimonspoli; // build.buildLoadGame(&config);
+        // Nimonspoli = build.buildLoadGame(&config,); 
     }
     else {
         Nimonspoli = build.buildNewGame(&config);

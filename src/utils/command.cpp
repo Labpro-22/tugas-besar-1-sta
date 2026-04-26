@@ -11,7 +11,7 @@ bool Command::execute(User& user, const std::string& input, Game& game, int& con
 
     if (first.empty()) {
         std::cout << "Perintah kosong.\n";
-        return false;
+        return true;
     }
 
     if (first == "CETAK_PAPAN"){
@@ -19,14 +19,14 @@ bool Command::execute(User& user, const std::string& input, Game& game, int& con
         return true;
     }
     else if ((first == "LEMPAR_DADU" || first == "ATUR_DADU") && consecutiveDadu >= 0){
-        if (first == "LEMPAR_DADU") {
+        if (first == "ATUR_DADU") {
             int x, y;
             std::string extra;
             if ((iss >> x >> y) && !(iss >> extra)) {
                 game.getDadu()->manual(x,y);
             }else{
                 std::cout << "Format ATUR_DADU salah. Gunakan: ATUR_DADU <X> <Y>\n";
-                return false;
+                return true;
             }
         }else{
             game.getDadu()->shuffle();
@@ -51,7 +51,7 @@ bool Command::execute(User& user, const std::string& input, Game& game, int& con
             return true;
         }
         std::cout << "Properti tidak ditemukan.\n";
-        return false;
+        return true;
     }
     else if (first == "CETAK_PROPERTI"){
         std::string input;
@@ -65,41 +65,52 @@ bool Command::execute(User& user, const std::string& input, Game& game, int& con
             return true;
         }
         std::cout << "User tidak ditemukan.\n";
-        return false;
+        return true;
     }
     else if (first == "GADAI"){
         // JALANIN FUNGSI GADAI
+        // Tampilin Daftar Properti 
+        // game.prosesGadai(user, game.getLokasiKode()[input]);
         return true;
     }
     else if (first == "TEBUS"){
         // JALANIN FUNGSI TEBUS
+        // Tampilin Daftar Properti
+        // game.prosesTebus(user, game.getLokasiKode()[input]);
         return true;
     }
     else if (first == "BANGUN"){
         // JALANIN FUNGSI BANGUN
+        // Tampilin Daftar Properti
+        // game.prosesBangun(game.getLokasiKode()[input]);
         return true;
     }
     else if (first == "GUNAKAN_KEMAMPUAN"){
         // JALANIN FUNGSI GUNAKAN_KEMAMPUAN
+        // Tampilin Daftar KEMAMPUAN
+        // [!] MASIH BELUM
         return true;
     }
     else if (first == "SIMPAN"){
         std::string namaFile;
         std::string extra;
+        configBase config("");
         if ((iss >> namaFile) && !(iss >> extra)) {
+            config.save(namaFile, game);
             return true;
         }
         std::cout << "Format SIMPAN salah. Gunakan: SIMPAN <nama_file>\n";
-        return false;
+        return true;
     }
     else if (first == "MUAT"){
         std::string namaFile;
         std::string extra;
         if ((iss >> namaFile) && !(iss >> extra)) {
+            
             return true;
         }
         std::cout << "Format MUAT salah. Gunakan: MUAT <nama_file>\n";
-        return false;
+        return true;
     }
     else if (first == "CETAK_LOG"){
         std::string extra;
@@ -113,13 +124,13 @@ bool Command::execute(User& user, const std::string& input, Game& game, int& con
             return true;
         }
         std::cout << "Format CETAK_LOG salah. Gunakan: CETAK_LOG atau CETAK_LOG <jumlah>\n";
-        return false;
+        return true;
     }
     else if (first == "SELESAI"){
         return false;
     }
     else {
         std::cout << "Perintah tidak dikenali. Ketik HELP untuk daftar perintah yang tersedia.\n";
-        return false;
+        return true;
     }
 }
