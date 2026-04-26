@@ -82,6 +82,7 @@ public:
 
     // Method 
     void move(int langkah, User& user);
+    void prosesPembayaran(User& debtor, User* creditor, int amount);
     void prosesGadai(User& user, Properti* properti);
     void prosesTebus(User& user, Properti* properti);
     void prosesBangun(Properti* properti);

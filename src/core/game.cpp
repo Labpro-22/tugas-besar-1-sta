@@ -1,5 +1,6 @@
 #include "core/game.hpp"
 #include "core/bangun.hpp"
+#include "core/bangkrut.hpp"
 #include <utility>
 
 Game::Game() : MAX_TURN(100), turn(1), end(false), currentPemain(0), sudahBagikanKartuSpesial(false), sudahPakaiKartuKemampuan(false) {} // Asumsi default batas giliran
@@ -166,14 +167,13 @@ bool Game::handleJailTurn(User& user) {
     }
 
     if (user.mustPayJailFine()) {
-        if (user.getUang() < jailFine) {
-            throw UangTidakCukupException("Uang pemain tidak cukup untuk membayar denda penjara!");
+        prosesPembayaran(user, nullptr, jailFine);
+        if (!user.isBankrupt()) {
+            user.releaseFromJail();
+            std::cout << user.getUsername() << " membayar denda penjara M" << jailFine << " dan keluar dari penjara.\n";
+            return true;
         }
-
-        user -= jailFine;
-        user.releaseFromJail();
-        std::cout << user.getUsername() << " membayar denda penjara M" << jailFine << " dan keluar dari penjara.\n";
-        return true;
+        return false;
     }
 
     std::cout << user.getUsername() << " sedang di penjara.\n";
@@ -184,14 +184,13 @@ bool Game::handleJailTurn(User& user) {
     std::cin >> pilihan;
 
     if (pilihan == 1) {
-        if (user.getUang() < jailFine) {
-            throw UangTidakCukupException("Uang pemain tidak cukup untuk membayar denda penjara!");
+        prosesPembayaran(user, nullptr, jailFine);
+        if (!user.isBankrupt()) {
+            user.releaseFromJail();
+            std::cout << user.getUsername() << " membayar denda penjara dan keluar.\n";
+            return true;
         }
-
-        user -= jailFine;
-        user.releaseFromJail();
-        std::cout << user.getUsername() << " membayar denda penjara dan keluar.\n";
-        return true;
+        return false;
     }
 
     dadu.shuffle();
@@ -241,6 +240,29 @@ const CardDeck<KartuSpesial>& Game::getDeckKartuSpesial() const {return deckKart
 void Game::move(int langkah, User& user) {
     user.move(langkah, &board);
     board.getPetakAt(user.getKoordinat())->onLanded(&user, this);
+}
+
+void Game::prosesPembayaran(User& debtor, User* creditor, int amount) {
+    if (amount <= 0 || debtor.isBankrupt()) {
+        return;
+    }
+
+    if (debtor.getUang() < amount) {
+        Bangkrut sistemBangkrut;
+        if (sistemBangkrut.isPayable(debtor, amount)) {
+            sistemBangkrut.likuidasi(debtor, amount);
+        }
+
+        if (debtor.getUang() < amount) {
+            sistemBangkrut.executeBangkrut(debtor, creditor, this);
+            return;
+        }
+    }
+
+    debtor -= amount;
+    if (creditor != nullptr && !creditor->isBankrupt()) {
+        *creditor += amount;
+    }
 }
 
 void Game::prosesGadai(User& user, Properti* properti) {

@@ -70,6 +70,7 @@ void KartuMundurTigaPetak::apply(Game* game, User& user) {
     std::cout << "\n[KESEMPATAN] \"" << deskripsi << "\"\n";
     user.move(-3, game->getBoard());
     std::cout << "> " << user.getUsername() << " mundur ke petak indeks " << user.getKoordinat() << ".\n";
+    game->getBoard()->getPetakAt(user.getKoordinat())->onLanded(&user, game);
 }
 
 // 3. "Masuk Penjara."
@@ -101,19 +102,16 @@ void KartuHadiahUlangTahun::apply(Game* game, User& user) {
                           << " dilindungi ShieldCard dan tidak membayar kado.\n";
                 continue;
             }
-            // BANGKRUT KALAU GABISA
-            int bayar = (p.getUang() >= 100) ? 100 : p.getUang();
-            p -= bayar;
+            int uangSebelum = user.getUang();
+            game->prosesPembayaran(p, &user, 100);
+            int bayar = user.getUang() - uangSebelum;
             totalHadiah += bayar;
-            
-            if (bayar < 100) {
-                std::cout << "> " << p.getUsername() << " tidak memiliki cukup uang, hanya memberikan M" << bayar << ".\n";
-            } else {
-                std::cout << "> " << p.getUsername() << " memberikan kado M100.\n";
+
+            if (bayar > 0) {
+                std::cout << "> " << p.getUsername() << " memberikan kado M" << bayar << ".\n";
             }
         }
     }
-    user += totalHadiah;
     std::cout << "> Anda mendapatkan total M" << totalHadiah << "!\n";
 }
 
@@ -129,13 +127,9 @@ void KartuBiayaDokter::apply(Game* game, User& user) {
         return;
     }
 
-    if (user.getUang() >= 700) {
-        user -= 700;
+    game->prosesPembayaran(user, nullptr, 700);
+    if (!user.isBankrupt()) {
         std::cout << "> Sisa uang Anda: M" << user.getUang() << "\n";
-    } else {
-        // BANGKRUT
-        std::cout << "> Anda tidak memiliki cukup uang untuk membayar biaya dokter.\n";
-        
     }
 }
 
@@ -152,17 +146,21 @@ void KartuNyaleg::apply(Game* game, User& user) {
     }
     
     for (auto& p : game->getPemain()) {
-        if (user.getUang() < biayaPerPemain) {
-            std::cout << "> Anda tidak memiliki cukup uang untuk membayar biaya kampanye kepada " << p.getUsername() << ".\n";
-            //BANGKRUT
-        }
-        if (p.getUsername() != user.getUsername() && p.getStatus() != 2) {
-            user -= biayaPerPemain;
-            p += biayaPerPemain;
-            std::cout << "> Membayar dana kampanye M200 kepada " << p.getUsername() << ".\n";
+        if (&p != &user && !p.isBankrupt()) {
+            int uangPenerimaSebelum = p.getUang();
+            game->prosesPembayaran(user, &p, biayaPerPemain);
+            int terbayar = p.getUang() - uangPenerimaSebelum;
+            if (terbayar > 0) {
+                std::cout << "> Membayar dana kampanye M" << terbayar << " kepada " << p.getUsername() << ".\n";
+            }
+            if (user.isBankrupt()) {
+                break;
+            }
         }
     }
-    std::cout << "> Sisa uang Anda: M" << user.getUang() << "\n";
+    if (!user.isBankrupt()) {
+        std::cout << "> Sisa uang Anda: M" << user.getUang() << "\n";
+    }
 }
 
 KartuSpesial::KartuSpesial(std::string nama, std::string deskripsi) 

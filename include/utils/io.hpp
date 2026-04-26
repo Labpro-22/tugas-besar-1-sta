@@ -91,8 +91,10 @@ public:
 
 class StateDeck{
 public:
-    int jumlahKartuDeck;
+    int jumlahKartuDeck = 0;
     std::vector<std::string> jenis;
+    std::vector<std::string> drawJenis;
+    std::vector<std::string> discardJenis;
 };
 
 class confLog{

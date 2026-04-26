@@ -80,7 +80,7 @@ void PetakLahan::beliLahan(User* user) {
     sertifikat->setOwner(user);
     sertifikat->setStatus(PropStatus::OWNED);
 }
-void PetakLahan::bayarSewa(User* user) {
+void PetakLahan::bayarSewa(User* user, Game* game) {
     if (sertifikat->getOwner() == nullptr) {
         throw BukanPemilikException();
     }
@@ -89,12 +89,16 @@ void PetakLahan::bayarSewa(User* user) {
     if (biayaSewa == 0) {
         return;
     }
-   
-    if (user->getUang() < biayaSewa) {
-        throw UangTidakCukupException();
+
+    if (game != nullptr) {
+        game->prosesPembayaran(*user, sertifikat->getOwner(), biayaSewa);
+    } else {
+        if (user->getUang() < biayaSewa) {
+            throw UangTidakCukupException();
+        }
+        *(user) -= biayaSewa;
+        *(sertifikat->getOwner()) += biayaSewa;
     }
-    *(user) -= biayaSewa;
-    *(sertifikat->getOwner()) += biayaSewa;
 }
 void PetakLahan::onLanded(User* user, Game* game) {
     if (sertifikat->getStatus()==PropStatus::BANK){
@@ -130,10 +134,9 @@ void PetakLahan::onLanded(User* user, Game* game) {
         std::cout << "[INFO] Properti dimiliki oleh " << sertifikat->getOwner()->getUsername() << ".\n";
         std::cout << "Waktunya bayar sewa!\n";
         try {
-            bayarSewa(user);
+            bayarSewa(user, game);
         } catch (const UangTidakCukupException& e) {
             std::cout << "[ERROR] Uang tidak cukup untuk membayar sewa.\n";
-            // BANGKRUT
         }
     }
     else{return;}
@@ -154,7 +157,7 @@ PetakStasiun::PetakStasiun(int index, std::string kodePetak, std::string name, s
 : PetakProperti(index, kodePetak, name, kategori, sertifikat, warna){}
 PetakStasiun::~PetakStasiun() {}
 
-void PetakStasiun::bayarSewa(User* user) {
+void PetakStasiun::bayarSewa(User* user, Game* game) {
     RailRoad* stasiun = dynamic_cast<RailRoad*>(sertifikat);
     int biayaSewa = stasiun->hitungSewa(0);
     biayaSewa = hitungTagihanSetelahEfekKartu(user, biayaSewa, true);
@@ -162,14 +165,17 @@ void PetakStasiun::bayarSewa(User* user) {
         return;
     }
 
-    if (user->getUang() < biayaSewa) {
-        throw UangTidakCukupException();
+    if (game != nullptr) {
+        game->prosesPembayaran(*user, sertifikat->getOwner(), biayaSewa);
+    } else {
+        if (user->getUang() < biayaSewa) {
+            throw UangTidakCukupException();
+        }
+        *(user) -= biayaSewa;
+        *(sertifikat->getOwner()) += biayaSewa;
     }
-    *(user) -= biayaSewa;
-    *(sertifikat->getOwner()) += biayaSewa;
 }
 void PetakStasiun::onLanded(User* user, Game* game) {
-    (void) game;
     if (sertifikat->getStatus()==PropStatus::BANK){
         std::cout << "Kamu mendapatkan stasiun kereta api "<< getName() << "!\n";
         sertifikat->setOwner(user);
@@ -178,10 +184,9 @@ void PetakStasiun::onLanded(User* user, Game* game) {
         std::cout << "[INFO] Properti dimiliki oleh " << sertifikat->getOwner()->getUsername() << ".\n";
         std::cout << "Waktunya bayar sewa!\n";
         try {
-            bayarSewa(user);
+            bayarSewa(user, game);
         } catch (const UangTidakCukupException& e) {
             std::cout << "[ERROR] Uang tidak cukup untuk membayar sewa.\n";
-            // BANGKRUT
 
         }
     }
@@ -203,11 +208,15 @@ void PetakUtilitas::bayarSewa(User* user, Game* game) {
         return;
     }
 
-    if (user->getUang() < biayaSewa) {
-        throw UangTidakCukupException();
+    if (game != nullptr) {
+        game->prosesPembayaran(*user, sertifikat->getOwner(), biayaSewa);
+    } else {
+        if (user->getUang() < biayaSewa) {
+            throw UangTidakCukupException();
+        }
+        *(user) -= biayaSewa;
+        *(sertifikat->getOwner()) += biayaSewa;
     }
-    *(user) -= biayaSewa;
-    *(sertifikat->getOwner()) += biayaSewa;
 }
 void PetakUtilitas::onLanded(User* user, Game* game) {
     if (sertifikat->getStatus()==PropStatus::BANK){
@@ -221,7 +230,6 @@ void PetakUtilitas::onLanded(User* user, Game* game) {
             bayarSewa(user, game);
         } catch (const UangTidakCukupException& e) {
             std::cout << "[ERROR] Uang tidak cukup untuk membayar sewa.\n";
-            // BANGKRUT
         }
     }
     else{return;}
@@ -353,22 +361,13 @@ void PetakPPH::bayarPajak(User& user, Game* game) {
     }
 
     if (tagihanPajak == 0) {
-        std::cout << "[SUCCESS] Pajak flat dibatalkan oleh ShieldCard.\n";
-    } else if (user.getUang() >= tagihanPajak) {
-        user -= tagihanPajak;
-        std::cout << "[SUCCESS] Pajak terbayar. Sisa uang: M" << user.getUang() << "\n";
-    } else {
-        std::cout << "[WARNING] Saldo tidak mencukupi!\n";
-        //Bangkrut - Likuidasi
-        Bangkrut sistemBangkrut;
-        // Cek apakah dengan menjual aset/gadai pemain masih bisa bayar
-        if (!sistemBangkrut.isPayable(user, tagihanPajak)) {
-            std::cout << "[INFO] Aset tidak mencukupi. Mengeksekusi kebangkrutan ke Bank...\n";
-            sistemBangkrut.executeBangkrut(user, nullptr, game);
-        } else {
-            std::cout << "[INFO] Anda masih memiliki aset yang bisa dilikuidasi.\n";
-            std::cout << "[!] Silakan gunakan perintah GADAI atau JUAL BANGUNAN untuk melunasi hutang!\n";
-            // Likuidasi 
+        std::cout << "[SUCCESS] Pajak dibatalkan oleh ShieldCard.\n";
+        return;
+    }
+    if (game != nullptr) {
+        game->prosesPembayaran(user, nullptr, tagihanPajak);
+        if (!user.isBankrupt()) {
+            std::cout << "[SUCCESS] Pajak terbayar. Sisa uang: M" << user.getUang() << "\n";
         }
     }
 }
@@ -390,21 +389,12 @@ void PetakPBM::bayarPajak(User& user, Game* game) {
     const int tagihanPajak = hitungTagihanSetelahEfekKartu(&user, static_cast<int>(pajakFlat), false);
     if (tagihanPajak == 0) {
         std::cout << "[SUCCESS] Pajak dibatalkan oleh ShieldCard.\n";
-    } else if (user.getUang() >= tagihanPajak) {
-        user -= tagihanPajak;
-        std::cout << "[SUCCESS] Pajak terbayar. Sisa uang: M" << user.getUang() << "\n";
-    } else {
-        std::cout << "[WARNING] Saldo tidak mencukupi untuk membayar pajak!\n";
-        //Bangkrut - Likuidasi
-        Bangkrut sistemBangkrut;
-        // Cek apakah dengan menjual aset/gadai pemain masih bisa bayar
-        if (!sistemBangkrut.isPayable(user, tagihanPajak)) {
-            std::cout << "[INFO] Aset tidak mencukupi. Mengeksekusi kebangkrutan ke Bank...\n";
-            sistemBangkrut.executeBangkrut(user, nullptr, game);
-        } else {
-            std::cout << "[INFO] Anda masih memiliki aset yang bisa dilikuidasi.\n";
-            std::cout << "[!] Silakan gunakan perintah GADAI atau JUAL BANGUNAN untuk melunasi hutang!\n";
-            // Likuidasi 
+        return;
+    }
+    if (game != nullptr) {
+        game->prosesPembayaran(user, nullptr, tagihanPajak);
+        if (!user.isBankrupt()) {
+            std::cout << "[SUCCESS] Pajak terbayar. Sisa uang: M" << user.getUang() << "\n";
         }
     }
 }

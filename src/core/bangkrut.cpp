@@ -54,17 +54,6 @@ std::vector<Properti*> Bangkrut::executeBangkrut(User& debtor, User* creditor, G
 
     else{
         propertiUntukDilelang = transferToBank(debtor);
-
-        if (game != nullptr) {
-            for (Properti* p : propertiUntukDilelang) {
-                std::cout << "\n[SITA BANK] Properti " << p->getNama() << " milik " << debtor.getUsername() << " disita dan akan dilelang!\n";
-                game->mulaiLelang(p, nullptr);
-            }
-        }
-    }
-
-    if (game != nullptr){
-        game->leave(debtor);
     }
 
     if (game != nullptr && !propertiUntukDilelang.empty()){
@@ -73,7 +62,7 @@ std::vector<Properti*> Bangkrut::executeBangkrut(User& debtor, User* creditor, G
         for (Properti* p : propertiUntukDilelang){
             if (p != nullptr){
                 std::cout << "\n -> Lelang: " << p->getNama() << " (" << p->getKode() << ") ...\n";
-                game->mulaiLelang(p, &debtor);
+                game->mulaiLelang(p, nullptr);
             }
         }
     }

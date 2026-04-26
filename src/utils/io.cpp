@@ -159,12 +159,87 @@ int getKartuSaveNilai(const KartuSpesial* kartu) {
     return 0;
 }
 
-void appendDeckState(StateDeck& state, const std::vector<KartuSpesial*>& cards) {
-    for (const KartuSpesial* kartu : cards) {
+template <class T>
+void appendDeckNames(std::vector<std::string>& output, const std::vector<T*>& cards, std::string (*getJenis)(const T*)) {
+    for (const T* kartu : cards) {
         if (kartu != nullptr) {
-            state.jenis.push_back(getKartuSaveJenis(kartu));
+            output.push_back(getJenis(kartu));
         }
     }
+}
+
+void setDeckPileFromTokens(StateDeck& deck, const std::vector<std::string>& tokens, const std::string& filePath, size_t lineNo) {
+    if (tokens.empty()) {
+        throw ConfigLoadFormatException(
+            "Baris deck kartu spesial kosong di " + filePath +
+            " baris " + std::to_string(lineNo) + "."
+        );
+    }
+
+    if (tokens[0] == "DRAW") {
+        deck.drawJenis.assign(tokens.begin() + 1, tokens.end());
+    } else if (tokens[0] == "DISCARD") {
+        deck.discardJenis.assign(tokens.begin() + 1, tokens.end());
+    } else {
+        throw ConfigLoadFormatException(
+            "Baris deck kartu spesial harus diawali DRAW atau DISCARD di " +
+            filePath + " baris " + std::to_string(lineNo) + "."
+        );
+    }
+}
+
+StateDeck buildLegacyDeckState(const std::vector<std::string>& tokens, const std::string& filePath, size_t lineNo) {
+    StateDeck deck;
+    const int jumlahDraw = parseIntStrict(tokens[0], "deckKartuSpesial.jumlahDraw", filePath, lineNo);
+    if (jumlahDraw < 0) {
+        throw ConfigLoadFormatException("Jumlah kartu deck tidak boleh negatif.");
+    }
+
+    size_t posisi = 1;
+    while (posisi < tokens.size() && tokens[posisi] != "DISCARD") {
+        deck.drawJenis.push_back(tokens[posisi]);
+        ++posisi;
+    }
+
+    if (posisi < tokens.size() && tokens[posisi] == "DISCARD") {
+        ++posisi;
+        if (posisi >= tokens.size()) {
+            throw ConfigLoadFormatException(
+                "Marker DISCARD harus diikuti jumlah kartu discard di " +
+                filePath + " baris " + std::to_string(lineNo) + "."
+            );
+        }
+
+        const int jumlahDiscard = parseIntStrict(tokens[posisi], "deckKartuSpesial.jumlahDiscard", filePath, lineNo);
+        if (jumlahDiscard < 0) {
+            throw ConfigLoadFormatException("Jumlah kartu discard pile tidak boleh negatif.");
+        }
+
+        ++posisi;
+        while (posisi < tokens.size()) {
+            deck.discardJenis.push_back(tokens[posisi]);
+            ++posisi;
+        }
+
+        if (deck.discardJenis.size() != static_cast<size_t>(jumlahDiscard)) {
+            throw ConfigLoadFormatException(
+                "Jumlah kartu discard pile tidak sesuai di " +
+                filePath + " baris " + std::to_string(lineNo) + "."
+            );
+        }
+    }
+
+    if (deck.drawJenis.size() != static_cast<size_t>(jumlahDraw)) {
+        throw ConfigLoadFormatException(
+            "Jumlah kartu draw pile tidak sesuai di " +
+            filePath + " baris " + std::to_string(lineNo) + "."
+        );
+    }
+
+    deck.jenis = deck.drawJenis;
+    deck.jenis.insert(deck.jenis.end(), deck.discardJenis.begin(), deck.discardJenis.end());
+    deck.jumlahKartuDeck = static_cast<int>(deck.jenis.size());
+    return deck;
 }
 }
 
@@ -411,25 +486,19 @@ void configBase::load(const std::string& pathLoad) {
 
     const std::string deckLine = readNextNonEmptyLine(loadFile, lineNo, pathLoad, "deckKartuSpesial");
     const std::vector<std::string> deckTokens = splitTokens(deckLine);
-    if (deckTokens.empty()) {
-        throw ConfigLoadFormatException(
-            "State deck kosong di " + pathLoad + " baris " + std::to_string(lineNo) + "."
-        );
-    }
-
     StateDeck deck;
-    deck.jumlahKartuDeck = parseIntStrict(deckTokens[0], "deck.jumlahKartuDeck", pathLoad, lineNo);
-    if (deck.jumlahKartuDeck < 0) {
-        throw ConfigLoadFormatException("Jumlah kartu deck tidak boleh negatif.");
-    }
-    if (deckTokens.size() != static_cast<size_t>(deck.jumlahKartuDeck + 1)) {
-        throw ConfigLoadFormatException(
-            "State deck harus berformat '<jumlahKartuDeck> <jenis1> ... <jenisN>' di " +
-            pathLoad + " baris " + std::to_string(lineNo) + "."
-        );
-    }
-    for (size_t i = 1; i < deckTokens.size(); ++i) {
-        deck.jenis.push_back(deckTokens[i]);
+    if (!deckTokens.empty() && (deckTokens[0] == "DRAW" || deckTokens[0] == "DISCARD")) {
+        setDeckPileFromTokens(deck, deckTokens, pathLoad, lineNo);
+
+        const std::string secondDeckLine = readNextNonEmptyLine(loadFile, lineNo, pathLoad, "deckKartuSpesial pile kedua");
+        const std::vector<std::string> secondDeckTokens = splitTokens(secondDeckLine);
+        setDeckPileFromTokens(deck, secondDeckTokens, pathLoad, lineNo);
+
+        deck.jenis = deck.drawJenis;
+        deck.jenis.insert(deck.jenis.end(), deck.discardJenis.begin(), deck.discardJenis.end());
+        deck.jumlahKartuDeck = static_cast<int>(deck.jenis.size());
+    } else {
+        deck = buildLegacyDeckState(deckTokens, pathLoad, lineNo);
     }
     loadedConfig.setDeckKartuSpesial(deck);
 
@@ -555,8 +624,10 @@ void configBase::save(const std::string &pathSave , const Game& game){
 
     StateDeck deck;
     const CardDeck<KartuSpesial>& deckGame = game.getDeckKartuSpesial();
-    appendDeckState(deck, deckGame.getDrawPile());
-    appendDeckState(deck, deckGame.getDiscardPile());
+    appendDeckNames<KartuSpesial>(deck.drawJenis, deckGame.getDrawPile(), getKartuSaveJenis);
+    appendDeckNames<KartuSpesial>(deck.discardJenis, deckGame.getDiscardPile(), getKartuSaveJenis);
+    deck.jenis = deck.drawJenis;
+    deck.jenis.insert(deck.jenis.end(), deck.discardJenis.begin(), deck.discardJenis.end());
     deck.jumlahKartuDeck = static_cast<int>(deck.jenis.size());
     savedConfig.setDeckKartuSpesial(deck);
 
@@ -610,8 +681,13 @@ void configBase::save(const std::string &pathSave , const Game& game){
     }
 
     const StateDeck& deckOutput = output.getDeckKartuSpesial();
-    saveFile << deckOutput.jumlahKartuDeck;
-    for (const std::string& jenis : deckOutput.jenis) {
+    saveFile << "DRAW";
+    for (const std::string& jenis : deckOutput.drawJenis) {
+        saveFile << ' ' << jenis;
+    }
+    saveFile << '\n';
+    saveFile << "DISCARD";
+    for (const std::string& jenis : deckOutput.discardJenis) {
         saveFile << ' ' << jenis;
     }
     saveFile << '\n';

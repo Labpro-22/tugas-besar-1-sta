@@ -43,7 +43,11 @@ int main(){
     while (match){
         loop = true;
         consecutiveDadu = 0;
-        Nimonspoli.bagikanKartuSpesial(Nimonspoli.getPemain()[Nimonspoli.getCurrentPemainIndex()]);
+        User& pemainAktif = Nimonspoli.getPemain()[Nimonspoli.getCurrentPemainIndex()];
+        Nimonspoli.bagikanKartuSpesial(pemainAktif);
+        if (!Nimonspoli.handleJailTurn(pemainAktif)) {
+            loop = false;
+        }
         // Command Match
         while (loop) {
             std::cout << ">> " << std::flush;

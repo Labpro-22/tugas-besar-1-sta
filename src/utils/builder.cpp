@@ -406,15 +406,22 @@ Game gameBuilder::buildLoadGame(configBase* configB, const configLoadSave* confi
 
     // 2D. Set deckKartuSpesial
     std::vector<KartuSpesial*> deckKartu;
+    std::vector<KartuSpesial*> discardKartu;
     const StateDeck& stateDeck = configS->getDeckKartuSpesial();
-    if (stateDeck.jumlahKartuDeck != static_cast<int>(stateDeck.jenis.size())) {
+    const bool deckSpesialTerpisah = !stateDeck.drawJenis.empty() || !stateDeck.discardJenis.empty();
+    const std::vector<std::string>& drawSpesial = deckSpesialTerpisah ? stateDeck.drawJenis : stateDeck.jenis;
+    if (stateDeck.jumlahKartuDeck != static_cast<int>(drawSpesial.size() + stateDeck.discardJenis.size())) {
         throw gameException("Gagal load game: jumlah deck kartu spesial tidak sesuai.");
     }
-    deckKartu.reserve(stateDeck.jenis.size());
-    for (const std::string& jenis : stateDeck.jenis) {
+    deckKartu.reserve(drawSpesial.size());
+    for (const std::string& jenis : drawSpesial) {
         deckKartu.push_back(buildKartuSpesial(jenis, 0));
     }
-    game.getDeckKartuSpesial().setDrawPile(deckKartu);
+    discardKartu.reserve(stateDeck.discardJenis.size());
+    for (const std::string& jenis : stateDeck.discardJenis) {
+        discardKartu.push_back(buildKartuSpesial(jenis, 0));
+    }
+    game.getDeckKartuSpesial().setPiles(deckKartu, discardKartu);
 
     // 2E. Set Log
     const StateLog& stateLog = configS->getLog();

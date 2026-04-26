@@ -186,6 +186,13 @@ public:
         discardPile.clear();
     }
 
+    void setPiles(std::vector<T*> drawCards, std::vector<T*> discardCards) {
+        for (T* card : drawPile) delete card;
+        for (T* card : discardPile) delete card;
+        drawPile = std::move(drawCards);
+        discardPile = std::move(discardCards);
+    }
+
     const std::vector<T*>& getDrawPile() const {
         return drawPile;
     }
