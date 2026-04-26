@@ -2,6 +2,32 @@
 #include "../../include/core/user.hpp"
 #include "../../include/core/game.hpp"
 
+namespace {
+    int hitungTagihanSetelahEfekKartu(User* user, int tagihan, bool pembayaranSewa) {
+        if (user == nullptr || tagihan <= 0) {
+            return tagihan;
+        }
+
+        if (user->isShieldActive()) {
+            std::cout << "[KARTU] ShieldCard aktif. Tagihan M" << tagihan
+                      << " dibatalkan.\n";
+            return 0;
+        }
+
+        if (pembayaranSewa && user->getActiveDiscount() > 0) {
+            const int diskon = user->getActiveDiscount();
+            const int potongan = tagihan * diskon / 100;
+            const int tagihanAkhir = tagihan - potongan;
+            std::cout << "[KARTU] DiscountCard aktif. Sewa M" << tagihan
+                      << " mendapat diskon " << diskon
+                      << "% menjadi M" << tagihanAkhir << ".\n";
+            return tagihanAkhir;
+        }
+
+        return tagihan;
+    }
+}
+
 // [1] Abstract Class : Petak
 Petak::Petak() : index(0), kodePetak(""), name(""), kategori(""), warna("") {}
 Petak::Petak(int index, std::string kodePetak, std::string name, std::string kategori, std::string warna)
@@ -59,6 +85,10 @@ void PetakLahan::bayarSewa(User* user) {
         throw BukanPemilikException();
     }
     int biayaSewa = sertifikat->hitungSewa(0);
+    biayaSewa = hitungTagihanSetelahEfekKartu(user, biayaSewa, true);
+    if (biayaSewa == 0) {
+        return;
+    }
    
     if (user->getUang() < biayaSewa) {
         throw UangTidakCukupException();
@@ -113,23 +143,6 @@ void PetakLahan::hancurkanBangunan() {
     }
 }
 
-void PetakLahan::hancurkanSatuBangunan() {
-    Street* jalan = dynamic_cast<Street*>(sertifikat);
-    if (jalan != nullptr) {
-        if (jalan->isHotel()) {
-            jalan->setHotel(false);
-            std::cout << "[INFO] Hotel di properti " << getName() << " telah dihancurkan.\n";
-        } else if (jalan->getJumlahBangunan() > 0) {
-            jalan->setJumlahRumah(jalan->getJumlahBangunan() - 1);
-            std::cout << "[INFO] Satu rumah di properti " << getName() << " telah dihancurkan. Sisa rumah: " << jalan->getJumlahBangunan() << "\n";
-        } else {
-            std::cout << "[INFO] Tidak ada bangunan yang dapat dihancurkan di properti ini.\n";
-        }
-    } else {
-        std::cout << "[ERROR] Petak ini bukan jenis Street, tidak memiliki bangunan.\n";
-    }
-}
-
 // [2.2] Class PetakStasiun (Inheritance dari PetakProperti)
 PetakStasiun::PetakStasiun() {}
 PetakStasiun::PetakStasiun(int index, std::string kodePetak, std::string name, std::string kategori, RailRoad* sertifikat, std::string warna)
@@ -139,6 +152,10 @@ PetakStasiun::~PetakStasiun() {}
 void PetakStasiun::bayarSewa(User* user) {
     RailRoad* stasiun = dynamic_cast<RailRoad*>(sertifikat);
     int biayaSewa = stasiun->hitungSewa(0);
+    biayaSewa = hitungTagihanSetelahEfekKartu(user, biayaSewa, true);
+    if (biayaSewa == 0) {
+        return;
+    }
 
     if (user->getUang() < biayaSewa) {
         throw UangTidakCukupException();
@@ -170,6 +187,10 @@ PetakUtilitas::~PetakUtilitas() {}
 void PetakUtilitas::bayarSewa(User* user, Game* game) {
     Utility* utilitas = dynamic_cast<Utility*>(sertifikat);
     int biayaSewa = utilitas->hitungSewa(game->getDadu()->getTotal());
+    biayaSewa = hitungTagihanSetelahEfekKartu(user, biayaSewa, true);
+    if (biayaSewa == 0) {
+        return;
+    }
 
     if (user->getUang() < biayaSewa) {
         throw UangTidakCukupException();
@@ -200,11 +221,28 @@ PetakAksi::PetakAksi(int index, std::string kodePetak, std::string name, std::st
 PetakAksi::~PetakAksi() {}
 
 // [3.1] Class PetakKartu {Inheritance dari PetakAksi}
-// Ada di HPP
-// PetakKartu::PetakKartu() : PetakAksi() {}
-// PetakKartu::~PetakKartu() {}
 template <class T>
-void PetakKartu<T>::onLanded(User* user, Game* game) {}
+PetakKartu<T>::PetakKartu() : PetakAksi() {}
+template <class T>
+PetakKartu<T>::PetakKartu(int index, std::string kodePetak, std::string name, std::string kategori, std::string warna)
+    : PetakAksi(index,kodePetak,name,kategori,warna), deck(){}
+template <class T>
+void PetakKartu<T>::onLanded(User* user, Game* game) {
+    if (user == nullptr || game == nullptr) {
+            return;
+        }
+
+    T* kartu = deck.draw();
+    if (kartu == nullptr) {
+        std::cout << "[KARTU] Deck kosong.\n";
+        return;
+    }
+
+    std::cout << "[KARTU] " << user->getUsername() << " mengambil "
+                << kartu->getNama() << ": " << kartu->getDeskripsi() << "\n";
+    kartu->apply(game, *user);
+    deck.discard(kartu);
+}
 
 // [3.2] Class PetakFestival {Inheritance dari PetakAksi}
 PetakFestival::PetakFestival() : PetakFestival(0, "FES", "Festival", "Aksi", "NONE") {}
@@ -281,8 +319,11 @@ void PetakPPH::bayarPajak(User& user) {
     std::cin >> pilihan;
 
     if (pilihan == 1) {
-        if (user.getUang() >= pajakFlat) {
-            user -= (pajakFlat);
+        const int tagihanPajak = hitungTagihanSetelahEfekKartu(&user, static_cast<int>(pajakFlat), false);
+        if (tagihanPajak == 0) {
+            std::cout << "[SUCCESS] Pajak flat dibatalkan oleh ShieldCard.\n";
+        } else if (user.getUang() >= tagihanPajak) {
+            user -= tagihanPajak;
             std::cout << "[SUCCESS] Pajak flat terbayar. Sisa uang: M" << user.getUang() << "\n";
         } else {
             std::cout << "[WARNING] Saldo tidak mencukupi!\n";
@@ -295,8 +336,11 @@ void PetakPPH::bayarPajak(User& user) {
         
         std::cout << "[INFO] Total aset: M" << totalKekayaan << " | Potongan: M" << pajakPersentase << "\n";
 
-        if (user.getUang() >= pajakPersentase) {
-            user -= (pajakPersentase);
+        const int tagihanPajak = hitungTagihanSetelahEfekKartu(&user, static_cast<int>(pajakPersentase), false);
+        if (tagihanPajak == 0) {
+            std::cout << "[SUCCESS] Pajak persentase dibatalkan oleh ShieldCard.\n";
+        } else if (user.getUang() >= tagihanPajak) {
+            user -= tagihanPajak;
             std::cout << "[SUCCESS] Pajak persentase terbayar. Sisa uang: M" << user.getUang() << "\n";
         } else {
             std::cout << "[WARNING] Saldo tidak mencukupi!\n";
@@ -319,8 +363,11 @@ void PetakPBM::onLanded(User* user, Game* game) {
     bayarPajak(*user);
 }
 void PetakPBM::bayarPajak(User& user) {
-    if (user.getUang() >= pajakFlat) {
-        user -= (pajakFlat);
+    const int tagihanPajak = hitungTagihanSetelahEfekKartu(&user, static_cast<int>(pajakFlat), false);
+    if (tagihanPajak == 0) {
+        std::cout << "[SUCCESS] Pajak dibatalkan oleh ShieldCard.\n";
+    } else if (user.getUang() >= tagihanPajak) {
+        user -= tagihanPajak;
         std::cout << "[SUCCESS] Pajak terbayar. Sisa uang: M" << user.getUang() << "\n";
     } else {
         std::cout << "[WARNING] Saldo tidak mencukupi untuk membayar pajak!\n";

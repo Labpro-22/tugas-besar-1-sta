@@ -7,12 +7,7 @@ Game::Game(int maxTurn,int turn,bool end,std::vector<User> pemain,std::vector<st
 Board board,Dadu dadu,std::map<std::string, PetakProperti*> lokasiKode,std::map<std::string, std::vector<PetakProperti*>> lokasiColorGroup) 
 : MAX_TURN(maxTurn),turn(turn),end(end),pemain(std::move(pemain)),
 daftarProperti(std::move(daftarProperti)),currentPemain(0),board(std::move(board)),
-dadu(std::move(dadu)),lokasiKode(std::move(lokasiKode)),lokasiColorGroup(std::move(lokasiColorGroup)) {
-    urutanPemain.reserve(this->pemain.size());
-    for (size_t i = 0; i < this->pemain.size(); ++i) {
-        urutanPemain.push_back(static_cast<int>(i));
-    }
-}
+dadu(std::move(dadu)),lokasiKode(std::move(lokasiKode)),lokasiColorGroup(std::move(lokasiColorGroup)) {}
 
 bool Game::isEnd() {
     // Jika Pemain tinggal satu atau end true
@@ -50,6 +45,37 @@ void Game::nextPlayer() {
             return;
         }
     }
+}
+
+void Game::bagikanKartuSpesial(User& user) {
+    if (user.isBankrupt()) {
+        return;
+    }
+
+    KartuSpesial* kartu = deckKartuSpesial.draw();
+    if (kartu == nullptr) {
+        std::cout << "[KARTU SPESIAL] Deck kosong, tidak ada kartu yang dibagikan.\n";
+        return;
+    }
+
+    if (MoveCard* moveCard = dynamic_cast<MoveCard*>(kartu)) {
+        moveCard->randomize();
+    } else if (DiscountCard* discountCard = dynamic_cast<DiscountCard*>(kartu)) {
+        discountCard->randomize();
+    }
+
+    std::cout << "[KARTU SPESIAL] " << user.getUsername() << " mendapat "
+              << kartu->getNama() << ".\n";
+    user.addKartuSpesial(kartu, &deckKartuSpesial);
+}
+
+void Game::mulaiLelang(Properti* targetProperti, User* pemicu) {
+    if (targetProperti == nullptr) {
+        return;
+    }
+
+    Lelang lelang(targetProperti, this, pemicu);
+    lelang.mulaiLelang();
 }
 
 int Game::getTurn() {
@@ -153,3 +179,45 @@ std::vector<Logger> Game::getLog(){return Log;}
 Dadu* Game::getDadu() {return &dadu;}
 std::map<std::string, PetakProperti*>& Game::getLokasiKode() {return lokasiKode;}
 std::map<std::string, std::vector<PetakProperti*>>& Game::getLokasiColorGroup() {return lokasiColorGroup;}
+CardDeck<KartuSpesial>& Game::getDeckKartuSpesial() {return deckKartuSpesial;}
+
+void Game::move(int langkah, User& user) {
+    user.move(langkah, &board);
+    board.getPetakAt(user.getKoordinat())->onLanded(&user, this);
+}
+
+void Game::prosesGadai(User& user, Properti& properti) {
+    // Implementasi proses gadai
+    // 1. Beri list properti yang bisa digadaikan (status Owned) Jika masih ada bangunan di color group, tidak bisa digadaikan.
+    std::string opsi;
+    std::cout << "Pilih nomor properti (0 untuk batal): ";
+    std::cin >> opsi;
+    std::cout << "Jakarta berhasil digadaikan." << std::endl << "Kamu menerima M200 dari Bank."
+    << std::endl << "Uang kamu sekarang: " << user.getUang() << std::endl << "Catatan: Properti yang digadaikan tidak akan menghasilkan sewa." << std::endl;
+}
+
+void Game::prosesTebus(User& user, Properti& properti) {
+    // Implementasi proses tebus
+    /*
+        1. Traversal semua properti yang bisa ditebus (status Mortgaged) dan tampilkan ke user
+        2. User pilih properti yang mau ditebus, jika uang cukup, proses tebus berhasil, jika tidak cukup, tampilkan pesan error
+    */
+}
+
+void Game::prosesBangun(Properti& properti) {
+    // Implementasi proses bangun
+    /*
+        1. Berikan list properti yang bisa dibangun (Hanya Street dengan status Owned, dan ketentuan Bangun (colorgroup))
+        2. Pilih color group
+        3. Pilih properti
+        4. Kalo gak ada, lewatkan!
+    */
+}
+
+void Game::prosesLoad() {
+    // Implementasi proses load
+}
+
+void Game::prosesSave() {
+    // Implementasi proses save
+}

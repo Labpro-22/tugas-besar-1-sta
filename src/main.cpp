@@ -33,12 +33,14 @@ int main(){
     while (match){
         loop = true;
         consecutiveDadu = 0;
+        Nimonspoli.bagikanKartuSpesial(Nimonspoli.getPemain()[Nimonspoli.getCurrentPemainIndex()]);
         // Command Match
-        std::cout << ">> " << std::flush;
-        std::getline(std::cin >> std::ws, command);
         while (loop) {
+            std::cout << ">> " << std::flush;
+            std::getline(std::cin >> std::ws, command);
             loop = cmd.execute(Nimonspoli.getPemain()[Nimonspoli.getCurrentPemainIndex()], command, Nimonspoli, consecutiveDadu);
         }
+        Nimonspoli.getPemain()[Nimonspoli.getCurrentPemainIndex()].resetEfekKartuSpesial();
 
         if (Nimonspoli.getCurrentPemainIndex() == static_cast<int>(Nimonspoli.getPemain().size()) - 1) {
             Nimonspoli.nextturn();

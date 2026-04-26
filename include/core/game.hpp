@@ -14,7 +14,7 @@
 
 class Game{
 private:
-    // Atribut Langsung game
+    // Atribut Game
     int MAX_TURN;
     int turn;
     bool end;
@@ -23,12 +23,12 @@ private:
     std::vector<std::unique_ptr<Properti>> daftarProperti;
     
     // Urutan Pemain (Angka melambangkan indeks di vector pemain)
-    std::vector<int> urutanPemain;
     int currentPemain;
 
     // Composition
     Board board;
     Dadu dadu;
+    CardDeck<KartuSpesial> deckKartuSpesial;
     // Mapping
     std::map<std::string, PetakProperti*> lokasiKode; // Kode -> Petak
     std::map<std::string, std::vector<PetakProperti*>> lokasiColorGroup; // Color X -> Semua Petak dengan color X
@@ -43,25 +43,37 @@ public:
     Game& operator=(Game&&) noexcept = default;
     ~Game() = default;
 
+    // Getter
     bool isEnd(); // Kondisi Max Turn atau Config : Bangkrut
-    void setMAXTURN(int max);
-    void nextturn(); // Ganti cycle
-    void nextPlayer();
-
     int getTurn();
-    int getCurrentPemainIndex() const;
-    int getActivePlayerCount() const;
-    int getJailFine() const;
-    bool handleJailTurn(User& user);
-    void sendPlayerToJail(User& user);
-    void leave(User& user);
-
     Board* getBoard();
     std::vector<User>& getPemain();
     std::vector<Logger> getLog();
     Dadu* getDadu();
     std::map<std::string, PetakProperti*>& getLokasiKode();
     std::map<std::string, std::vector<PetakProperti*>>& getLokasiColorGroup();
+    CardDeck<KartuSpesial>& getDeckKartuSpesial();
+
+    int getCurrentPemainIndex() const;
+    int getActivePlayerCount() const;
+    int getJailFine() const;
+
+    void setMAXTURN(int max);
+    void nextturn(); // Ganti cycle
+    void nextPlayer();
+    void bagikanKartuSpesial(User& user);
+    void mulaiLelang(Properti* targetProperti, User* pemicu);
+    bool handleJailTurn(User& user);
+    void sendPlayerToJail(User& user);
+    void leave(User& user);
+
+    // Method 
+    void move(int langkah, User& user);
+    void prosesGadai(User& user, Properti& properti);
+    void prosesTebus(User& user, Properti& properti);
+    void prosesBangun(Properti& properti);
+    void prosesLoad();
+    void prosesSave();
 };
 
 #endif
